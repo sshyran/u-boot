@@ -84,7 +84,7 @@
 		"bootm ${loadaddr}\0" \
 	\
 	"mmc_setup=mmc init ${mmcdev}; setenv bootdev_bootargs "\
-		"root=/dev/mmcblk0p5 rootwait; "\
+		"root=/dev/mmcblk0p3 rootwait; "\
 		"run regen_all\0"\
 	"mmc_boot=run mmc_setup; "\
 		"ext2load mmc ${mmcdev}:3 ${loadaddr} ${cros_bootfile}; "\
