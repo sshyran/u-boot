@@ -77,14 +77,14 @@
 		"bootm ${loadaddr}\0" \
 	\
 	"usb_setup=setenv bootdev_bootargs "\
-		"root=/dev/sda3; "\
+		"root=/dev/sda3 rootwait; "\
 		"run regen_all\0"\
 	"usb_boot=run usb_setup; "\
 		"ext2load usb 0:3 ${loadaddr} ${cros_bootfile}; "\
 		"bootm ${loadaddr}\0" \
 	\
 	"mmc_setup=mmc init ${mmcdev}; setenv bootdev_bootargs "\
-		"root=/dev/mmcblk0p5; "\
+		"root=/dev/mmcblk0p5 rootwait; "\
 		"run regen_all\0"\
 	"mmc_boot=run mmc_setup; "\
 		"ext2load mmc ${mmcdev}:3 ${loadaddr} ${cros_bootfile}; "\
