@@ -166,7 +166,11 @@
         0,    0,    0,    0,    0,    0,    0,    0,            \
         0,    0,    0,    0,  '?',    0,    0,    0
 
-#define CONFIG_TEGRA2_PINMUX                    \
-        CONFIG_TEGRA2_PINMUX_DISPLAY_SEABOARD
+#define CONFIG_TEGRA2_PINMUX	CONFIG_TEGRA2_PINMUX_DISPLAY_SEABOARD
+
+#define TEGRA_GPIO_INIT_LCD     TEGRA_GPIO_INIT_LCD_SEABOARD
+#define TEGRA_CLOCK_INIT_LCD    TEGRA_CLOCK_INIT_LCD_SEABOARD
+#define TEGRA_RESOURCE_LCD      TEGRA_RESOURCE_LCD_SEABOARD
+#define TEGRA_PANEL_MODE        TEGRA_PANEL_MODE_SEABOARD
 
 #endif /* __CONFIG_H */

@@ -124,6 +124,32 @@
 #define PHYS_SDRAM_1		TEGRA2_SDRC_CS0
 #define PHYS_SDRAM_1_SIZE	SZ_512M
 
+/*-----------------------------------------------------------------------
+ * Common macros for constructing configurations.  These are being used to
+ * move configuration data out of the board C files and into the included
+ * configuration files.  The final goal is to move this configuration data
+ * into a FDT blob.
+ *
+ * Tracker: http://code.google.com/p/chromium-os/issues/detail?id=11623
+ */
+#define TEGRA_GPIO_INIT(_gpio, _state)  { _gpio, _state },
+
+#define TEGRA_CLOCK(_name, _parent, _rate, _enabled)        \
+        { _name, _parent, _rate, _enabled },
+
+#define TEGRA_RESOURCE(_name, _start, _length)  \
+        {                                       \
+                .name  = _name,                 \
+                .start = _start,                \
+                .end   = _start + _length - 1,  \
+        },
+
+#define TEGRA_PANEL(_name, _value)      ._name = _value,
+
+/*-----------------------------------------------------------------------
+ * Include component configurations.
+ */
+
 #include <configs/chromeos/tegra2/parts/gpio.h>
 #include <configs/chromeos/tegra2/parts/i2c.h>
 #include <configs/chromeos/tegra2/parts/lcd.h>

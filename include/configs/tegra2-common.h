@@ -475,4 +475,56 @@
         PINMUX(LVS,   DISPLAYA,      NORMAL,    NORMAL)         \
         PINMUX(SLXD,  SPDIF,         NORMAL,    NORMAL)
 
+/*
+ * Panel configuration.
+ */
+#define TEGRA_GPIO_INIT(_gpio, _state)  { _gpio, _state },
+
+#define TEGRA_CLOCK(_name, _parent, _rate, _enabled)        \
+        { _name, _parent, _rate, _enabled },
+
+#define TEGRA_RESOURCE(_name, _start, _length)  \
+        {                                       \
+                .name  = _name,                 \
+                .start = _start,                \
+                .end   = _start + _length - 1,  \
+        },
+
+#define TEGRA_PANEL(_name, _value)      ._name = _value,
+
+#define TEGRA_GPIO_BACKLIGHT_SEABOARD     TEGRA_GPIO_PD4
+#define TEGRA_GPIO_LVDS_SHUTDOWN_SEABOARD TEGRA_GPIO_PB2
+#define TEGRA_GPIO_BACKLIGHT_VDD_SEABOARD TEGRA_GPIO_PW0
+#define TEGRA_GPIO_EN_VDD_PNL_SEABOARD    TEGRA_GPIO_PC6
+
+#define TEGRA_GPIO_INIT_LCD_SEABOARD					\
+        TEGRA_GPIO_INIT(TEGRA_GPIO_BACKLIGHT_SEABOARD,     true)	\
+        TEGRA_GPIO_INIT(TEGRA_GPIO_LVDS_SHUTDOWN_SEABOARD, true)	\
+        TEGRA_GPIO_INIT(TEGRA_GPIO_BACKLIGHT_VDD_SEABOARD, false)	\
+        TEGRA_GPIO_INIT(TEGRA_GPIO_EN_VDD_PNL_SEABOARD,    true)
+
+#define TEGRA_CLOCK_INIT_LCD_SEABOARD				\
+        TEGRA_CLOCK("3d",     "pll_m",   300000000, true)       \
+        TEGRA_CLOCK("2d",     "pll_m",   300000000, true)       \
+        TEGRA_CLOCK("host1x", "pll_p",   144000000, true)       \
+        TEGRA_CLOCK("disp1",  "pll_p",   216000000, true)       \
+        TEGRA_CLOCK("pwm",    "clk_32k", 32768,     true)
+
+#define TEGRA_RESOURCE_LCD_SEABOARD					\
+        TEGRA_RESOURCE("irq",   0x69,               1)                  \
+        TEGRA_RESOURCE("regs",  TEGRA_DISPLAY_BASE, TEGRA_DISPLAY_SIZE) \
+        TEGRA_RESOURCE("fbmem", LCD_FB_ADDR,        0x4000000)          \
+        TEGRA_RESOURCE("pwm",   TEGRA_PWFM2_BASE,   TEGRA_PWFM2_SIZE)
+
+#define TEGRA_PANEL_MODE_SEABOARD			\
+        TEGRA_PANEL(pclk,          62200000)            \
+        TEGRA_PANEL(h_ref_to_sync, 11)                  \
+        TEGRA_PANEL(v_ref_to_sync, 1)                   \
+        TEGRA_PANEL(h_sync_width,  58)                  \
+        TEGRA_PANEL(v_sync_width,  4)                   \
+        TEGRA_PANEL(h_back_porch,  58)                  \
+        TEGRA_PANEL(v_back_porch,  4)                   \
+        TEGRA_PANEL(h_front_porch, 58)                  \
+        TEGRA_PANEL(v_front_porch, 4)
+
 #endif /* __CONFIG_H */
