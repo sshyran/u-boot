@@ -503,8 +503,16 @@ NvBootError tegra2_i2c_send_pkt_transaction(
 
 	dptr = (NvU32 *)transaction_info->buf;
 	while (words_to_send) {
-		NVB_WRITE32(i2c_tx_fifo_reg, *dptr);
-		debug("pkt data sent (0x%x)\n", *dptr);
+		/* deal with word alignment */
+		if ((unsigned)dptr & 3) {
+			NvU32 local;
+			memcpy(&local, dptr, sizeof(NvU32));
+			NVB_WRITE32(i2c_tx_fifo_reg, local);
+			debug("pkt data sent (0x%x)\n", local);
+		} else {
+			NVB_WRITE32(i2c_tx_fifo_reg, *dptr);
+			debug("pkt data sent (0x%x)\n", *dptr);
+		}
 		if (!wait_for_tx_fifo_empty(controller, I2C_TIMEOUT_USEC)) {
 			error = NvBootError_HwTimeOut;
 			goto exit;
@@ -612,9 +620,14 @@ NvBootError tegra2_i2c_receive_pkt_transaction(
 			NVB_READ32(i2c_rx_fifo_reg, local);
 			memcpy( (uchar *)dptr, (char *)&local, last_bytes);
 		} else {
-			NVB_READ32(i2c_rx_fifo_reg, *dptr);
+			NVB_READ32(i2c_rx_fifo_reg, local);
+			if ((unsigned)dptr & 3) {
+				memcpy(dptr, &local, sizeof(NvU32));
+			} else {
+				*dptr = local;
+			}
 		}
-		debug("pkt data received (0x%x)\n", *dptr);
+		debug("pkt data received (0x%x)\n", local);
 		words_to_receive--;
 		dptr++;
 	}
