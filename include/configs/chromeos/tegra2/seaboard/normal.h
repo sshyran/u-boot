@@ -10,4 +10,6 @@
 #include <configs/chromeos/tegra2/normal.h>
 #include <configs/chromeos/tegra2/seaboard/common.h>
 
+#include <configs/chromeos/tegra2/seaboard/parts/mmc.h>
+
 #endif /*__configs_chromeos_tegra2_seaboard_normal_h__*/

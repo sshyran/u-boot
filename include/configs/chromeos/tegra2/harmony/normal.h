@@ -10,4 +10,6 @@
 #include <configs/chromeos/tegra2/normal.h>
 #include <configs/chromeos/tegra2/harmony/common.h>
 
+#include <configs/chromeos/tegra2/harmony/parts/mmc.h>
+
 #endif /*__configs_chromeos_tegra2_harmony_normal_h__*/

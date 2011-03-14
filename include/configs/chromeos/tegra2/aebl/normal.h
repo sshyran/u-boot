@@ -10,4 +10,6 @@
 #include <configs/chromeos/tegra2/normal.h>
 #include <configs/chromeos/tegra2/aebl/common.h>
 
+#include <configs/chromeos/tegra2/aebl/parts/mmc.h>
+
 #endif /*__configs_chromeos_tegra2_aebl_normal_h__*/

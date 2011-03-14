@@ -10,4 +10,6 @@
 #include <configs/chromeos/tegra2/normal.h>
 #include <configs/chromeos/tegra2/wario/common.h>
 
+#include <configs/chromeos/tegra2/wario/parts/mmc.h>
+
 #endif /*__configs_chromeos_tegra2_wario_normal_h__*/

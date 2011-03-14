@@ -10,6 +10,8 @@
 #include <configs/chromeos/normal.h>
 #include <configs/chromeos/tegra2/common.h>
 
+#include <configs/chromeos/tegra2/parts/mmc.h>
+
 #define CONFIG_EXTRA_ENV_SETTINGS_ARCH CONFIG_EXTRA_ENV_SETTINGS_ARCH_COMMON
 
 #endif //__configs_chromeos_tegra2_normal_h__

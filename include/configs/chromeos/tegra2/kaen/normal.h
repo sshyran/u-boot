@@ -10,4 +10,6 @@
 #include <configs/chromeos/tegra2/normal.h>
 #include <configs/chromeos/tegra2/kaen/common.h>
 
+#include <configs/chromeos/tegra2/kaen/parts/mmc.h>
+
 #endif /*__configs_chromeos_tegra2_kaen_normal_h__*/

@@ -15,4 +15,10 @@
 
 #define CONFIG_BOOTCOMMAND "cros_normal_firmware"
 
+/* These are used for access EFI partition */
+#define CONFIG_MMC
+#define CONFIG_EFI_PARTITION
+#define CONFIG_DOS_PARTITION
+#define CONFIG_CMD_FAT
+
 #endif //__configs_chromeos_normal_h__
