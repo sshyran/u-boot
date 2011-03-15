@@ -13,7 +13,7 @@
 #include <asm/arch/nv_hardware_access.h>
 #include <asm/arch/nv_drf.h>
 #include <asm/arch/tegra2.h>
-#include "../common/board.h"
+#include "board.h"
 #include "generic.h"
 #include <spi.h>
 

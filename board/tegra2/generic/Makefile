@@ -6,41 +6,35 @@
 
 include $(TOPDIR)/config.mk
 
-$(shell mkdir -p $(obj)../common/sdmmc)
-$(shell mkdir -p $(obj)../common/crypto)
-ifdef CONFIG_TEGRA2_LCD
-$(shell mkdir -p $(obj)../common/lcd)
-$(shell mkdir -p $(obj)../common/lcd/gpinit)
-endif
+$(shell mkdir -p $(obj)sdmmc)
+$(shell mkdir -p $(obj)crypto)
+$(shell mkdir -p $(obj)lcd)
+$(shell mkdir -p $(obj)lcd/gpinit)
+$(shell mkdir -p $(obj)nand)
 
 LIB	= $(obj)lib$(BOARD).a
 
-COBJS	:= $(BOARD).o
-ifdef CONFIG_TEGRA2_KEYBOARD
-COBJS	+= $(BOARD)_kbc.o
-endif
-COBJS	+= ../common/board.o
-COBJS	+= ../common/sdmmc/nvboot_sdmmc.o
-COBJS	+= ../common/sdmmc/nvboot_reset.o
-COBJS	+= ../common/sdmmc/nvboot_util.o
-COBJS	+= ../common/sdmmc/nvboot_clocks.o
-COBJS	+= ../common/sdmmc/nvboot_pads.o
-COBJS	+= ../common/sdmmc/nvboot_pinmux.o
-COBJS	+= ../common/sdmmc/nvboot_pinmux_tables.o
-ifdef CONFIG_TEGRA2_LP0
-COBJS   += ../common/crypto/aes_ref.o
-COBJS   += ../common/crypto/crypto.o
-endif
-ifdef CONFIG_TEGRA2_LCD
-COBJS	+= gpinit.o
-COBJS	+= ../common/lcd/gpinit/gp-util.o
-COBJS	+= ../common/lcd/gpinit/gp-dc.o
-COBJS	+= ../common/lcd/gpinit/gp-clk.o
-COBJS	+= ../common/lcd/gpinit/gp-pinmux.o
-COBJS	+= ../common/lcd/gpinit/gp-pinmux-t2-tables.o
-COBJS	+= ../common/lcd/nvboot_lcd.o
-endif
+COBJS-y	:= $(BOARD).o
+COBJS-y	+= board.o
+COBJS-y	+= sdmmc/nvboot_sdmmc.o
+COBJS-y	+= sdmmc/nvboot_reset.o
+COBJS-y	+= sdmmc/nvboot_util.o
+COBJS-y	+= sdmmc/nvboot_clocks.o
+COBJS-y	+= sdmmc/nvboot_pads.o
+COBJS-y	+= sdmmc/nvboot_pinmux.o
+COBJS-y	+= sdmmc/nvboot_pinmux_tables.o
+COBJS-$(CONFIG_TEGRA2_KEYBOARD)	+= $(BOARD)_kbc.o
+COBJS-$(CONFIG_TEGRA2_LP0)	+= crypto/aes_ref.o
+COBJS-$(CONFIG_TEGRA2_LP0)	+= crypto/crypto.o
+COBJS-$(CONFIG_TEGRA2_LCD)	+= gpinit.o
+COBJS-$(CONFIG_TEGRA2_LCD)	+= lcd/gpinit/gp-util.o
+COBJS-$(CONFIG_TEGRA2_LCD)	+= lcd/gpinit/gp-dc.o
+COBJS-$(CONFIG_TEGRA2_LCD)	+= lcd/gpinit/gp-clk.o
+COBJS-$(CONFIG_TEGRA2_LCD)	+= lcd/gpinit/gp-pinmux.o
+COBJS-$(CONFIG_TEGRA2_LCD)	+= lcd/gpinit/gp-pinmux-t2-tables.o
+COBJS-$(CONFIG_TEGRA2_LCD)	+= lcd/nvboot_lcd.o
 
+COBJS	:= $(sort $(COBJS-y))
 SRCS	:= $(COBJS:.o=.c)
 OBJS	:= $(addprefix $(obj),$(COBJS))
 

@@ -30,9 +30,9 @@
 #include <asm/arch/nv_hardware_access.h>
 #include <asm/arch/i2c.h>
 
-#include "../board/tegra2/common/sdmmc/nvboot_clocks_int.h"
-#include "../board/tegra2/common/sdmmc/nvboot_reset.h"
-#include "../board/tegra2/common/sdmmc/nvboot_util.h"
+#include "../board/tegra2/generic/sdmmc/nvboot_clocks_int.h"
+#include "../board/tegra2/generic/sdmmc/nvboot_reset.h"
+#include "../board/tegra2/generic/sdmmc/nvboot_util.h"
 
 #define NVB_READ32	NV_READ32_
 #define NVB_WRITE32	NV_WRITE32_

@@ -6,10 +6,10 @@
 
 #include <common.h>
 
-#include "../common/lcd/gpinit/gp-dc_reg.h"
-#include "../common/lcd/gpinit/gpinit.h"
-#include "../common/lcd/gpinit/gp-pinmux.h"
-#include "../common/lcd/gpinit/gp-util.h"
+#include "lcd/gpinit/gp-dc_reg.h"
+#include "lcd/gpinit/gpinit.h"
+#include "lcd/gpinit/gp-pinmux.h"
+#include "lcd/gpinit/gp-util.h"
 
 struct tegra_gpio_init_table tegra2_gp_gpio_init_table[] = {
 	TEGRA_GPIO_INIT_LCD

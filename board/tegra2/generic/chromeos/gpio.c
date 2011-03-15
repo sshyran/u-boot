@@ -12,7 +12,7 @@
 
 #include <common.h>
 #include <asm/arch/gpio.h>
-#include "../../common/lcd/gpinit/gpinit.h"
+#include "../lcd/gpinit/gpinit.h"
 
 #include <chromeos/hardware_interface.h>
 
