@@ -165,4 +165,7 @@
 #define CONFIG_VB_SHARED_DATA_BLOB	0x10000000
 #define CONFIG_VB_SHARED_DATA_SIZE	VB_SHARED_DATA_REC_SIZE
 
+/* A sufficiently large buffer size for holding kernel image */
+#define CONFIG_MAX_KERNEL_SIZE		0x01000000
+
 #endif /*__configs_chromeos_tegra2_common_h__*/
