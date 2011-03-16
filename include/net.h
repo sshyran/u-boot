@@ -123,7 +123,18 @@ extern int eth_get_dev_index (void);		/* get the device index */
 extern void eth_parse_enetaddr(const char *addr, uchar *enetaddr);
 extern int eth_getenv_enetaddr(char *name, uchar *enetaddr);
 extern int eth_setenv_enetaddr(char *name, const uchar *enetaddr);
-extern int eth_getenv_enetaddr_by_index(int index, uchar *enetaddr);
+
+/*
+ * Get the hardware address for an ethernet interface .
+ * Args:
+ *	base_name - base name for device (NULL for "eth")
+ *	index - device index number (0 for first)
+ *	enetaddr - returns 6 byte hardware address
+ * Returns:
+ *	1 = ok, 0 = invalid MAC address
+ */
+extern int eth_getenv_enetaddr_by_index(char *base_name, int index,
+					uchar *enetaddr);
 
 extern int eth_init(bd_t *bis);			/* Initialize the device */
 extern int eth_send(volatile void *packet, int length);	   /* Send a packet */
@@ -133,6 +144,17 @@ extern int eth_receive(volatile void *packet, int length); /* Receive a packet*/
 extern int eth_rx(void);			/* Check for received packets */
 extern void eth_halt(void);			/* stop SCC */
 extern char *eth_get_name(void);		/* get name of current device */
+
+/*
+ * Set the hardware address for an ethernet interface based on 'eth%daddr'
+ * environment variable (or just 'ethaddr' if eth_number is 0).
+ * Args:
+ *	base_name - base name for device (NULL for "eth")
+ *	eth_number - value of %d (0 for first device of this type)
+ * Returns:
+ *	0 = ok, -1 = driver reported error trying to set address
+ */
+int eth_set_hwaddr(struct eth_device *dev, char *base_name, int eth_number);
 
 #ifdef CONFIG_MCAST_TFTP
 int eth_mcast_join( IPaddr_t mcast_addr, u8 join);
