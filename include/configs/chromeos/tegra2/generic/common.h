@@ -9,6 +9,9 @@
 
 #include <configs/chromeos/tegra2/common.h>
 
+/* Use default firmware layout */
+#include <configs/chromeos/firmware_layout.h>
+
 #define LINUX_MACH_TYPE			MACH_TYPE_HARMONY
 #define CONFIG_SYS_BOARD_ODMDATA	0x300d8011  /* lp1, 1GB */
 

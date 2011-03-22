@@ -9,6 +9,9 @@
 
 #include <configs/chromeos/tegra2/common.h>
 
+/* Use Seaboard-specific firmware layout */
+#include <configs/chromeos/tegra2/seaboard/firmware_layout.h>
+
 #define LINUX_MACH_TYPE			MACH_TYPE_SEABOARD
 #define CONFIG_SYS_BOARD_ODMDATA	0x300d8011  /* lp1, 1GB */
 
