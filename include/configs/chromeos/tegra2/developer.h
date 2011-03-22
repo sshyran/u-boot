@@ -21,6 +21,10 @@
 #define CONFIG_ENV_SECT_SIZE    CONFIG_LENGTH_ENV
 #define CONFIG_ENV_OFFSET       CONFIG_OFFSET_ENV
 
+/* Override the environment size, since we only need a small area */
+#undef CONFIG_ENV_SIZE
+#define CONFIG_ENV_SIZE         CONFIG_LENGTH_ENV
+
 #define CONFIG_SYS_MEMTEST_START       0x0000
 #define CONFIG_SYS_MEMTEST_END         0x1000
 
