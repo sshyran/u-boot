@@ -40,6 +40,8 @@
 #define CONFIG_CMD_EXT2
 #define CONFIG_CMD_FAT
 
+#define CONFIG_USB_STOR_NO_RETRY
+
 #define CONFIG_ENV_IS_NOWHERE
 
 #endif //__configs_chromeos_recovery_h__

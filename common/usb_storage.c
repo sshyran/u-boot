@@ -900,7 +900,11 @@ do_retry:
 static int usb_inquiry(ccb *srb, struct us_data *ss)
 {
 	int retry, i;
+#ifdef CONFIG_USB_STOR_NO_RETRY
+	retry = 1;
+#else
 	retry = 5;
+#endif /* CONFIG_USB_STOR_NO_RETRY */
 	do {
 		memset(&srb->cmd[0], 0, 12);
 		srb->cmd[0] = SCSI_INQUIRY;
@@ -947,8 +951,13 @@ static int usb_request_sense(ccb *srb, struct us_data *ss)
 
 static int usb_test_unit_ready(ccb *srb, struct us_data *ss)
 {
-	int retries = 10;
+	int retry;
 	int result;
+#ifdef CONFIG_USB_STOR_NO_RETRY
+	retry = 1;
+#else
+	retry = 10;
+#endif /* CONFIG_USB_STOR_NO_RETRY */
 
 	do {
 		memset(&srb->cmd[0], 0, 12);
@@ -961,7 +970,7 @@ static int usb_test_unit_ready(ccb *srb, struct us_data *ss)
 		if (result == USB_EDEVCRITICAL)
 			return result;
 		wait_ms(100);
-	} while (retries--);
+	} while (retry--);
 
 	return -1;
 }
@@ -969,8 +978,11 @@ static int usb_test_unit_ready(ccb *srb, struct us_data *ss)
 static int usb_read_capacity(ccb *srb, struct us_data *ss)
 {
 	int retry;
-	/* XXX retries */
+#ifdef CONFIG_USB_STOR_NO_RETRY
+	retry = 1;
+#else
 	retry = 3;
+#endif /* CONFIG_USB_STOR_NO_RETRY */
 	do {
 		memset(&srb->cmd[0], 0, 12);
 		srb->cmd[0] = SCSI_RD_CAPAC;
