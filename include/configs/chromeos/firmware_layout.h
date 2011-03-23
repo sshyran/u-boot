@@ -7,34 +7,6 @@
 #ifndef __FIRMWARE_LAYOUT_H__
 #define __FIRMWARE_LAYOUT_H__
 
-/* TODO(clchiou): Below are old firmware layouts, will be removed soon */
-
-#define CONFIG_OFFSET_BOOTSTUB	0x00000000
-#define CONFIG_LENGTH_BOOTSTUB	0x000a0000
-
-#define CONFIG_OFFSET_ROVPD	0x001f0000
-#define CONFIG_LENGTH_ROVPD	0x00010000
-
-#define CONFIG_OFFSET_FW_A_KEY	0x00200000
-#define CONFIG_LENGTH_FW_A_KEY	0x00010000
-
-#define CONFIG_OFFSET_FW_A_DATA	0x00210000
-#define CONFIG_LENGTH_FW_A_DATA	0x000d0000
-
-#define CONFIG_OFFSET_FW_B_KEY	0x002e0000
-#define CONFIG_LENGTH_FW_B_KEY	0x00010000
-
-#define CONFIG_OFFSET_FW_B_DATA	0x002f0000
-#define CONFIG_LENGTH_FW_B_DATA	0x000d0000
-
-#define CONFIG_OFFSET_RWVPD	0x003c0000
-#define CONFIG_LENGTH_RWVPD	0x00010000
-
-#define CONFIG_OFFSET_LOGVOL	0x003d0000
-#define CONFIG_LENGTH_LOGVOL	0x00030000
-
-/* TODO(clchiou): Old firmware layout ends here */
-
 #define CONFIG_FIRMWARE_SIZE		0x00400000 /* 4 MB */
 
 /* -- Region: Read-only ----------------------------------------------------- */

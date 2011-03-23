@@ -15,34 +15,6 @@
  * only 16MBit (=2MB) of SPI Flash.
  */
 
-/* TODO(clchiou): Below are old firmware layouts, will be removed soon */
-
-#define CONFIG_OFFSET_BOOTSTUB	0x00000000
-#define CONFIG_LENGTH_BOOTSTUB	0x00088000
-
-#define CONFIG_OFFSET_ROVPD	0x000f0000
-#define CONFIG_LENGTH_ROVPD	0x00010000
-
-#define CONFIG_OFFSET_FW_A_KEY	0x00100000
-#define CONFIG_LENGTH_FW_A_KEY	0x00010000
-
-#define CONFIG_OFFSET_FW_A_DATA	0x00110000
-#define CONFIG_LENGTH_FW_A_DATA	0x00068000
-
-#define CONFIG_OFFSET_FW_B_KEY	0x00178000
-#define CONFIG_LENGTH_FW_B_KEY	0x00010000
-
-#define CONFIG_OFFSET_FW_B_DATA	0x00188000
-#define CONFIG_LENGTH_FW_B_DATA	0x00068000
-
-#define CONFIG_OFFSET_RWVPD	0x001f0000
-#define CONFIG_LENGTH_RWVPD	0x00008000
-
-#define CONFIG_OFFSET_LOGVOL	0x001ff000
-#define CONFIG_LENGTH_LOGVOL	0x00001000
-
-/* TODO(clchiou): Old firmware layout ends here */
-
 #define CONFIG_FIRMWARE_SIZE		0x00200000 /* 2 MB */
 
 /* -- Region: Read-only ----------------------------------------------------- */
