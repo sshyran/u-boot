@@ -172,10 +172,12 @@ void set_muxconf_regs(void)
 /***************************************************************************
  * Routines to be provided by corresponding device drivers.
  ***************************************************************************/
+#ifndef CONFIG_TEGRA2_NAND
 int board_nand_init(struct nand_chip *nand)
 {
     return -1;
 }
+#endif
 
 /***************************************************************************
  * Routines for UART initialization.

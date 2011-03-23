@@ -33,6 +33,7 @@ COBJS-$(CONFIG_TEGRA2_LCD)	+= lcd/gpinit/gp-clk.o
 COBJS-$(CONFIG_TEGRA2_LCD)	+= lcd/gpinit/gp-pinmux.o
 COBJS-$(CONFIG_TEGRA2_LCD)	+= lcd/gpinit/gp-pinmux-t2-tables.o
 COBJS-$(CONFIG_TEGRA2_LCD)	+= lcd/nvboot_lcd.o
+COBJS-$(CONFIG_TEGRA2_NAND)	+= nand/tegra2_nand.o
 
 COBJS	:= $(sort $(COBJS-y))
 SRCS	:= $(COBJS:.o=.c)
