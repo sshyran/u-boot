@@ -10,4 +10,6 @@
 #include <configs/chromeos/tegra2/flasher.h>
 #include <configs/chromeos/tegra2/harmony/common.h>
 
+#include <configs/chromeos/tegra2/harmony/parts/nand.h>
+
 #endif /*__configs_chromeos_tegra2_harmony_flasher_h__*/

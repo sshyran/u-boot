@@ -10,6 +10,7 @@
 #include <configs/chromeos/developer.h>
 #include <configs/chromeos/tegra2/common.h>
 
+#include <configs/chromeos/tegra2/parts/nand.h>
 #include <configs/chromeos/tegra2/parts/usb.h>
 
 /*

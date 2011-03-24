@@ -34,7 +34,7 @@
  */
 
 #define CONFIG_CMD_NAND
-#define CONFIG_NAND_TEGRA2
+#define CONFIG_TEGRA2_NAND
 #define CONFIG_SYS_NAND_ADDR            NAND_BASE
 #define CONFIG_SYS_NAND_BASE            NAND_BASE
 #define CONFIG_SYS_MAX_NAND_DEVICE      1

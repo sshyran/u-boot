@@ -10,6 +10,8 @@
 #include <configs/chromeos/flasher.h>
 #include <configs/chromeos/tegra2/common.h>
 
+#include <configs/chromeos/tegra2/parts/nand.h>
+
 #define SCRIPT_ADDRESS   0xe48000 // TEXT_BASE + 0x40000
 
 /*

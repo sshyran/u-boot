@@ -10,4 +10,6 @@
 #include <configs/chromeos/tegra2/flasher.h>
 #include <configs/chromeos/tegra2/seaboard/common.h>
 
+#include <configs/chromeos/tegra2/seaboard/parts/nand.h>
+
 #endif /*__configs_chromeos_tegra2_seaboard_flasher_h__*/
