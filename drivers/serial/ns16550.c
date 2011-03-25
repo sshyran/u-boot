@@ -64,6 +64,28 @@ void NS16550_reinit (NS16550_t com_port, int baud_divisor)
 	serial_out((baud_divisor >> 8) & 0xff, &com_port->dlm);
 	serial_out(UART_LCRVAL, &com_port->lcr);
 }
+
+/* Clear the UART's RX FIFO */
+
+void NS16550_clear(NS16550_t com_port)
+{
+	/* Reset RX fifo */
+	serial_out(UART_FCR_FIFO_EN | UART_FCR_RXSR, &com_port->fcr);
+
+	/* Remove any pending characters */
+	while (NS16550_tstc(com_port))
+		NS16550_getc(com_port);
+}
+
+/* Wait for the UART's output buffer and holding register to drain */
+
+void NS16550_drain(NS16550_t com_port)
+{
+	/* Wait for the UART to finish sending */
+	while(!(serial_in(&com_port->lsr) & UART_LSR_TEMT))
+		udelay(100);
+}
+
 #endif /* CONFIG_NS16550_MIN_FUNCTIONS */
 
 void NS16550_putc (NS16550_t com_port, char c)

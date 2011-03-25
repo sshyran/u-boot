@@ -155,12 +155,9 @@ void spi_cs_activate(struct spi_slave *slave)
 	volatile spi_tegra_t *spi = (spi_tegra_t *)TEGRA2_SPI_BASE;
 	u32 val;
 
-	/*
-	 * Delay here to clean up comms - spurious chars seen around SPI xfers.
-	 * Fine-tune later.
-	 */
-	udelay(1000);
-
+#ifdef CONFIG_SPI_CORRUPTS_UART
+	NS16550_drain(CONFIG_SPI_CORRUPTS_UART);
+#endif
 	/*
 	 * We need to dynamically change the pinmux, shared w/UART RXD/CTS!
 	 */
@@ -193,12 +190,6 @@ void spi_cs_deactivate(struct spi_slave *slave)
 	u32 val;
 
 	/*
-	 * Delay here to clean up comms - spurious chars seen around SPI xfers.
-	 * Fine-tune later.
-	 */
-	udelay(1000);
-
-	/*
 	 * Looks like we may also need to dynamically change the pinmux,
 	 *  shared w/UART RXD/CTS!
 	 */
@@ -222,6 +213,11 @@ void spi_cs_deactivate(struct spi_slave *slave)
 
 	debug("spi_cs_deactivate: CS driven %s\n",
 	 (spi->command & SPI_CMD_CS_VAL) ? "LOW" : "HIGH");
+
+#ifdef CONFIG_SPI_CORRUPTS_UART
+	udelay(100);
+	NS16550_clear(CONFIG_SPI_CORRUPTS_UART);
+#endif
 }
 
 int spi_xfer(struct spi_slave *slave, unsigned int bitlen, const void *dout,

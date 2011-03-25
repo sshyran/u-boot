@@ -38,3 +38,6 @@
 
 /* UARTA: debug board uart */
 #define CONFIG_SYS_NS16550_COM2         NV_ADDRESS_MAP_APB_UARTA_BASE
+
+/* On Seaboard, using SPI causes the UART pins to float */
+#define CONFIG_SPI_CORRUPTS_UART	NV_ADDRESS_MAP_APB_UARTD_BASE
