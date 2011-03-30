@@ -7,17 +7,17 @@
 #include <common.h>
 #include <i2c.h>
 
-#define INFINEON_TPM_CHIP   (CONFIG_INFINEON_TPM_CHIP_ADDRESS)
 
 /* infineon prototype i2c tpm's internal registers
  */
+#define INFINEON_TPM_CHIP   (0x1A)
 #define REG_RDATA           (0xA4)
 #define REG_WDATA           (0xA5)
 #define REG_STAT            (0xA7)
 /* i2c timeout value and polling period
  */
-#define I2CBUSY_WAIT_US	    (1000ul)
-#define TIMEOUT_REG_US      (1000000ul)
+#define I2CBUSY_WAIT_MS	    (1ul)
+#define TIMEOUT_REG_MS      (1000ul)
 
 /* error code follows u-boot standard
  * 0        : success
@@ -41,8 +41,8 @@ enum {
  * prototype i2c tpm chip, spec is not as clear as lpc tpm chip. just use
  * the maximum wait time as the timeout value.
  */
-#define TIMEOUT_READ_US     (3000000ul)
-#define TIMEOUT_WRITE_US    (1000000ul)
+#define TIMEOUT_READ_MS     (3000ul)
+#define TIMEOUT_WRITE_MS    (1000ul)
 
 /* tpm stat register bits
  */
@@ -224,8 +224,8 @@ static int tpm_i2c_reg(uint8_t *reg)
 	ulong stime = get_timer(0);
 	while (i2c_write_data((uchar)INFINEON_TPM_CHIP, reg, 1)) {
 		/* i2c busy, wait 1ms */
-		udelay(I2CBUSY_WAIT_US);
-		if (get_timer(stime) > TIMEOUT_REG_US)
+		udelay(I2CBUSY_WAIT_MS * 1000);
+		if (get_timer(stime) > TIMEOUT_REG_MS)
 			return E_TIMEOUT;
 	}
 	return 0;
@@ -335,7 +335,7 @@ static int tpm_prepare_read(ulong timeout_us)
 
 /* TPM API
  */
-int tpm_status(int *ready_write, int *ready_read, size_t *p_len)
+int tpm_status_v03(int *ready_write, int *ready_read, size_t *p_len)
 {
 	t_inf_stat_reg reg;
 
@@ -349,7 +349,7 @@ int tpm_status(int *ready_write, int *ready_read, size_t *p_len)
 	if ((reg.status ^ reg.len_h ^ reg.len_l) != reg.checksum)
 		return E_CHECKSUM;
 	/* data available
-	 */  
+	 */
 	if (ready_read)
 		*ready_read = (reg.status & TPM_RECEIVE_DATA_AVAILABLE) ? 1 : 0;
 	/* data length
@@ -368,7 +368,7 @@ int tpm_status(int *ready_write, int *ready_read, size_t *p_len)
 }
 
 
-int tpm_init(void)
+int tpm_init_v03(void)
 {
 	int ready_write = 0, ready_read = 0;
 	size_t read_len = 0;
@@ -378,11 +378,11 @@ int tpm_init(void)
 	#endif
 	ret_code = i2c_probe(INFINEON_TPM_CHIP);
 	#ifdef VBOOT_DEBUG
-	printf("probe  : %d\n", ret_code);
+	printf("v03 probe  : %s\n", ret_code ? "N/A" : "found");
 	#endif /* VBOOT_DEBUG */
 	if (ret_code)
 		return ret_code;
-	ret_code = tpm_status(&ready_write, &ready_read, &read_len);
+	ret_code = tpm_status_v03(&ready_write, &ready_read, &read_len);
 	#ifdef VBOOT_DEBUG
 	printf("status : %d\n\tw[%c] r[%c : %u]\n", ret_code,
 	ready_write ? 'y' : 'n',
@@ -390,27 +390,38 @@ int tpm_init(void)
 	#endif /* VBOOT_DEBUG */
 	if (ret_code)
 		return ret_code;
-	TPM_CHECK(tpm_prepare_write(TIMEOUT_WRITE_US));
+	TPM_CHECK(tpm_prepare_write(TIMEOUT_WRITE_MS));
 	return 0;
 }
 
-int tpm_send(const uint8_t *pdata, size_t length)
-{
-	TPM_CHECK(tpm_prepare_write(TIMEOUT_WRITE_US));
-	TPM_CHECK(tpm_i2c_write_data(pdata, length));
-	return 0;
-}
-
-int tpm_receive(uint8_t *pdata, size_t max_length)
+int tpm_sendrecv_v03(const uint8_t *sendbuf, size_t buf_size, uint8_t *recvbuf,
+	size_t *recv_len)
 {
 	int ready_write = 0, ready_read = 0;
 	size_t read_length = 0;
-	TPM_CHECK(tpm_prepare_read(TIMEOUT_READ_US));
-	TPM_CHECK(tpm_status(&ready_write, &ready_read, &read_length));
+	TPM_CHECK(tpm_prepare_write(TIMEOUT_WRITE_MS));
+	TPM_CHECK(tpm_i2c_write_data(sendbuf, buf_size));
+	TPM_CHECK(tpm_prepare_read(TIMEOUT_READ_MS));
+	TPM_CHECK(tpm_status_v03(&ready_write, &ready_read, &read_length));
 	if (read_length == 0)
 		return E_GENERAL;
-	if (max_length < read_length)
-		return E_SIZE;
-	TPM_CHECK(tpm_i2c_read_data(pdata, read_length, NULL));
+	if (recv_len) {
+		/* *recv_len sets the maximum data can be feched
+		 * if *recv_len == 0, means the buffer is large enough to read any tpm
+		 * response
+		 */
+		if (*recv_len != 0 && *recv_len < read_length)
+			return E_SIZE;
+	}
+	if (recvbuf) {
+		TPM_CHECK(tpm_i2c_read_data(recvbuf, read_length, NULL));
+		/* update recv_len only on success */
+		if (recv_len)
+			*recv_len = read_length;
+	} else {
+		/* discard data in read buffer */
+		TPM_CHECK(tpm_prepare_write(TIMEOUT_WRITE_MS));
+	}
 	return 0;
 }
+

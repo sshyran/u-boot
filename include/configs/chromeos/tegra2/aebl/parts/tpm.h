@@ -13,7 +13,7 @@
 
 /* auto detect all following chips selected below */
 #define CONFIG_TPM_SLB9635_I2C
-#define CONFIG_TPM_SLB9635_I2C_V03
+/* #define CONFIG_TPM_SLB9635_I2C_V03 */
 
 /* limit burst write to tpm chip on i2c */
 #define CONFIG_TPM_I2C_BURST_LIMITATION		3

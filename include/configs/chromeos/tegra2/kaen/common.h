@@ -38,6 +38,7 @@
 #include <configs/chromeos/tegra2/kaen/parts/pinmux.h>
 #include <configs/chromeos/tegra2/kaen/parts/spi.h>
 #include <configs/chromeos/tegra2/kaen/parts/uart.h>
+#include <configs/chromeos/tegra2/kaen/parts/tpm.h>
 
 #define CONFIG_CHROMEOS_HWID	"ARM KAEN TEST 3084"
 

@@ -38,6 +38,7 @@
 #include <configs/chromeos/tegra2/aebl/parts/pinmux.h>
 #include <configs/chromeos/tegra2/aebl/parts/spi.h>
 #include <configs/chromeos/tegra2/aebl/parts/uart.h>
+#include <configs/chromeos/tegra2/aebl/parts/tpm.h>
 
 #define CONFIG_CHROMEOS_HWID	"ARM AEBL TEST 5789"
 

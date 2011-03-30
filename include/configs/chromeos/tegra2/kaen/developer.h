@@ -12,4 +12,6 @@
 
 #include <configs/chromeos/tegra2/kaen/parts/usb.h>
 
+#define CONFIG_CMD_CROS_TPM
+
 #endif /*__configs_chromeos_tegra2_kaen_developer_h__*/

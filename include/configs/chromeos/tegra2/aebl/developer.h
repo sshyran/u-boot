@@ -12,4 +12,6 @@
 
 #include <configs/chromeos/tegra2/aebl/parts/usb.h>
 
+#define CONFIG_CMD_CROS_TPM
+
 #endif /*__configs_chromeos_tegra2_aebl_developer_h__*/
