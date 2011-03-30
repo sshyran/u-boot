@@ -8,12 +8,13 @@
  * Software Foundation.
  */
 
+/* Implementation of firmware storage access interface for SPI */
+
 #include <common.h>
+#include <chromeos/firmware_storage.h>
 
-#include <chromeos/hardware_interface.h>
-
-int is_debug_reset_mode_field_containing_cookie(void) { return 0; }
-
-int is_recovery_mode_field_containing_cookie(void) { return 0; }
-
-int is_try_firmware_b_field_containing_cookie(void) { return 0; }
+int firmware_storage_init_spi(firmware_storage_t *file)
+{
+	/* TODO Implement interface to SPI */
+	return -1;
+}

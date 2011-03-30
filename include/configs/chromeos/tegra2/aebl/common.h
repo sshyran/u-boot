@@ -41,4 +41,7 @@
 
 #define CONFIG_CHROMEOS_HWID	"ARM AEBL TEST 5789"
 
+#define CONFIG_CHROMEOS_FIRMWARE_STORAGE_SPI
+#define CONFIG_CHROMEOS_DEFAULT_FIRMWARE_STORAGE_SPI
+
 #endif /*__configs_chromeos_tegra2_aebl_common_h__*/

@@ -41,4 +41,7 @@
 
 #define CONFIG_CHROMEOS_HWID	"ARM WARIO BOGUS 0000"
 
+#define CONFIG_CHROMEOS_FIRMWARE_STORAGE_SPI
+#define CONFIG_CHROMEOS_DEFAULT_FIRMWARE_STORAGE_SPI
+
 #endif /*__configs_chromeos_tegra2_wario_common_h__*/

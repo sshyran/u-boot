@@ -38,4 +38,7 @@
 
 #define CONFIG_CHROMEOS_HWID	"ARM HARMONY TEST 2428"
 
+#define CONFIG_CHROMEOS_FIRMWARE_STORAGE_NAND
+#define CONFIG_CHROMEOS_DEFAULT_FIRMWARE_STORAGE_NAND
+
 #endif /*__configs_chromeos_tegra2_harmony_common_h__*/
