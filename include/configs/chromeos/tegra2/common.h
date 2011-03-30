@@ -78,7 +78,6 @@
 	TEGRA_LP0_CMDLINE \
 	TEGRA_KCRASHMEM_CMDLINE
 
-#define CONFIG_LOADADDR			0x40C000
 #define CONFIG_BOOTDELAY		2	/* 2s to break to prompt */
 #define CONFIG_EXTRA_ENV_SETTINGS_ARCH_COMMON \
 	"scriptaddr=0x408000\0" \
@@ -165,7 +164,16 @@
 #define CONFIG_VB_SHARED_DATA_BLOB	0x10000000
 #define CONFIG_VB_SHARED_DATA_SIZE	VB_SHARED_DATA_REC_SIZE
 
+/*
+ * Kernel must be loaded to a fixed address because it is a part of the
+ * verified boot security check.
+ *
+ * You have to make sure that memory range starting from CONFIG_LOADADDR
+ * has at least CONFIG_MAX_KERNEL_SIZE free space available.
+ */
+#define CONFIG_LOADADDR			0x00100000
+
 /* A sufficiently large buffer size for holding kernel image */
-#define CONFIG_MAX_KERNEL_SIZE		0x01000000
+#define CONFIG_MAX_KERNEL_SIZE		0x00800000
 
 #endif /*__configs_chromeos_tegra2_common_h__*/
