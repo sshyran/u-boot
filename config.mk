@@ -46,6 +46,10 @@ PLATFORM_LDFLAGS =
 
 #########################################################################
 
+ifdef CROS_CONFIG_PATH
+HOSTCPPFLAGS += -I$(CROS_CONFIG_PATH)
+endif
+
 HOSTCFLAGS	= -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer \
 		  $(HOSTCPPFLAGS)
 HOSTSTRIP	= strip
@@ -183,6 +187,10 @@ CPPFLAGS += -I$(VBOOT)/include/vboot
 endif
 ifdef VBOOT_DEBUG
 CPPFLAGS += -DVBOOT_DEBUG
+endif
+
+ifdef CROS_CONFIG_PATH
+CPPFLAGS += -I$(CROS_CONFIG_PATH)
 endif
 
 CPPFLAGS += -I$(TOPDIR)/include

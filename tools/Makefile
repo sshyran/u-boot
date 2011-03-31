@@ -144,6 +144,9 @@ HOSTCPPFLAGS =	-idirafter $(SRCTREE)/include \
 		-DTEXT_BASE=$(TEXT_BASE) -DUSE_HOSTCC \
 		-D__KERNEL_STRICT_NAMES
 
+ifdef CROS_CONFIG_PATH
+HOSTCPPFLAGS += -I$(CROS_CONFIG_PATH)
+endif
 
 all:	$(obj).depend $(BINS) $(LOGO-y) subdirs
 
