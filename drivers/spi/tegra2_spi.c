@@ -91,9 +91,11 @@ void spi_init(void)
 	NV_CLK_RST_WRITE(0x14, (val | 0x800));
 	debug("spi_init: ClkEnable = %08x\n", val);
 
-	/* Change default SPI clock from 12MHz to 6MHz, same as BootROM */
+	/* Change SPI clock to 24MHz */
 	NV_CLK_RST_READ(0x114, val);
-	NV_CLK_RST_WRITE(0x114, (val | 0x2));
+	val &= 0x3FFFFF00;		/* src = PLLP_OUT0 */
+	val |= ((9-1) << 1);		/* div = 9 in 7.1 format */
+	NV_CLK_RST_WRITE(0x114, val);
 	debug("spi_init: ClkSrc = %08x\n", val);
 
 	NV_CLK_RST_READ(0x08, val);
