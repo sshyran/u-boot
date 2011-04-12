@@ -189,13 +189,13 @@ ifdef VBOOT_DEBUG
 CPPFLAGS += -DVBOOT_DEBUG
 endif
 
-ifdef CROS_CONFIG_PATH
-CPPFLAGS += -I$(CROS_CONFIG_PATH)
-endif
-
 CPPFLAGS += -I$(TOPDIR)/include
 CPPFLAGS += -fno-builtin -ffreestanding -nostdinc	\
 	-isystem $(gccincdir) -pipe $(PLATFORM_CPPFLAGS)
+
+ifdef CROS_CONFIG_PATH
+CPPFLAGS += -I$(CROS_CONFIG_PATH)
+endif
 
 ifdef BUILD_TAG
 CFLAGS := $(CPPFLAGS) -Wall -Wstrict-prototypes \
