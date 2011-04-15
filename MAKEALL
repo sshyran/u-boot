@@ -1004,6 +1004,25 @@ LIST_sparc="gr_xc3s_1500	gr_cpci_ax2000	gr_ep2s60	grsim	grsim_leon2"
 build_target() {
 	target=$1
 
+	if [ $(expr match "${target}" ".*chromeos.*") -ne 0 ]; then
+		local ROOT="/build/$(echo ${target} | cut -d_ -f2-3)"
+
+		if [ ! -d "${ROOT}" ]; then
+			echo "ERROR: ${ROOT} does not exist"
+			RC=1
+			ERR_CNT=$((ERR_CNT + 1))
+			ERR_LIST="${ERR_LIST} $target"
+			TOTAL_CNT=$((TOTAL_CNT + 1))
+			return
+		fi
+
+		export VBOOT="${ROOT%/}/usr"
+		export CROS_CONFIG_PATH="${ROOT%/}/u-boot"
+	else
+		export VBOOT=""
+		export CROS_CONFIG_PATH=""
+	fi
+
 	${MAKE} distclean >/dev/null
 	${MAKE} ${target}_config
 
