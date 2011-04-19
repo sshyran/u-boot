@@ -53,6 +53,7 @@ typedef enum
 
 NvEmmcDeviceId mmc_get_device_id(int dev);
 
+int mmc_get_current_dev_index(void);
 NvEmmcDeviceId mmc_get_current_device_id(void);
 
 /**

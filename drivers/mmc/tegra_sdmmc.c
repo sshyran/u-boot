@@ -63,6 +63,11 @@ NvEmmcDeviceId mmc_get_device_id(int dev)
 	return NvUnknownId;
 }
 
+int mmc_get_current_dev_index(void)
+{
+	return mmc_current_dev_index;
+}
+
 NvEmmcDeviceId mmc_get_current_device_id(void)
 {
         return mmc_get_device_id(mmc_current_dev_index);
