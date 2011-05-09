@@ -8,8 +8,14 @@
  * Software Foundation.
  */
 
-#include <common.h>
+/* GPIO interface for Chrome OS verified boot */
 
-#include <chromeos/hardware_interface.h>
+#ifndef __GPIO_H__
+#define __GPIO_H__
 
-int is_s3_resume(void) { return 0; }
+/* GPIO accessor functions: returns 0 if false, nonzero if true */
+int is_firmware_write_protect_gpio_asserted(void);
+int is_recovery_mode_gpio_asserted(void);
+int is_developer_mode_gpio_asserted(void);
+
+#endif /* __GPIO_H__ */
