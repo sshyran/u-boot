@@ -537,6 +537,10 @@ int do_usb(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 #ifdef CONFIG_TEGRA2
 			extern int USB_EHCI_TEGRA_BASE_ADDR;
 			extern int USB_base_addr[];
+			if (!USB_base_addr[i]) {
+				printf("unknown controller\n");
+				return 1;
+			}
 			USB_EHCI_TEGRA_BASE_ADDR = USB_base_addr[i];
 #endif
 		}
