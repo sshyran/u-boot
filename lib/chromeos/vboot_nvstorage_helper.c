@@ -9,6 +9,7 @@
  */
 
 #include <common.h>
+#include <chromeos/power_management.h>
 #include <chromeos/vboot_nvstorage_helper.h>
 
 /* TODO: temporary hack for factory bring up; remove/rewrite when necessary */
@@ -184,9 +185,9 @@ void reboot_to_recovery_mode(VbNvContext *nvcxt, uint32_t reason)
 	}
 
 	debug(PREFIX "reboot to recovery mode\n");
-	reset_cpu(0);
+	cold_reboot();
 
-	debug(PREFIX "error: reset_cpu() returned\n");
+	debug(PREFIX "error: cold_reboot() returned\n");
 FAIL:
 	/* FIXME: bring up a sad face? */
 	printf("Please reset and press recovery button when reboot.\n");
