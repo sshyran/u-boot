@@ -30,6 +30,7 @@
 #include <asm/arch/nv_hardware_access.h>
 #include <asm/arch/nv_drf.h>
 #include <asm/arch/tegra2.h>
+#include <chromeos/kernel_shared_data.h>
 #include "sdmmc/nvboot_clocks_int.h"
 #include "board.h"
 #include <asm/arch/gpio.h>
@@ -148,6 +149,9 @@ int board_init(void)
  */
 int misc_init_r(void)
 {
+#ifdef CONFIG_INIT_KERNEL_SHARED_DATA
+	initialize_kernel_shared_data();
+#endif
 	return 0;
 }
 

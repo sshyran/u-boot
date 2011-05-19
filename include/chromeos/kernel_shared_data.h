@@ -38,6 +38,8 @@ typedef struct {
 KernelSharedDataType *get_kernel_shared_data(void);
 
 /* Clears the kernel shared data content. */
-void clear_kernel_shared_data(void);
+void initialize_kernel_shared_data(void);
+
+extern const char version_string[];
 
 #endif /* __CHROMEOS_KERNEL_SHARED_DATA_H__ */

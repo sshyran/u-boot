@@ -36,9 +36,6 @@ int do_bootm(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 #include <vboot_nvstorage.h>
 #include <vboot_struct.h>
 
-/* This is used to keep u-boot and kernel in sync */
-#define SHARED_MEM_VERSION 1
-
 #undef PREFIX
 #define PREFIX "load_kernel_wrapper: "
 
@@ -140,12 +137,10 @@ EXIT:
 
 		GoogleBinaryBlockHeader *gbbh =
 			(GoogleBinaryBlockHeader*) gbb_data;
+		const char* hwid;
 		int i;
 
 		VBDEBUG(PREFIX "kernel shared data at %p\n", sd);
-
-		strcpy((char*) sd->signature, "CHROMEOS");
-		sd->version = SHARED_MEM_VERSION;
 
 		/*
 		 * chsw bit value
@@ -160,8 +155,14 @@ EXIT:
 		if (!is_firmware_write_protect_gpio_asserted())
 			sd->chsw |= 0x200; /* write protect is disabled */
 
-		strncpy((char*) sd->hwid,
-				gbb_data + gbbh->hwid_offset, gbbh->hwid_size);
+		if (memcmp(gbbh->signature, GBB_SIGNATURE,
+			   sizeof(gbbh->signature)))
+			/* Must be a debug workaround case */
+			hwid = "Unknown";
+		else
+			hwid = (const char*)(gbb_data + gbbh->hwid_offset);
+
+		strncpy((char*) sd->hwid, hwid, sizeof(sd->hwid));
 
 		/* boot reason; always 0 */
 		sd->binf[0] = 0;
@@ -186,14 +187,6 @@ EXIT:
 		/* recovery reason */
 		sd->binf[4] = reason;
 
-		sd->write_protect_sw =
-			is_firmware_write_protect_gpio_asserted();
-		sd->recovery_sw = is_recovery_mode_gpio_asserted();
-		sd->developer_sw = is_developer_mode_gpio_asserted();
-
-		sd->vbnv[0] = 0;
-		sd->vbnv[1] = VBNV_BLOCK_SIZE;
-
 		firmware_storage_t file;
 		firmware_storage_init(&file);
 		firmware_storage_read(&file,
@@ -201,8 +194,6 @@ EXIT:
 				sd->shared_data_body);
 		file.close(file.context);
 		sd->fmap_base = (uint32_t)sd->shared_data_body;
-
-		sd->total_size = sizeof(*sd);
 
 		sd->nvcxt_lba = get_nvcxt_lba();
 
@@ -254,7 +245,7 @@ static int load_kernel_config(uint64_t bootloader_address)
 	strcpy(buf, "setenv bootargs ${bootargs} ");
 
 	/* Use the bootloader address to find the kernel config location. */
-	strncat(buf, (char *)(bootloader_address - CROS_PARAMS_SIZE -
+	strncat(buf, (char *)((uint32_t)bootloader_address - CROS_PARAMS_SIZE -
 			CROS_CONFIG_SIZE), CROS_CONFIG_SIZE);
 
 	/*

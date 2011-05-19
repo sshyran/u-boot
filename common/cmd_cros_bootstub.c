@@ -90,8 +90,6 @@ int do_cros_bootstub(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (is_firmware_write_protect_gpio_asserted())
 		WARN_ON_FAILURE(file.lock_device(file.context));
 
-	clear_kernel_shared_data();
-
 	/* Fill in the RO firmware ID */
 	KernelSharedDataType *sd = get_kernel_shared_data();
 	if (firmware_storage_read(&file,
