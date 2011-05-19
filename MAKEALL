@@ -784,6 +784,11 @@ LIST_chromeos="					\
 	chromeos_tegra2_wario_normal		\
 	chromeos_tegra2_wario_recovery		\
 	chromeos_tegra2_wario_stub		\
+	chromeos_x86_generic_developer		\
+	chromeos_x86_generic_flasher		\
+	chromeos_x86_generic_normal		\
+	chromeos_x86_generic_recovery		\
+	chromeos_x86_generic_stub		\
 "
 
 #########################################################################
@@ -868,6 +873,11 @@ LIST_mips_el="			\
 
 LIST_I486="		\
 	sc520_eNET	\
+	chromeos_x86_generic_developer		\
+	chromeos_x86_generic_flasher		\
+	chromeos_x86_generic_normal		\
+	chromeos_x86_generic_recovery		\
+	chromeos_x86_generic_stub		\
 "
 
 LIST_x86="		\
