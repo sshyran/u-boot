@@ -750,31 +750,37 @@ LIST_tegra="		\
 LIST_chromeos="					\
 	chromeos_tegra2_generic_developer	\
 	chromeos_tegra2_generic_flasher		\
+	chromeos_tegra2_generic_legacy		\
 	chromeos_tegra2_generic_normal		\
 	chromeos_tegra2_generic_recovery	\
 	chromeos_tegra2_generic_stub		\
 	chromeos_tegra2_harmony_developer	\
 	chromeos_tegra2_harmony_flasher		\
+	chromeos_tegra2_harmony_legacy		\
 	chromeos_tegra2_harmony_normal		\
 	chromeos_tegra2_harmony_recovery	\
 	chromeos_tegra2_harmony_stub		\
 	chromeos_tegra2_seaboard_developer	\
 	chromeos_tegra2_seaboard_flasher	\
+	chromeos_tegra2_seaboard_legacy		\
 	chromeos_tegra2_seaboard_normal		\
 	chromeos_tegra2_seaboard_recovery	\
 	chromeos_tegra2_seaboard_stub		\
 	chromeos_tegra2_kaen_developer		\
 	chromeos_tegra2_kaen_flasher		\
+	chromeos_tegra2_kaen_legacy		\
 	chromeos_tegra2_kaen_normal		\
 	chromeos_tegra2_kaen_recovery		\
 	chromeos_tegra2_kaen_stub		\
 	chromeos_tegra2_aebl_developer		\
 	chromeos_tegra2_aebl_flasher		\
+	chromeos_tegra2_aebl_legacy		\
 	chromeos_tegra2_aebl_normal		\
 	chromeos_tegra2_aebl_recovery		\
 	chromeos_tegra2_aebl_stub		\
 	chromeos_tegra2_wario_developer		\
 	chromeos_tegra2_wario_flasher		\
+	chromeos_tegra2_wario_legacy		\
 	chromeos_tegra2_wario_normal		\
 	chromeos_tegra2_wario_recovery		\
 	chromeos_tegra2_wario_stub		\
