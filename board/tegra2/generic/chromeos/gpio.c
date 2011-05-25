@@ -14,6 +14,7 @@
 #include <asm/arch/gpio.h>
 #include "../lcd/gpinit/gpinit.h"
 
+#include <chromeos/common.h>
 #include <chromeos/gpio.h>
 
 #define GPIO_ACTIVE_HIGH	0
