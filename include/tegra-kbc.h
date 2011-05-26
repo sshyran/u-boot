@@ -11,8 +11,6 @@
 
 #define KEY_FN          222
 #define KEY_SHIFT       223
-#define KEY_LEFTCTRL    224
-#define KEY_RIGHTCTRL   225
 
 typedef struct {
         u32     reg;
@@ -32,8 +30,6 @@ typedef struct {
     int *                       plain_keycode;
     int *                       shift_keycode;
     int *                       function_keycode;
-    int *                       leftctrl_keycode;
-    int *                       rightctrl_keycode;
 } tegra_keyboard_config;
 
 #endif /* __include_tegra_kbc_h__ */

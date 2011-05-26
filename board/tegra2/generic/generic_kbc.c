@@ -19,14 +19,11 @@ static tegra_pinmux_config keyboard_pinmux[] = {
 static int plain_keycode[] = { CONFIG_TEGRA2_KBC_PLAIN_KEYCODES };
 static int shift_keycode[] = { CONFIG_TEGRA2_KBC_SHIFT_KEYCODES };
 static int function_keycode[] = { CONFIG_TEGRA2_KBC_FUNCTION_KEYCODES };
-static int ctrl_keycode[] = { CONFIG_TEGRA2_KBC_CTRL_KEYCODES };
 
 tegra_keyboard_config board_keyboard_config = {
     .pinmux           = keyboard_pinmux,
     .pinmux_length    = (sizeof(keyboard_pinmux) / sizeof(keyboard_pinmux[0])),
     .plain_keycode    = plain_keycode,
     .shift_keycode    = shift_keycode,
-    .function_keycode = function_keycode,
-    .leftctrl_keycode  = ctrl_keycode,
-    .rightctrl_keycode = ctrl_keycode
+    .function_keycode = function_keycode
 };

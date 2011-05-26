@@ -83,8 +83,6 @@ struct tegra_kbc {
 	int *plain_keycode;
 	int *fn_keycode;
 	int *shift_keycode;
-	int *leftctrl_keycode;
-	int *rightctrl_keycode;
 };
 
 struct tegra_kbc *kbc;
@@ -134,10 +132,6 @@ static int tegra_kbc_keycode(struct tegra_kbc *kbc, int r, int c, int spl_key)
 		return kbc->fn_keycode[(r * KBC_MAX_COL) + c];
 	else if (spl_key == KEY_SHIFT)
 		return kbc->shift_keycode[(r * KBC_MAX_COL) + c];
-	else if (spl_key == KEY_LEFTCTRL)
-		return kbc->leftctrl_keycode[(r * KBC_MAX_COL) + c];
-	else if (spl_key == KEY_RIGHTCTRL)
-		return kbc->rightctrl_keycode[(r * KBC_MAX_COL) + c];
 	else
 		return kbc->plain_keycode[(r * KBC_MAX_COL) + c];
 }
@@ -168,8 +162,7 @@ static int tegra_kbc_find_keys(int *fifo)
 
 	for (i = 0; i < valid; i++) {
 		int k = tegra_kbc_keycode(kbc, rows_val[i], cols_val[i], 0);
-		if ((k == KEY_FN) || (k == KEY_SHIFT) ||
-				(k == KEY_LEFTCTRL) || (k == KEY_RIGHTCTRL)) {
+		if ((k == KEY_FN) || (k == KEY_SHIFT)) {
 			spl = k;
 			break;
 		}
@@ -397,8 +390,6 @@ int drv_keyboard_init(void)
 	kbc->plain_keycode = board_keyboard_config.plain_keycode;
 	kbc->shift_keycode = board_keyboard_config.shift_keycode;
 	kbc->fn_keycode    = board_keyboard_config.function_keycode;
-	kbc->leftctrl_keycode = board_keyboard_config.leftctrl_keycode;
-	kbc->rightctrl_keycode = board_keyboard_config.rightctrl_keycode;
 
 	stdinname = getenv("stdin");
 	memset(&kbddev, 0, sizeof(kbddev));
