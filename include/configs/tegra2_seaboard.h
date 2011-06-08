@@ -122,7 +122,7 @@
       '-',  '0',  'o',  'i',  'l',  'k',  ',',  'm',            \
         0,  '=',  ']', '\r',    0,    0,    0,    0,            \
         0,    0,    0,    0, KEY_SHIFT, KEY_SHIFT,    0,    0,  \
-        0,    0,    0,    0,    0,    0,    0,    0,            \
+        0, 0, 0, 0, 0, KEY_RIGHTCTRL, 0, KEY_LEFTCTRL,          \
         0,    0,    0,    0,    0,    0,    0,    0,            \
       '[',  'p', '\'',  ';',  '/',  '.',    0,    0,            \
         0,    0, 0x08,  '3',  '2',    0,    0,    0,            \
@@ -165,6 +165,9 @@
         0,    0,    0,    0,    0,    0,    0,    0,            \
         0,    0,    0,    0,    0,    0,    0,    0,            \
         0,    0,    0,    0,  '?',    0,    0,    0
+
+#define CONFIG_TEGRA2_KBC_CTRL_KEYCODES                         \
+          CONFIG_TEGRA2_KBC_CTRL_KEYCODES_SEABOARD
 
 /* Set clock divisor
  * 7 bits of D and 1 bit of H

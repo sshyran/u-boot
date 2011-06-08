@@ -113,7 +113,7 @@
 
 /* Keyboard scan matrix configuration */
 #define CONFIG_TEGRA2_KBC_PLAIN_KEYCODES                        \
-        0,    0,    0,    0,    0,    0,    0,    0,            \
+        0, 0, KEY_LEFTCTRL, 0, KEY_RIGHTCTRL, 0, 0, 0,          \
         0, 0x1b, 0x09,  '`',  'a',  'z',  '1',  'q',            \
         0,    0,    0,    0,  'd',  'c',  '3',  'e',            \
         0,    0,    0,    0,    0,    0,    0,    0,            \
@@ -165,6 +165,9 @@
         0,    0,    0,    0,    0,    0,    0,    0,            \
         0,    0,    0,    0,    0,    0,    0,    0,            \
         0,    0,    0,    0,    0,    0,    0,    0,
+
+#define CONFIG_TEGRA2_KBC_CTRL_KEYCODES                         \
+          CONFIG_TEGRA2_KBC_CTRL_KEYCODES_CHROMEOS_1
 
 #define CONFIG_TEGRA2_PINMUX	CONFIG_TEGRA2_PINMUX_DISPLAY_SEABOARD
 
