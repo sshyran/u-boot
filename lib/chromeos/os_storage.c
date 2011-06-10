@@ -251,7 +251,9 @@ int is_usb_storage_present(int usb_controller_number)
 
 int is_any_storage_device_plugged(int boot_probed_device)
 {
+#ifdef CONFIG_USB_STORAGE
 	int bus;
+#endif
 
 #ifdef CONFIG_MMC
 	if (is_mmc_storage_present(MMC_DEV_NUM_SD)) {
