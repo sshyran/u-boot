@@ -49,19 +49,6 @@ static void pinmux_init(void)
 	tegra_pinmux_config_table(tegra2_gp_pinmux, tegra2_gp_pinmux_tab_len);
 }
 
-static void panel_init(void)
-{
-	int i;
-
-	for (i = 0; i < tegra2_gp_gpio_offset_tab_len; i++) {
-		tg2_gpio_direction_output_ex(
-			tegra2_gp_gpio_init_table[i].offset, 1);
-		if (tegra2_gp_gpio_init_table[i].set == true)
-			tg2_gpio_set_value_ex(
-				tegra2_gp_gpio_init_table[i].offset, 1);
-	}
-}
-
 #ifdef	TEGRA_PANEL_POWERON_SEQUENCE
 void mdelay(int ms)
 {
@@ -108,6 +95,19 @@ static void poweron_panel(void)
 	/* Enable Ven(LCD enable signal) */
 	tg2_gpio_direction_output_ex(tegra_panel_sequence_table.backlight, 1);
 	tg2_gpio_set_value_ex(tegra_panel_sequence_table.backlight, 1);
+}
+#else
+static void panel_init(void)
+{
+	int i;
+
+	for (i = 0; i < tegra2_gp_gpio_offset_tab_len; i++) {
+		tg2_gpio_direction_output_ex(
+			tegra2_gp_gpio_init_table[i].offset, 1);
+		if (tegra2_gp_gpio_init_table[i].set == true)
+			tg2_gpio_set_value_ex(
+				tegra2_gp_gpio_init_table[i].offset, 1);
+	}
 }
 #endif
 
