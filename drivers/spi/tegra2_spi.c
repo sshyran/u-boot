@@ -159,7 +159,7 @@ void spi_cs_activate(struct spi_slave *slave)
 	u32 val;
 
 #ifdef CONFIG_SPI_CORRUPTS_UART
-	NS16550_drain(CONFIG_SPI_CORRUPTS_UART);
+	NS16550_drain((NS16550_t)CONFIG_SPI_CORRUPTS_UART);
 #endif
 	/*
 	 * We need to dynamically change the pinmux, shared w/UART RXD/CTS!
@@ -219,7 +219,7 @@ void spi_cs_deactivate(struct spi_slave *slave)
 
 #ifdef CONFIG_SPI_CORRUPTS_UART
 	udelay(100);
-	NS16550_clear(CONFIG_SPI_CORRUPTS_UART);
+	NS16550_clear((NS16550_t)CONFIG_SPI_CORRUPTS_UART);
 #endif
 }
 
