@@ -5,3 +5,6 @@
 #
 
 TEXT_BASE = 0x00e08000
+PLATFORM_CPPFLAGS += -Wall -Werror
+HOSTCFLAGS_autoconf.mk.dep = -Wno-variadic-macros
+

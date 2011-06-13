@@ -757,7 +757,8 @@
 #define CSITE_CPUDBG1_LAR_0                     _MK_ADDR_CONST(0x12fb0)
 
 /* arpg.h */
-#define PG_UP_TAG_0_PID_CPU                     _MK_ENUM_CONST(1431655765)    // // CPU aka "arm1" aka "mpcore" aka "arm11"
+    /*  CPU aka "arm1" aka "mpcore" aka "arm11" */
+#define PG_UP_TAG_0_PID_CPU                     _MK_ENUM_CONST(1431655765)
 #define PG_UP_TAG_0                     _MK_ADDR_CONST(0x0)
 
 /* arsdmmc.h */
@@ -1172,6 +1173,7 @@ typedef volatile struct timerus {
 #define TIMERUS_USEC_CFG_0_USEC_DIVISOR_DEFAULT_MASK                            _MK_MASK_CONST(0xff)
 #define TIMERUS_USEC_CFG_0_USEC_DIVISOR_SHIFT                                   _MK_SHIFT_CONST(0)
 
-#define PG_UP_TAG_0_PID_COP                     _MK_ENUM_CONST(-1431655766)    // // COP aka "arm2" aka "arm7"
+    /*  COP aka "arm2" aka "arm7" */
+#define PG_UP_TAG_0_PID_COP                     _MK_ENUM_CONST(-1431655766)
 
 #endif
