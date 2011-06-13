@@ -378,7 +378,7 @@ static int boot_kernel(LoadKernelParams *params)
 
 	if (load_kernel_config(params->bootloader_address)) {
 		VBDEBUG(PREFIX "error: load kernel config failed\n");
-		return LOAD_KERNEL_INVALID;
+		return;
 	}
 
 	if ((cmdline = getenv("bootargs"))) {
