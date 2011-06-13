@@ -155,12 +155,22 @@ EXIT:
 		if (!is_firmware_write_protect_gpio_asserted())
 			sd->chsw |= 0x200; /* write protect is disabled */
 
-		if (memcmp(gbbh->signature, GBB_SIGNATURE,
-			   sizeof(gbbh->signature)))
+		/*
+		 * "$GBB" is the GBB signaure. We can't use it as a whole
+		 * or somethings that a compiler may think it is a whole.
+		 * If the signature appears in the u-boot .constdata section
+		 * gbb_utility will consider it a duplicated signature and
+		 * will be failed.
+		 */
+		if (gbbh->signature[0] == '$' &&
+				gbbh->signature[1] == 'G' &&
+				gbbh->signature[2] == 'B' &&
+				gbbh->signature[2] == gbbh->signature[3]) {
+			hwid = (const char*)(gbb_data + gbbh->hwid_offset);
+		} else {
 			/* Must be a debug workaround case */
 			hwid = "Unknown";
-		else
-			hwid = (const char*)(gbb_data + gbbh->hwid_offset);
+		}
 
 		strncpy((char*) sd->hwid, hwid, sizeof(sd->hwid));
 
