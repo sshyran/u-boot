@@ -1,127 +1,217 @@
 /* register offset */
 #define NAND_COMMAND_0		0x00
- #define NAND_CMD_GO		Bit31
- #define NAND_CMD_CLE		Bit30
- #define NAND_CMD_ALE		Bit29
- #define NAND_CMD_PIO		Bit28
- #define NAND_CMD_TX		Bit27
- #define NAND_CMD_RX		Bit26
- #define NAND_CMD_SEC_CMD	Bit25
- #define NAND_CMD_AFT_DAT	Bit24
- #define NAND_CMD_TRANS_SIZE_SHIFT	20
- #define NAND_CMD_TRANS_SIZE_BYTES1	0
- #define NAND_CMD_TRANS_SIZE_BYTES2	1
- #define NAND_CMD_TRANS_SIZE_BYTES3	2
- #define NAND_CMD_TRANS_SIZE_BYTES4	3
- #define NAND_CMD_TRANS_SIZE_BYTES5	4
- #define NAND_CMD_TRANS_SIZE_BYTES6	5
- #define NAND_CMD_TRANS_SIZE_BYTES7	6
- #define NAND_CMD_TRANS_SIZE_BYTES8	7
- #define NAND_CMD_A_VALID	Bit19
- #define NAND_CMD_B_VALID	Bit18
- #define NAND_CMD_RD_STATUS_CHK Bit17
- #define NAND_CMD_R_BSY_CHK	Bit16
- #define NAND_CMD_CE7		Bit15
- #define NAND_CMD_CE6		Bit14
- #define NAND_CMD_CE5		Bit13
- #define NAND_CMD_CE4		Bit12
- #define NAND_CMD_CE3		Bit11
- #define NAND_CMD_CE2		Bit10
- #define NAND_CMD_CE1		Bit9
- #define NAND_CMD_CE0		Bit8
- #define NAND_CMD_CLE_BYTE_SIZE_SHIFT	4
- #define NAND_CMD_CLE_BYTES1	0
- #define NAND_CMD_CLE_BYTES2	1
- #define NAND_CMD_CLE_BYTES3	2
- #define NAND_CMD_CLE_BYTES4	3
- #define NAND_CMD_ALE_BYTE_SIZE_SHIFT	0
- #define NAND_CMD_ALE_BYTES1	0
- #define NAND_CMD_ALE_BYTES2	1
- #define NAND_CMD_ALE_BYTES3	2
- #define NAND_CMD_ALE_BYTES4	3
- #define NAND_CMD_ALE_BYTES5	4
- #define NAND_CMD_ALE_BYTES6	5
- #define NAND_CMD_ALE_BYTES7	6
- #define NAND_CMD_ALE_BYTES8	7
+#define NAND_CMD_GO		Bit31
+#define NAND_CMD_CLE		Bit30
+#define NAND_CMD_ALE		Bit29
+#define NAND_CMD_PIO		Bit28
+#define NAND_CMD_TX		Bit27
+#define NAND_CMD_RX		Bit26
+#define NAND_CMD_SEC_CMD	Bit25
+#define NAND_CMD_AFT_DAT_MASK	Bit24
+#define NAND_CMD_AFT_DAT_DISABLE	0
+#define NAND_CMD_AFT_DAT_ENABLE	Bit24
+#define NAND_CMD_TRANS_SIZE_SHIFT	20
+#define NAND_CMD_TRANS_SIZE_BYTES1	0
+#define NAND_CMD_TRANS_SIZE_BYTES2	1
+#define NAND_CMD_TRANS_SIZE_BYTES3	2
+#define NAND_CMD_TRANS_SIZE_BYTES4	3
+#define NAND_CMD_TRANS_SIZE_BYTES5	4
+#define NAND_CMD_TRANS_SIZE_BYTES6	5
+#define NAND_CMD_TRANS_SIZE_BYTES7	6
+#define NAND_CMD_TRANS_SIZE_BYTES8	7
+#define NAND_CMD_TRANS_SIZE_BYTES_PAGE_SIZE_SEL	8
+#define NAND_CMD_A_VALID	Bit19
+#define NAND_CMD_B_VALID	Bit18
+#define NAND_CMD_RD_STATUS_CHK	Bit17
+#define NAND_CMD_R_BSY_CHK	Bit16
+#define NAND_CMD_CE7		Bit15
+#define NAND_CMD_CE6		Bit14
+#define NAND_CMD_CE5		Bit13
+#define NAND_CMD_CE4		Bit12
+#define NAND_CMD_CE3		Bit11
+#define NAND_CMD_CE2		Bit10
+#define NAND_CMD_CE1		Bit9
+#define NAND_CMD_CE0		Bit8
+#define NAND_CMD_CLE_BYTE_SIZE_SHIFT	4
+#define NAND_CMD_CLE_BYTES1	0
+#define NAND_CMD_CLE_BYTES2	1
+#define NAND_CMD_CLE_BYTES3	2
+#define NAND_CMD_CLE_BYTES4	3
+#define NAND_CMD_ALE_BYTE_SIZE_SHIFT	0
+#define NAND_CMD_ALE_BYTES1	0
+#define NAND_CMD_ALE_BYTES2	1
+#define NAND_CMD_ALE_BYTES3	2
+#define NAND_CMD_ALE_BYTES4	3
+#define NAND_CMD_ALE_BYTES5	4
+#define NAND_CMD_ALE_BYTES6	5
+#define NAND_CMD_ALE_BYTES7	6
+#define NAND_CMD_ALE_BYTES8	7
 
 #define NAND_STATUS_0		0x04
- #define NAND_STATUS_RBSY0	Bit8
+#define NAND_STATUS_RBSY0	Bit8
+
 #define NAND_ISR_0		0x08
+#define NAND_ISR_IS_CMD_DONE	Bit5
+#define NAND_ISR_IS_ECC_ERR	Bit4
+
 #define NAND_IER_0		0x0C
+
 #define NAND_CONFIG_0		0x10
- #define NAND_CONFIG_HW_ECC_MASK		Bit31
- #define NAND_CONFIG_HW_ECC_DISABLE		0
- #define NAND_CONFIG_HW_ECC_ENABLE		Bit31
- #define NAND_CONFIG_HW_ECC_SEL_MASK		Bit30
- #define NAND_CONFIG_HW_ECC_SEL_HAMMING		0
- #define NAND_CONFIG_HW_ECC_SEL_RS		Bit30
- #define NAND_CONFIG_HW_ECC_CORRECTION_MASK	Bit29
- #define NAND_CONFIG_HW_ECC_CORRECTION_DISABLE	0
- #define NAND_CONFIG_HW_ECC_CORRECTION_ENABLE	Bit29
- #define NAND_CONFIG_PIPELINE_EN_MASK		Bit28
- #define NAND_CONFIG_PIPELINE_EN_DISABLE	0
- #define NAND_CONFIG_PIPELINE_EN_ENABLE		Bit28
- #define NAND_CONFIG_ECC_EN_TAG_MASK		Bit27
- #define NAND_CONFIG_ECC_EN_TAG_DISABLE		0
- #define NAND_CONFIG_ECC_EN_TAG_ENABLE		Bit27
- #define NAND_CONFIG_TVALUE			(Bit25+Bit24)
- #define NAND_CONFIG_TVAL4			(0<<24)
- #define NAND_CONFIG_TVAL6			(1<<24)
- #define NAND_CONFIG_TVAL8			(2<<24)
- #define NAND_CONFIG_SKIP_SPARE_MASK		Bit23
- #define NAND_CONFIG_SKIP_SPARE_DISABLE		0
- #define NAND_CONFIG_SKIP_SPARE_ENABLE		Bit23
- #define NAND_CONFIG_COM_BSY_MASK		Bit22
- #define NAND_CONFIG_COM_BSY_DISABLE		0
- #define NAND_CONFIG_COM_BSY_ENABLE		Bit22
- #define NAND_CONFIG_BUS_WIDTH_MASK		Bit21
- #define NAND_CONFIG_BUS_WIDTH_8BIT		0
- #define NAND_CONFIG_BUS_WIDTH_16BIT		Bit21
- #define NAND_CONFIG_LPDDR1_MODE_MASK		Bit20
- #define NAND_CONFIG_LPDDR1_MODE_DISABLE	0
- #define NAND_CONFIG_LPDDR1_MODE_ENABLE		Bit20
- #define NAND_CONFIG_EDO_MODE_MASK		Bit19
- #define NAND_CONFIG_EDO_MODE_DISABLE		0
- #define NAND_CONFIG_EDO_MODE_ENABLE		Bit19
- #define NAND_CONFIG_PAGE_SIZE_SEL_MASK		(Bit18+Bit17+Bit16)
- #define NAND_CONFIG_PAGE_SIZE_256		(0<<16)
- #define NAND_CONFIG_PAGE_SIZE_512		(1<<16)
- #define NAND_CONFIG_PAGE_SIZE_1024		(2<<16)
- #define NAND_CONFIG_PAGE_SIZE_2048		(3<<16)
- #define NAND_CONFIG_PAGE_SIZE_4096		(4<<16)
- #define NAND_CONFIG_SKIP_SPARE_SEL_MASK	(Bit15+Bit14)
- #define NAND_CONFIG_SKIP_SPARE_SEL_4		(0<<14)
- #define NAND_CONFIG_SKIP_SPARE_SEL_8		(1<<14)
- #define NAND_CONFIG_SKIP_SPARE_SEL_12		(2<<14)
- #define NAND_CONFIG_SKIP_SPARE_SEL_16		(3<<14)
- #define NAND_CONFIG_TAG_BYTE_SIZE_MASK		0x1FF
+#define NAND_CONFIG_HW_ECC_MASK			Bit31
+#define NAND_CONFIG_HW_ECC_DISABLE		0
+#define NAND_CONFIG_HW_ECC_ENABLE		Bit31
+#define NAND_CONFIG_HW_ECC_SEL_MASK		Bit30
+#define NAND_CONFIG_HW_ECC_SEL_HAMMING		0
+#define NAND_CONFIG_HW_ECC_SEL_RS		Bit30
+#define NAND_CONFIG_HW_ECC_CORRECTION_MASK	Bit29
+#define NAND_CONFIG_HW_ECC_CORRECTION_DISABLE	0
+#define NAND_CONFIG_HW_ECC_CORRECTION_ENABLE	Bit29
+#define NAND_CONFIG_PIPELINE_EN_MASK		Bit28
+#define NAND_CONFIG_PIPELINE_EN_DISABLE		0
+#define NAND_CONFIG_PIPELINE_EN_ENABLE		Bit28
+#define NAND_CONFIG_ECC_EN_TAG_MASK		Bit27
+#define NAND_CONFIG_ECC_EN_TAG_DISABLE		0
+#define NAND_CONFIG_ECC_EN_TAG_ENABLE		Bit27
+#define NAND_CONFIG_TVALUE_MASK			(Bit25+Bit24)
+#define NAND_CONFIG_TVAL4			(0<<24)
+#define NAND_CONFIG_TVAL6			(1<<24)
+#define NAND_CONFIG_TVAL8			(2<<24)
+#define NAND_CONFIG_SKIP_SPARE_MASK		Bit23
+#define NAND_CONFIG_SKIP_SPARE_DISABLE		0
+#define NAND_CONFIG_SKIP_SPARE_ENABLE		Bit23
+#define NAND_CONFIG_COM_BSY_MASK		Bit22
+#define NAND_CONFIG_COM_BSY_DISABLE		0
+#define NAND_CONFIG_COM_BSY_ENABLE		Bit22
+#define NAND_CONFIG_BUS_WIDTH_MASK		Bit21
+#define NAND_CONFIG_BUS_WIDTH_8BIT		0
+#define NAND_CONFIG_BUS_WIDTH_16BIT		Bit21
+#define NAND_CONFIG_LPDDR1_MODE_MASK		Bit20
+#define NAND_CONFIG_LPDDR1_MODE_DISABLE		0
+#define NAND_CONFIG_LPDDR1_MODE_ENABLE		Bit20
+#define NAND_CONFIG_EDO_MODE_MASK		Bit19
+#define NAND_CONFIG_EDO_MODE_DISABLE		0
+#define NAND_CONFIG_EDO_MODE_ENABLE		Bit19
+#define NAND_CONFIG_PAGE_SIZE_SEL_MASK		(Bit18+Bit17+Bit16)
+#define NAND_CONFIG_PAGE_SIZE_256		(0<<16)
+#define NAND_CONFIG_PAGE_SIZE_512		(1<<16)
+#define NAND_CONFIG_PAGE_SIZE_1024		(2<<16)
+#define NAND_CONFIG_PAGE_SIZE_2048		(3<<16)
+#define NAND_CONFIG_PAGE_SIZE_4096		(4<<16)
+#define NAND_CONFIG_SKIP_SPARE_SEL_MASK		(Bit15+Bit14)
+#define NAND_CONFIG_SKIP_SPARE_SEL_4		(0<<14)
+#define NAND_CONFIG_SKIP_SPARE_SEL_8		(1<<14)
+#define NAND_CONFIG_SKIP_SPARE_SEL_12		(2<<14)
+#define NAND_CONFIG_SKIP_SPARE_SEL_16		(3<<14)
+#define NAND_CONFIG_TAG_BYTE_SIZE_MASK		0x1FF
 
 #define NAND_TIMING_0		0x14
- #define NAND_TIMING_TRP_RESP_CNT_SHIFT		28
- #define NAND_TIMING_TWB_CNT_SHIFT		24
- #define NAND_TIMING_TCR_TAR_TRR_CNT_SHIFT	20
- #define NAND_TIMING_TWHR_CNT_SHIFT		16
- #define NAND_TIMING_TCS_CNT_SHIFT		14
- #define NAND_TIMING_TWH_CNT_SHIFT		12
- #define NAND_TIMING_TWP_CNT_SHIFT		8
- #define NAND_TIMING_TRH_CNT_SHIFT		4
- #define NAND_TIMING_TRP_CNT_SHIFT		0
+#define NAND_TIMING_TRP_RESP_CNT_SHIFT		28
+#define NAND_TIMING_TWB_CNT_SHIFT		24
+#define NAND_TIMING_TCR_TAR_TRR_CNT_SHIFT	20
+#define NAND_TIMING_TWHR_CNT_SHIFT		16
+#define NAND_TIMING_TCS_CNT_SHIFT		14
+#define NAND_TIMING_TWH_CNT_SHIFT		12
+#define NAND_TIMING_TWP_CNT_SHIFT		8
+#define NAND_TIMING_TRH_CNT_SHIFT		4
+#define NAND_TIMING_TRP_CNT_SHIFT		0
+
 #define NAND_RESP_0		0x18
+
 #define NAND_TIMING2_0		0x1C
- #define NAND_TIMING2_TADL_CNT_SHIFT		0
+#define NAND_TIMING2_TADL_CNT_SHIFT		0
+
 #define NAND_CMD_REG1_0		0x20
 #define NAND_CMD_REG2_0		0x24
 #define NAND_ADDR_REG1_0	0x28
 #define NAND_ADDR_REG2_0	0x2C
 
+#define NAND_DMA_MST_CTRL_0	0x30
+#define NAND_DMA_MST_CTRL_GO_MASK		Bit31
+#define NAND_DMA_MST_CTRL_GO_DISABLE		0
+#define NAND_DMA_MST_CTRL_GO_ENABLE		Bit31
+#define NAND_DMA_MST_CTRL_DIR_MASK		Bit30
+#define NAND_DMA_MST_CTRL_DIR_READ		0
+#define NAND_DMA_MST_CTRL_DIR_WRITE		Bit30
+#define NAND_DMA_MST_CTRL_PERF_EN_MASK		Bit29
+#define NAND_DMA_MST_CTRL_PERF_EN_DISABLE	0
+#define NAND_DMA_MST_CTRL_PERF_EN_ENABLE	Bit29
+#define NAND_DMA_MST_CTRL_REUSE_BUFFER_MASK	Bit27
+#define NAND_DMA_MST_CTRL_REUSE_BUFFER_DISABLE	0
+#define NAND_DMA_MST_CTRL_REUSE_BUFFER_ENABLE	Bit27
+#define NAND_DMA_MST_CTRL_BURST_SIZE_MASK	(Bit26+Bit25+Bit24)
+#define NAND_DMA_MST_CTRL_BURST_1WORDS		(2<<24)
+#define NAND_DMA_MST_CTRL_BURST_4WORDS		(3<<24)
+#define NAND_DMA_MST_CTRL_BURST_8WORDS		(4<<24)
+#define NAND_DMA_MST_CTRL_BURST_16WORDS		(5<<24)
+#define NAND_DMA_MST_CTRL_IS_DMA_DONE		Bit20
+#define NAND_DMA_MST_CTRL_EN_A_MASK		Bit2
+#define NAND_DMA_MST_CTRL_EN_A_DISABLE		0
+#define NAND_DMA_MST_CTRL_EN_A_ENABLE		Bit2
+#define NAND_DMA_MST_CTRL_EN_B_MASK		Bit1
+#define NAND_DMA_MST_CTRL_EN_B_DISABLE		0
+#define NAND_DMA_MST_CTRL_EN_B_ENABLE		Bit1
+
+#define NAND_DMA_CFG_A_0		0x34
+#define NAND_DMA_CFG_B_0		0x38
+#define NAND_FIFO_CTRL_0		0x3C
+#define NAND_DATA_BLOCK_PTR_0		0x40
+#define NAND_TAG_PTR_0			0x44
+#define NAND_ECC_PTR_0			0x48
+
+#define NAND_DEC_STATUS_0		0x4C
+#define NAND_DEC_STATUS_A_ECC_FAIL	Bit1
+#define NAND_DEC_STATUS_B_ECC_FAIL	Bit0
+
+#define NAND_BCH_CONFIG_0		0xCC
+#define NAND_BCH_CONFIG_BCH_TVALUE_MASK		(Bit5+Bit4)
+#define NAND_BCH_CONFIG_BCH_TVAL4		(0<<4)
+#define NAND_BCH_CONFIG_BCH_TVAL8		(1<<4)
+#define NAND_BCH_CONFIG_BCH_TVAL14		(2<<4)
+#define NAND_BCH_CONFIG_BCH_TVAL16		(3<<4)
+#define NAND_BCH_CONFIG_BCH_ECC_MASK		Bit0
+#define NAND_BCH_CONFIG_BCH_ECC_DISABLE	0
+#define NAND_BCH_CONFIG_BCH_ECC_ENABLE		Bit0
+
+#define NAND_BCH_DEC_RESULT_0		0xD0
+#define NAND_BCH_DEC_RESULT_CORRFAIL_ERR_MASK	Bit8
+#define NAND_BCH_DEC_RESULT_PAGE_COUNT_MASK	0xFF
+
+#define NAND_BCH_DEC_STATUS_BUF_0	0xD4
+#define NAND_BCH_DEC_STATUS_FAIL_SEC_FLAG_MASK	0xFF000000
+#define NAND_BCH_DEC_STATUS_CORR_SEC_FLAG_MASK	0x00FF0000
+#define NAND_BCH_DEC_STATUS_FAIL_TAG_MASK	Bit14
+#define NAND_BCH_DEC_STATUS_CORR_TAG_MASK	Bit13
+#define NAND_BCH_DEC_STATUS_MAX_CORR_CNT_MASK	(Bit12+Bit11+Bit10+Bit9+Bit8)
+#define NAND_BCH_DEC_STATUS_PAGE_NUMBER_MASK	0xFF
+
 #define LP_OPTIONS (NAND_NO_READRDY | NAND_NO_AUTOINCR)
 
 static uint8_t tegra2_nand_read_byte(struct mtd_info *mtd);
-static void tegra2_nand_write_buf(struct mtd_info *mtd, const uint8_t *buf, \
+static void tegra2_nand_write_buf(struct mtd_info *mtd, const uint8_t *buf,
 	int len);
 static void tegra2_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len);
 static int tegra2_nand_waitfor_cmd_completion(struct mtd_info *mtd);
 static int tegra2_nand_dev_ready(struct mtd_info *mtd);
-
-
-
+static void tegra2_nand_hwcontrol(struct mtd_info *mtd, int cmd,
+	unsigned int ctrl);
+static void tegra2_nand_clear_interrupt_status(struct nand_chip *chip);
+static void tegra2_nand_command(struct mtd_info *mtd, unsigned int command,
+			 int column, int page_addr);
+static int tegra_nand_rw_page(struct mtd_info *mtd, struct nand_chip *chip,
+	uint8_t *buf, int page, int with_ecc, int is_writing);
+static int tegra_nand_read_page_hwecc(struct mtd_info *mtd,
+	struct nand_chip *chip,	uint8_t *buf, int page);
+static void tegra_nand_write_page_hwecc(struct mtd_info *mtd,
+	struct nand_chip *chip, const uint8_t *buf);
+static int tegra_nand_read_page_raw(struct mtd_info *mtd,
+	struct nand_chip *chip, uint8_t *buf, int page);
+static void tegra_nand_write_page_raw(struct mtd_info *mtd,
+	struct nand_chip *chip,	const uint8_t *buf);
+static int tegra_nand_rw_oob(struct mtd_info *mtd, struct nand_chip *chip,
+	int page, int with_ecc, int is_writing);
+static int tegra_nand_read_oob(struct mtd_info *mtd, struct nand_chip *chip,
+	int page, int sndcmd);
+static int tegra_nand_write_oob(struct mtd_info *mtd, struct nand_chip *chip,
+	int page);
+static int check_ecc_error(struct nand_chip *chip, u8 *datbuf, int a_len,
+	u8 *oobbuf, int b_len);
