@@ -70,6 +70,10 @@
 #define CONFIG_CMD_SPI
 #define CONFIG_CMD_SF
 
+/* Seaboard SPI activity corrupts the first UART */
+#define CONFIG_SPI_CORRUPTS_UART	NV_ADDRESS_MAP_APB_UARTD_BASE
+#define CONFIG_SPI_CORRUPTS_UART_NR	3
+
 #undef CONFIG_ENV_IS_NOWHERE
 #define CONFIG_ENV_IS_IN_SPI_FLASH
 
