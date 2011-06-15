@@ -30,7 +30,9 @@
 #include <asm/arch/nv_hardware_access.h>
 #include <asm/arch/nv_drf.h>
 #include <asm/arch/tegra2.h>
+#ifdef CONFIG_INIT_KERNEL_SHARED_DATA
 #include <chromeos/kernel_shared_data.h>
+#endif
 #include "sdmmc/nvboot_clocks_int.h"
 #include "board.h"
 #include <asm/arch/gpio.h>
