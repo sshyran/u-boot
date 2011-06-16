@@ -237,6 +237,13 @@ static int show_screen(ScreenIndex scr)
 	}
 }
 
+#define REC_MODE_BANNER \
+	"************************************************************\n" \
+	"*                                                          *\n" \
+	"*      THIS IS RECOVERY MODE -- THIS IS RECOVERY MODE      *\n" \
+	"*                                                          *\n" \
+	"************************************************************\n"
+
 int do_cros_rec(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	uint64_t boot_flags = BOOT_FLAG_RECOVERY;
@@ -260,6 +267,8 @@ int do_cros_rec(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (!g_is_dev) {
 		/* Wait for user to unplug SD card and USB storage device */
 		while (is_any_storage_device_plugged(NOT_BOOT_PROBED_DEVICE)) {
+			VBDEBUG(REC_MODE_BANNER);
+			VBDEBUG("*** PLEASE UNPLUG SD CARD AND USB KEY ***\n");
 			show_screen(SCREEN_RECOVERY_MODE);
 			wait_ms(WAIT_MS_BETWEEN_PROBING);
 		}
@@ -268,6 +277,8 @@ int do_cros_rec(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	for (;;) {
 		/* Wait for user to plug in SD card or USB storage device */
 		while (!is_any_storage_device_plugged(BOOT_PROBED_DEVICE)) {
+			VBDEBUG(REC_MODE_BANNER);
+			VBDEBUG("*** PLEASE PLUG IN SD CARD OR USB KEY ***\n");
 			show_screen(SCREEN_RECOVERY_MISSING_OS);
 			wait_ms(WAIT_MS_BETWEEN_PROBING);
 		}
@@ -278,6 +289,9 @@ int do_cros_rec(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 				boot_flags);
 
 		while (is_any_storage_device_plugged(NOT_BOOT_PROBED_DEVICE)) {
+			VBDEBUG(REC_MODE_BANNER);
+			VBDEBUG("*** CANNOT BOOT THE PLUGGED DEVICE    ***\n");
+			VBDEBUG("*** PLEASE UNPLUG SD CARD AND USB KEY ***\n");
 			show_screen(SCREEN_RECOVERY_NO_OS);
 			wait_ms(WAIT_MS_SHOW_ERROR);
 		}
