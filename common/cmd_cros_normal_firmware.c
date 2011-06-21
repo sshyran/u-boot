@@ -81,7 +81,7 @@ int do_cros_normal_firmware(cmd_tbl_t *cmdtp, int flag, int argc,
 
 	if (status == LOAD_KERNEL_REBOOT) {
 		VBDEBUG(PREFIX "internal error: reboot to current mode\n");
-		cold_reboot();
+		cros_reboot();
 	}
 
 	if (status == LOAD_KERNEL_NOT_FOUND)

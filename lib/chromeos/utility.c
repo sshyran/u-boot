@@ -36,7 +36,7 @@ int memcmp(const void *cs, const void *ct, size_t count);
  */
 void _abort(void)
 {
-	cold_reboot();
+	cros_reboot();
 }
 
 #define exit(retcode) _abort()

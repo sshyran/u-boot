@@ -49,7 +49,7 @@ int do_fmap	(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 int do_nvram	(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 int do_load_fw	(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 int do_load_k	(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
-int do_cold_reboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+int do_cros_reboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 int do_cros_help(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 
 U_BOOT_CMD(cros, CONFIG_SYS_MAXARGS, 1, do_cros,
@@ -95,7 +95,7 @@ cmd_tbl_t cmd_cros_sub[] = {
 		"Load kernel from the boot device",
 		"boot_flags shdata\n    - Load kernel with boot_flags and "
 		"modify shared data at shdata\n"),
-	U_BOOT_CMD_MKENT(cold_reboot, 1, 1, do_cold_reboot,
+	U_BOOT_CMD_MKENT(cros_reboot, 1, 1, do_cros_reboot,
 		"Cold reboot the machine",
 		""),
 	U_BOOT_CMD_MKENT(help, 1, 1, do_cros_help,
@@ -572,9 +572,9 @@ int do_load_k(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	return retcode;
 }
 
-int do_cold_reboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+int do_cros_reboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	cold_reboot();
+	cros_reboot();
 	return 0;
 }
 

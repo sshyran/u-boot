@@ -142,7 +142,7 @@ int do_cros_bootstub(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (status == LOAD_FIRMWARE_SUCCESS) {
 		jump_to_firmware((void (*)(void)) firmware_data);
 	} else if (status == LOAD_FIRMWARE_REBOOT) {
-		cold_reboot();
+		cros_reboot();
 	}
 
 	/* assert(status == LOAD_FIRMWARE_RECOVERY) */

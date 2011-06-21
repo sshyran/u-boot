@@ -12,11 +12,28 @@
 
 #include <common.h>
 #include <i2c.h>
+#include <asm/arch/gpio.h>
+#include "../lcd/gpinit/gpinit.h"
 
 #include <chromeos/common.h>
 #include <chromeos/power_management.h>
 
-#define PREFIX "cold_reboot: "
+#define PREFIX "power_management: "
+
+void cros_reboot(void)
+{
+	/*
+	 * Pulling this gpio down should reboot the main processor and TPM
+	 * chip together (on certain boards).
+	 */
+	tg2_gpio_direction_output(TEGRA_GPIO_PORT(TEGRA_GPIO_PG3),
+			TEGRA_GPIO_BIT(TEGRA_GPIO_PG3), 1);
+	tg2_gpio_set_value(TEGRA_GPIO_PORT(TEGRA_GPIO_PG3),
+			TEGRA_GPIO_BIT(TEGRA_GPIO_PG3), 0);
+
+	VBDEBUG(PREFIX "fall back to cold reboot\n");
+	cold_reboot();
+}
 
 #define PMIC_I2C_BUS		0x00
 #define PMIC_I2C_DEVICE_ADDRESS	0x34

@@ -184,9 +184,9 @@ void reboot_to_recovery_mode(uint32_t reason)
 	}
 
 	VBDEBUG(PREFIX "reboot to recovery mode\n");
-	cold_reboot();
+	cros_reboot();
 
-	VBDEBUG(PREFIX "error: cold_reboot() returned\n");
+	VBDEBUG(PREFIX "error: cros_reboot() returned\n");
 FAIL:
 	/* FIXME: bring up a sad face? */
 	printf("Please reset and press recovery button when reboot.\n");
