@@ -214,6 +214,7 @@ struct tegra_gpio_init_table {
  * backlight          : LCD signal enable pin
  * backlight_vdd      : backlight power pin
  * panel_power_enable : panel power pin
+ * T1                 : delay between Panel power-on and Data
  * T3                 : delay between Data and Backlight Rise
  * T5                 : delay between Backlight and Vpwm Rise
  * T6                 : delay between Vpwm and Ven Rise
@@ -223,6 +224,7 @@ struct tegra_panel_sequence {
 	unsigned  backlight;
 	unsigned  backlight_vdd;
 	unsigned  panel_power_enable;
+	unsigned  T1;
 	unsigned  T3;
 	unsigned  T5;
 	unsigned  T6;

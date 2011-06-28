@@ -32,6 +32,7 @@ struct tegra_panel_sequence tegra_panel_sequence_table = {
 	.backlight = TEGRA_PANEL_GPIO_BACKLIGHT,
 	.backlight_vdd = TEGRA_PANEL_GPIO_BACKLIGHT_VDD,
 	.panel_power_enable = TEGRA_PANEL_GPIO_EN_VDD_PNL,
+	.T1 = TEGRA_PANEL_PANEL_PON_TO_DATA_MS,
 	.T3 = TEGRA_PANEL_DATA_TO_BACKLIGHTPWR_MS,
 	.T5 = TEGRA_PANEL_BACKLIGHTPWR_TO_VPWM_MS,
 	.T6 = TEGRA_PANEL_VPWM_TO_VEN_MS,
@@ -44,15 +45,11 @@ static void clk_init(void)
 	tegra_clk_init_from_table(tegra2_gp_clk_init_table);
 }
 
-static void pinmux_init(void)
-{
-	tegra_pinmux_config_table(tegra2_gp_pinmux, tegra2_gp_pinmux_tab_len);
-}
-
 #ifdef	TEGRA_PANEL_POWERON_SEQUENCE
 void mdelay(int ms)
 {
-	udelay(ms * 1000);
+	if (ms)
+		udelay(ms * 1000);
 }
 
 static void poweron_panel(void)
@@ -66,6 +63,9 @@ static void poweron_panel(void)
 		tegra_panel_sequence_table.panel_power_enable, 1);
 	tg2_gpio_set_value_ex(
 		tegra_panel_sequence_table.panel_power_enable, 1);
+
+	/* Panel power-on to Data Time */
+	mdelay(tegra_panel_sequence_table.T1);
 
 	/* Enable LVDS */
 	tg2_gpio_direction_output_ex(
@@ -114,7 +114,6 @@ static void panel_init(void)
 void gpinit(void)
 {
 	clk_init();
-	pinmux_init();
 	poweron_3d();
 
 #ifdef	TEGRA_PANEL_POWERON_SEQUENCE

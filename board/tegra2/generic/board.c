@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  (C) Copyright 2010
  *  NVIDIA Corporation <www.nvidia.com>
  *
@@ -36,6 +36,7 @@
 #include "sdmmc/nvboot_clocks_int.h"
 #include "board.h"
 #include <asm/arch/gpio.h>
+#include "lcd/gpinit/gp-util.h"
 
 /******************************************************************************
  * PLL CONFIGURATION & PARAMETERS for different clock generators:
@@ -118,6 +119,11 @@ static const NvU8 s_UtmipHsSyncStartDelay = 9;
 void board_usb_init(void);
 void board_spi_init(void);
 
+static void pinmux_init(void)
+{
+	tegra_pinmux_config_table(tegra2_gp_pinmux, tegra2_gp_pinmux_tab_len);
+}
+
 /*
  * Routine: board_init
  * Description: Early hardware init.
@@ -130,6 +136,12 @@ int board_init(void)
 	gd->bd->bi_boot_params = (NV_ADDRESS_MAP_SDRAM_BASE + 0x100);
 	/* board id for Linux */
 	gd->bd->bi_arch_number = LINUX_MACH_TYPE;
+
+	/*
+	 * do pinmux_init early to make LCD power signals
+	 * keep on low level before LCD power on
+	 */
+	pinmux_init();
 
 #ifdef CONFIG_TEGRA2_LCD
 	gd->fb_base = LCD_FB_ADDR;
