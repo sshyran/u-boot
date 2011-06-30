@@ -12,6 +12,7 @@
 #define __CHROMEOS_KERNEL_SHARED_DATA_H__
 
 #include <vboot_nvstorage.h>
+#include <vboot_struct.h>
 
 #define ID_LEN		256
 
@@ -31,7 +32,7 @@ typedef struct {
 	uint8_t		fwid[ID_LEN];
 	uint8_t		frid[ID_LEN];
 	uint32_t	fmap_base;
-	uint8_t		shared_data_body[CONFIG_LENGTH_FMAP];
+	uint8_t		shared_data_body[CONFIG_VB_SHARED_DATA_SIZE];
 } __attribute__((packed)) KernelSharedDataType;
 
 /* Returns the kernel shared data point. */

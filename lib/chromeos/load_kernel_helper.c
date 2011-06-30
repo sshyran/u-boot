@@ -197,13 +197,9 @@ EXIT:
 		/* recovery reason */
 		sd->binf[4] = reason;
 
-		firmware_storage_t file;
-		firmware_storage_init(&file);
-		firmware_storage_read(&file,
-				CONFIG_OFFSET_FMAP, CONFIG_LENGTH_FMAP,
-				sd->shared_data_body);
-		file.close(file.context);
-		sd->fmap_base = (uint32_t)sd->shared_data_body;
+		memcpy(sd->shared_data_body, params->shared_data_blob,
+		       params->shared_data_size);
+		sd->fmap_base = CONFIG_OFFSET_FMAP;
 
 		sd->nvcxt_lba = get_nvcxt_lba();
 
