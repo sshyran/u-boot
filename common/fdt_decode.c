@@ -344,6 +344,25 @@ int fdt_decode_get_spi_switch(const void *blob, struct fdt_spi_uart *config)
 	return 0;
 }
 
+int fdt_decode_memory(const void *blob, struct fdt_memory *config)
+{
+	int node, len;
+	const addr_t *cell;
+
+	node = fdt_path_offset(blob, "/memory");
+	if (node < 0)
+		return node;
+
+	cell = fdt_getprop(blob, node, "reg", &len);
+	if (cell && len == sizeof(addr_t) * 2) {
+		config->start = addr_to_cpu(cell[0]);
+		config->end = addr_to_cpu(cell[1]);
+	} else
+		return -FDT_ERR_BADLAYOUT;
+
+	return 0;
+}
+
 /**
  * Decode a list of GPIOs from an FDT. This creates a list of GPIOs with no
  * terminating item.

@@ -42,6 +42,12 @@ typedef u32 addr_t;
 #define addr_to_cpu(reg) be32_to_cpu(reg)
 #endif
 
+/* Information obtained about memory from the FDT */
+struct fdt_memory {
+	addr_t start;
+	addr_t end;
+};
+
 /**
  * Compat types that we know about and for which we might have drivers.
  * Each is named COMPAT_<dir>_<filename> where <dir> is the directory
@@ -198,6 +204,14 @@ struct fdt_i2c {
 	u32 speed;
 	enum periph_id periph_id;
 };
+
+/**
+ * Returns information from the FDT about the memory.
+ *
+ * @param blob          FDT blob to use
+ * @param config        structure to use to return information
+ */
+int fdt_decode_memory(const void *blob, struct fdt_memory *config);
 
 /**
  * Return information from the FDT about the console UART. This looks for
