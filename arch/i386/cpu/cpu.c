@@ -86,6 +86,13 @@ static void reload_gdt(void)
 		     : : "m" (gdt) : "ecx");
 }
 
+int x86_cleanup_before_linux(void)
+{
+	return 0;
+}
+int cleanup_before_linux(void)
+	__attribute__((weak, alias("x86_cleanup_before_linux")));
+
 
 int x86_cpu_init_f(void)
 {
