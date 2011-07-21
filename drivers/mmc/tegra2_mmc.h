@@ -57,7 +57,8 @@ struct tegra2_mmc {
 	unsigned short	setinterr;	/* offset 52h */
 	unsigned char	admaerr;	/* offset 54h */
 	unsigned char	res4[3];	/* RESERVED, offset 55h-57h */
-	unsigned long	admaaddr;	/* offset 58h-5Fh */
+	unsigned int	admaaddr;	/* offset 58h-5bh */
+	unsigned int    admaaddr_high;  /* offset 5Ch-5Fh */
 	unsigned char	res5[0x9c];	/* RESERVED, offset 60h-FBh */
 	unsigned short	slotintstatus;	/* offset FCh */
 	unsigned short	hcver;		/* HOST Version */
