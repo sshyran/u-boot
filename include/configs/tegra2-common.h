@@ -305,19 +305,10 @@
  * and also have set tftpserverip/nfsserverip to something other than 0.0.0.0.
  * For full network booting you just need tftpserverip.  For full NFS root
  * you neet to set both.
- *
- * We decorate the nfsroot name so that multiple users / boards can easily
- * share an NFS server:
- *   user - username, e.g. 'frank'
- *   board - board, e.g. 'seaboard'
- *   serial - serial number, e.g. '1234'
  */
 #define CONFIG_NETBOOT_SETTINGS \
 	"tftpserverip=0.0.0.0\0" \
 	"nfsserverip=0.0.0.0\0" \
-	\
-	"user=user\0" \
-	"serial#=1\0" \
 	\
 	"rootaddr=0x12008000\0" \
 	"initrd_high=0xffffffff\0" \
