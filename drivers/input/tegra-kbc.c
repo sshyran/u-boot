@@ -62,7 +62,18 @@ enum {
 
 /* kbc globals */
 unsigned int kbc_repoll_time;
-int kbc_last_keypress;
+
+/*
+ * Use a simple FIFO to convert some keys into escape sequences and to handle
+ * testc vs getc.  The FIFO length must be a power of two.  Currently, four
+ * characters is the smallest power of two that is large enough to contain all
+ * generated escape sequences.
+ */
+#define KBC_FIFO_LENGTH	(1 << 2)
+
+static int kbc_fifo[KBC_FIFO_LENGTH];
+static int kbc_fifo_read;
+static int kbc_fifo_write;
 
 /* These are key maps for each modifier: each has KBC_KEY_COUNT entries */
 u8 *kbc_plain_keycode;
@@ -295,28 +306,118 @@ static int kbd_fetch_char(int test)
 	return key;
 }
 
+/*
+ * Return true if there are no characters in the FIFO.
+ */
+static int kbd_fifo_empty(void)
+{
+	return kbc_fifo_read == kbc_fifo_write;
+}
+
+/*
+ * Return number of characters of free space in the FIFO.
+ */
+static int kbd_fifo_free_space(void)
+{
+	return KBC_FIFO_LENGTH - (kbc_fifo_write - kbc_fifo_read);
+}
+
+/*
+ * Insert a character into the FIFO.  Calling this function when the FIFO is
+ * full will overwrite the oldest character in the FIFO.
+ */
+static void kbd_fifo_insert(int key)
+{
+	int index = kbc_fifo_write & (KBC_FIFO_LENGTH - 1);
+
+	assert(kbd_fifo_free_space() > 0);
+
+	kbc_fifo[index] = key;
+
+	kbc_fifo_write++;
+}
+
+/*
+ * Remove a character from the FIFO, it is an error to call this function when
+ * the FIFO is empty.
+ */
+static int kbd_fifo_remove(void)
+{
+	int index = kbc_fifo_read & (KBC_FIFO_LENGTH - 1);
+	int key   = kbc_fifo[index];
+
+	assert(!kbd_fifo_empty());
+
+	kbc_fifo_read++;
+
+	return key;
+}
+
+/*
+ * Given a keycode, convert it to the sequence of characters that U-Boot expects
+ * to recieve from its input devices and insert the characters into the FIFO.
+ * If the keycode is 0, ignore it.  Currently this function will only ever add
+ * at most three characters to the FIFO, so it is always safe to call when the
+ * FIFO is empty.
+ */
+static void kbd_fifo_refill(int key)
+{
+	switch (key)
+	{
+		/*
+		 * We need to deal with a zero keycode value here because the
+		 * testc call can call us with zero if no key is pressed.
+		 */
+		case 0x00:
+			break;
+
+		/*
+		 * Generate escape sequences for arrow keys.  Additional escape
+		 * sequences can be added to the switch statements, but it may
+		 * be better in the future t0 use the top bit of the keycode to
+		 * indicate a key that generates an escape sequence.  Then the
+		 * outer switch could turn into an "if (key & 0x80)".
+		 */
+		case 0x1C:
+		case 0x1D:
+		case 0x1E:
+		case 0x1F:
+			kbd_fifo_insert(0x1B); /* Escape */
+			kbd_fifo_insert('[');
+
+			switch (key)
+			{
+				case 0x1C: kbd_fifo_insert('D'); break;
+				case 0x1D: kbd_fifo_insert('C'); break;
+				case 0x1E: kbd_fifo_insert('A'); break;
+				case 0x1F: kbd_fifo_insert('B'); break;
+			}
+			break;
+
+		/*
+		 * All other keycodes can be treated as characters as is and
+		 * are inserted into the FIFO directly.
+		 */
+		default:
+			kbd_fifo_insert(key);
+			break;
+	}
+}
+
 static int kbd_testc(void)
 {
-	unsigned char key = kbd_fetch_char(1);
+	if (kbd_fifo_empty())
+		kbd_fifo_refill(kbd_fetch_char(1));
 
-	if (key)
-		kbc_last_keypress = key;
-
-	return (key != 0);
+	return !kbd_fifo_empty();
 }
 
 static int kbd_getc(void)
 {
-	unsigned char key;
+	if (kbd_fifo_empty())
+		kbd_fifo_refill(kbd_fetch_char(0));
 
-	if (kbc_last_keypress) {
-		key = kbc_last_keypress;
-		kbc_last_keypress = 0;
-	} else {
-		key = kbd_fetch_char(0);
-	}
-
-	return key;
+	return kbd_fifo_remove();
 }
 
 /* configures keyboard GPIO registers to use the rows and columns */
