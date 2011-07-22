@@ -12,12 +12,11 @@ include $(TOPDIR)/config.mk
 
 LIB	= $(obj)libchromeos.a
 
-COBJS-$(CONFIG_CHROMEOS) += cmdline_updater.o
+COBJS-$(CONFIG_CHROMEOS) += boot_kernel.o
 COBJS-$(CONFIG_CHROMEOS) += crossystem_data.o
 COBJS-$(CONFIG_CHROMEOS) += fdt_decode.o
 COBJS-$(CONFIG_CHROMEOS) += firmware_storage_spi.o
 COBJS-$(CONFIG_CHROMEOS) += memory_wipe.o
-COBJS-$(CONFIG_CHROMEOS) += preboot_fdt_update.o
 
 # TODO(sjg): This MMC code is not needed as yet, and needs slight changes
 # to build now
