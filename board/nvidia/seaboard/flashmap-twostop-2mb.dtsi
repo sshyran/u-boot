@@ -36,8 +36,8 @@
 			 * each RW_SECTION. */
 			reg = <0x00100000 0x00002000>;
 			type = "keyblock boot";
-			keyblock = "dev_firmware.keyblock";
-			signprivate = "dev_firmware_data_key.vbprivk";
+			keyblock = "firmware.keyblock";
+			signprivate = "firmware_data_key.vbprivk";
 			version = <1>;
 			kernelkey = "kernel_subkey.vbpubk";
 			preamble-flags = <1>;
