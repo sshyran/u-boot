@@ -16,7 +16,6 @@ COBJS-$(CONFIG_CHROMEOS) += cmdline_updater.o
 COBJS-$(CONFIG_CHROMEOS) += crossystem_data.o
 COBJS-$(CONFIG_CHROMEOS) += fdt_decode.o
 COBJS-$(CONFIG_CHROMEOS) += firmware_storage_spi.o
-COBJS-$(CONFIG_CHROMEOS) += gbb_bmpblk.o
 COBJS-$(CONFIG_CHROMEOS) += memory_wipe.o
 COBJS-$(CONFIG_CHROMEOS) += preboot_fdt_update.o
 
