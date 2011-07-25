@@ -12,6 +12,12 @@
 #define CONFIG_CHROMEOS
 
 /*
+ * This is the default kernel command line to a Chrome OS kernel. An ending
+ * space character helps us concatenate more arguments.
+ */
+#define CHROMEOS_BOOTARGS "cros_vboot " CONFIG_BOOTARGS " "
+
+/*
  * Use the fdt to decide whether to load the environment early in start-up
  * (even before we decide if we're entering developer mode).
  */
