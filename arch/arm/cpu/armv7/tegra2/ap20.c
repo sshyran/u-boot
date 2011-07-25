@@ -42,7 +42,7 @@ struct clk_pll_table {
 };
 
 /* ~0=uninitialized/unknown, 0=false, 1=true */
-int is_tegra2_cold_boot = 0xffffffff;
+uint32_t is_tegra2_processor_reset = 0xffffffff;
 
 /*
  * Timing tables for each SOC for all four oscillator options.
@@ -387,7 +387,7 @@ void tegra2_start(void)
 
 	/* FIXME: should have ap20's L2 disabled too? */
 
-	/* Init is_tegra2_cold_boot */
-	is_tegra2_cold_boot = check_is_tegra2_cold_boot();
+	/* Init is_tegra2_processor_reset */
+	is_tegra2_processor_reset = check_is_tegra2_processor_reset();
 }
 

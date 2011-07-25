@@ -902,7 +902,7 @@ int clock_verify(void)
 	return 0;
 }
 
-int check_is_tegra2_cold_boot(void)
+uint32_t check_is_tegra2_processor_reset(void)
 {
 	u32 base_reg;
 	struct clk_pll *pll;
