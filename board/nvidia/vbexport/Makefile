@@ -10,15 +10,9 @@
 
 include $(TOPDIR)/config.mk
 
-LIB	= $(obj)libvbexport.a
+LIB	= $(obj)libvbexport_board.a
 
-COBJS-$(CONFIG_CHROMEOS_VBEXPORT) += boot_device.o
-COBJS-$(CONFIG_CHROMEOS_VBEXPORT) += display.o
-COBJS-$(CONFIG_CHROMEOS_VBEXPORT) += keyboard.o
-COBJS-$(CONFIG_CHROMEOS_VBEXPORT) += load_firmware.o
-COBJS-$(CONFIG_CHROMEOS_VBEXPORT) += misc.o
-COBJS-$(CONFIG_CHROMEOS_VBEXPORT) += tlcl_stub.o
-COBJS-$(CONFIG_CHROMEOS_VBEXPORT) += utility.o
+COBJS-$(CONFIG_CHROMEOS_VBEXPORT) += nvstorage.o
 
 COBJS	:= $(COBJS-y)
 OBJS	:= $(addprefix $(obj),$(COBJS))

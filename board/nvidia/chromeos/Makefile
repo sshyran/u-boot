@@ -10,7 +10,7 @@
 
 include $(TOPDIR)/config.mk
 
-LIB	= $(obj)libchromeos_hardware_interface.a
+LIB	= $(obj)libchromeos_board.a
 
 COBJS-$(CONFIG_CHROMEOS) += cros_gpio.o
 COBJS-$(CONFIG_CHROMEOS) += power_management.o
