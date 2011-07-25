@@ -451,7 +451,6 @@ unsigned long clock_start_pll(enum clock_id clkid, u32 divm, u32 divn,
 	return timer_get_future_us(CLOCK_PLL_STABLE_DELAY_US);
 }
 
-#ifdef DEBUG
 /* return 1 if a peripheral ID is in range and valid */
 static int clock_periph_id_isvalid(enum periph_id id)
 {
@@ -479,7 +478,6 @@ static int clock_periph_id_isvalid(enum periph_id id)
 	}
 	return 0;
 }
-#endif
 
 /* Returns a pointer to the clock source register for a peripheral */
 static u32 *get_periph_source_reg(enum periph_id periph_id)
