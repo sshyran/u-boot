@@ -21,7 +21,7 @@ COBJS-$(CONFIG_CHROMEOS) += memory_wipe.o
 
 # TODO(sjg): This MMC code is not needed as yet, and needs slight changes
 # to build now
-#COBJS-$(CONFIG_CHROMEOS_TWOSTOP) += firmware_storage_twostop.o
+#COBJS-$(CONFIG_CHROMEOS) += firmware_storage_twostop.o
 
 COBJS	:= $(COBJS-y)
 OBJS	:= $(addprefix $(obj),$(COBJS))

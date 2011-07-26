@@ -7,13 +7,12 @@
 #ifndef __configs_chromeos_tegra2_twostop_h__
 #define __configs_chromeos_tegra2_twostop_h__
 
-/* TODO This should be renamed to chromeos_tegra2_common.h? */
-#include <configs/chromeos_seaboard_common.h>
+/* So far all our tegra2-based boards share the seaboard config. */
+#include <configs/seaboard.h>
 
-#define CONFIG_CHROMEOS_VBEXPORT
-#define CONFIG_CHROMEOS_TWOSTOP
+#include "chromeos.h"
 
-/* entry point of twostop firmware */
-#define CONFIG_CMD_VBOOT_TWOSTOP
+/* Store the VbNvContext in the first block of the disk. */
+#define CHROMEOS_VBNVCONTEXT_LBA	0
 
 #endif /* __configs_chromeos_tegra2_twostop_h__ */

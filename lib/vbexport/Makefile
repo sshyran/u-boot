@@ -12,13 +12,13 @@ include $(TOPDIR)/config.mk
 
 LIB	= $(obj)libvbexport.a
 
-COBJS-$(CONFIG_CHROMEOS_VBEXPORT) += boot_device.o
-COBJS-$(CONFIG_CHROMEOS_VBEXPORT) += display.o
-COBJS-$(CONFIG_CHROMEOS_VBEXPORT) += keyboard.o
-COBJS-$(CONFIG_CHROMEOS_VBEXPORT) += load_firmware.o
-COBJS-$(CONFIG_CHROMEOS_VBEXPORT) += misc.o
-COBJS-$(CONFIG_CHROMEOS_VBEXPORT) += tlcl_stub.o
-COBJS-$(CONFIG_CHROMEOS_VBEXPORT) += utility.o
+COBJS-$(CONFIG_CHROMEOS) += boot_device.o
+COBJS-$(CONFIG_CHROMEOS) += display.o
+COBJS-$(CONFIG_CHROMEOS) += keyboard.o
+COBJS-$(CONFIG_CHROMEOS) += load_firmware.o
+COBJS-$(CONFIG_CHROMEOS) += misc.o
+COBJS-$(CONFIG_CHROMEOS) += tlcl_stub.o
+COBJS-$(CONFIG_CHROMEOS) += utility.o
 
 COBJS	:= $(COBJS-y)
 OBJS	:= $(addprefix $(obj),$(COBJS))
