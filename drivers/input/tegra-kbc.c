@@ -262,13 +262,8 @@ static unsigned char tegra_kbc_get_char(void)
 	val = readl(&kbc->interrupt);
 	writel(val, &kbc->interrupt);
 
-	if (!(val & KBC_INT_FIFO_CNT_INT_STATUS)) {
-		ctl |= KBC_CONTROL_FIFO_CNT_INT_EN;
-		writel(ctl, &kbc->control);
-		return 0;
-	}
-
-	key = tegra_kbc_get_single_char((val >> 4) & 0xf);
+	if (val & KBC_INT_FIFO_CNT_INT_STATUS)
+		key = tegra_kbc_get_single_char((val >> 4) & 0xf);
 
 	ctl |= KBC_CONTROL_FIFO_CNT_INT_EN;
 	writel(ctl, &kbc->control);
