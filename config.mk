@@ -157,6 +157,9 @@ OPTFLAGS= -Os #-fomit-frame-pointer
 ifdef VBOOT_DEBUG
 DBGFLAGS += -DVBOOT_DEBUG
 endif
+ifdef VBOOT_PERFORMANCE
+DBGFLAGS += -DVBOOT_PERFORMANCE
+endif
 ifndef LDSCRIPT
 #LDSCRIPT := $(TOPDIR)/board/$(BOARDDIR)/u-boot.lds.debug
 ifeq ($(CONFIG_NAND_U_BOOT),y)
