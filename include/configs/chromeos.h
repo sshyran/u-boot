@@ -41,4 +41,10 @@
 #define CHROMEOS_KERNEL_LOADADDR	0x00100000
 #define CHROMEOS_KERNEL_BUFSIZE		0x00800000
 
+/*
+ * This is the default kernel command line to a Chrome OS kernel. An ending
+ * space character helps us concatenate more arguments.
+ */
+#define CHROMEOS_BOOTARGS "cros_vboot " CONFIG_BOOTARGS " "
+
 #endif /* __configs_chromeos_h__ */
