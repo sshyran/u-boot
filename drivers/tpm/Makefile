@@ -19,6 +19,8 @@ COBJS-$(CONFIG_INFINEON_TPM_I2C) = slb9635_i2c.o \
 	$(IFXDIR)/ifx_v05.o \
 	$(IFXDIR)/ifx_v03.o
 
+COBJS-$(CONFIG_DUMMY_TPM) = dummy_tpm.o
+
 COBJS	:= $(COBJS-y)
 SRCS	:= $(COBJS:.o=.c)
 OBJS	:= $(addprefix $(obj),$(COBJS))
