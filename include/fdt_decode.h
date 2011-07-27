@@ -104,7 +104,7 @@ struct fdt_gpio_state {
 /* This tells us whether a fdt_gpio_state record is valid or not */
 #define fdt_gpio_isvalid(gpio) ((gpio)->gpio != FDT_GPIO_NONE)
 
-#define FDT_LCD_GPIOS	5
+#define FDT_LCD_TIMINGS	4
 
 enum {
 	FDT_LCD_TIMING_REF_TO_SYNC,
@@ -136,7 +136,6 @@ struct fdt_lcd {
 	 * case this field holds 24 also! This is a U-Boot thing.
 	 */
 	int log2_bpp;
-	struct fdt_gpio_state gpios[FDT_LCD_GPIOS]; /* state of output GPIOS */
 	struct pwfm_ctlr *pwfm;	/* PWM to use for backlight */
 	struct disp_ctlr *disp;	/* Display controller to use */
 	addr_t frame_buffer;	/* Address of frame buffer */
@@ -144,6 +143,19 @@ struct fdt_lcd {
 	int horiz_timing[FDT_LCD_TIMING_COUNT];	/* Horizontal timing */
 	int vert_timing[FDT_LCD_TIMING_COUNT];	/* Vertical timing */
 	enum lcd_cache_t cache_type;
+
+	struct fdt_gpio_state backlight_en;	/* GPIO for backlight enable */
+	struct fdt_gpio_state lvds_shutdown;	/* GPIO for lvds shutdown */
+	struct fdt_gpio_state backlight_vdd;	/* GPIO for backlight vdd */
+	struct fdt_gpio_state panel_vdd;	/* GPIO for panel vdd */
+	/*
+	 * Panel required timings
+	 * Timing 1: delay between panel_vdd-rise and data-rise
+	 * Timing 2: delay between data-rise and backlight_vdd-rise
+	 * Timing 3: delay between backlight_vdd and pwm-rise
+	 * Timing 4: delay between pwm-rise and backlight_en-rise
+	 */
+	int panel_timings[FDT_LCD_TIMINGS];
 };
 
 /* Parameters we need for USB */
@@ -340,7 +352,11 @@ int fdt_get_gpio_num(struct fdt_gpio_state *gpio);
  *	pixel_clock	Pixel clock in Hz
  *	horiz_timing	ref_to_sync, sync_width. back_porch, front_porch
  *	vert_timing	ref_to_sync, sync_width. back_porch, front_porch
- *	gpios		list of GPIOs to make as outputs, along with 0/1 value
+ *	backlight_en 	GPIO to control backlight_en signal
+ *	lvds_shutdown 	GPIO to control lvds_shutdown signal
+ *	backlight_vdd 	GPIO to control the vdd of backlight
+ *	panel_vdd 	GPIO to control the vdd of panel
+ *	panel_timings 	the required timings in the panel init sequence
  *
  * @param blob		FDT blob to use
  * @param config	structure to use to return information

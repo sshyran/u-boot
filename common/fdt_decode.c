@@ -400,6 +400,7 @@ static int decode_gpios(const void *blob, int node, const char *property,
 	return len;
 }
 
+#if 0
 /**
  * Decode a list of GPIOs from an FDT. This creates a list of GPIOs with the
  * last one being GPIO_NONE.
@@ -424,6 +425,7 @@ static int decode_gpio_list(const void *blob, int node, const char *property,
 	gpio[err].gpio = FDT_GPIO_NONE;
 	return 0;
 }
+#endif
 
 /**
  * Decode a single GPIOs from an FDT.
@@ -515,8 +517,19 @@ int fdt_decode_lcd(const void *blob, struct fdt_lcd *config)
 			!config->pwfm || !config->disp)
 		return -FDT_ERR_MISSING;
 	config->frame_buffer = get_addr(blob, node, "frame-buffer");
-	return decode_gpio_list(blob, node, "gpios", config->gpios,
-				FDT_LCD_GPIOS);
+
+	err |= decode_gpio(blob, node, "backlight-enable",
+			   &config->backlight_en);
+	err |= decode_gpio(blob, node, "lvds-shutdown",
+			   &config->lvds_shutdown);
+	err |= decode_gpio(blob, node, "backlight-vdd",
+			   &config->backlight_vdd);
+	err |= decode_gpio(blob, node, "panel-vdd", &config->panel_vdd);
+	if (err)
+		return -FDT_ERR_MISSING;
+
+	return get_int_array(blob, node, "panel-timings",
+			config->panel_timings, FDT_LCD_TIMINGS);
 }
 
 int fdt_decode_usb(const void *blob, int node, unsigned osc_frequency_mhz,

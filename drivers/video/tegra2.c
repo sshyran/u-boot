@@ -24,6 +24,7 @@
 #include <fdt_decode.h>
 #include <asm/clocks.h>
 #include <asm/arch/clock.h>
+#include <asm/arch/gpio.h>
 #include <asm/arch/pinmux.h>
 #include <asm/arch/power.h>
 #include <asm/arch/pwfm.h>
@@ -31,6 +32,8 @@
 #include <asm/system.h>
 
 DECLARE_GLOBAL_DATA_PTR;
+
+unsigned long timer_last;
 
 int lcd_line_length;
 int lcd_color_fg;
@@ -106,20 +109,57 @@ struct pingroup_config pinmux_cros_1[] = {
 	PINMUX(SLXD,  SPDIF,      NORMAL,    NORMAL),
 };
 
+/* Initialize the Tegra LCD pinmuxs */
+static void init_lcd_pinmux(struct fdt_lcd *config)
+{
+	/* TODO: put pinmux into the FDT */
+	pinmux_config_table(pinmux_cros_1, ARRAY_SIZE(pinmux_cros_1));
+
+	fdt_setup_gpio(&config->panel_vdd);
+	fdt_setup_gpio(&config->lvds_shutdown);
+	fdt_setup_gpio(&config->backlight_vdd);
+	fdt_setup_gpio(&config->backlight_en);
+
+	gpio_set_value(config->panel_vdd.gpio, 1);
+	udelay(config->panel_timings[0] * 1000);
+
+	gpio_set_value(config->lvds_shutdown.gpio, 1);
+	timer_last = timer_get_us();
+}
+
 /* Initialize the Tegra LCD panel and controller */
 void init_lcd(struct fdt_lcd *config)
 {
 	clk_init();
-
-	/* TODO: put pinmux into the FDT */
-	pinmux_config_table(pinmux_cros_1, ARRAY_SIZE(pinmux_cros_1));
 	power_enable_partition(POWERP_3D);
-	fdt_setup_gpios(config->gpios);
-
 	tegra2_display_register(config);
+}
+
+static void init_lcd_pwm(struct fdt_lcd *config)
+{
+	long pre_delay;
+
+	/*
+	 * Compare the current timer valuse with the timer_last to
+	 * figure out the pre_delay which is the passed time from
+	 * the end of init_lcd_pinmux to now.
+	 * If the required delay(timings[1]) is bigger than pre_delay,
+	 * we have to do a delay (timings[1] - pre_delay) to make
+	 * sure the required delay(timings[1]) has passed.
+	 */
+	pre_delay = timer_get_us() - timer_last;
+
+	if ((long)(config->panel_timings[1] * 1000) > pre_delay)
+		udelay((long)(config->panel_timings[1] * 1000) - pre_delay);
+
+	gpio_set_value(config->backlight_vdd.gpio, 1);
+	udelay(config->panel_timings[2] * 1000);
 
 	/* Enable PWM at 15/16 high, divider 1 */
 	pwfm_setup(config->pwfm, 1, 0xdf, 1);
+	udelay(config->panel_timings[3] * 1000);
+
+	gpio_set_value(config->backlight_en.gpio, 1);
 }
 
 void lcd_cursor_size(ushort width, ushort height)
@@ -229,6 +269,16 @@ void lcd_setcolreg(ushort regno, ushort red, ushort green, ushort blue)
 
 void lcd_enable(void)
 {
+	struct fdt_lcd config;
+
+	/* get panel details */
+	if (fdt_decode_lcd(gd->blob, &config)) {
+		printf("No LCD information in device tree\n");
+		return;
+	}
+
+	/* call board specific hw init for backlight PWM */
+	init_lcd_pwm(&config);
 }
 
 void lcd_early_init(const void *blob)
@@ -240,3 +290,14 @@ void lcd_early_init(const void *blob)
 		update_panel_size(&config);
 }
 
+int lcd_pinmux_early_init(const void *blob)
+{
+	struct fdt_lcd config;
+
+	/* get panel details */
+	if (fdt_decode_lcd(gd->blob, &config))
+		return -1;
+
+	init_lcd_pinmux(&config);
+	return 0;
+}

@@ -193,6 +193,9 @@ static void power_det_init(void)
  */
 int board_init(void)
 {
+#ifdef CONFIG_VIDEO_TEGRA2
+	lcd_pinmux_early_init(gd->blob);
+#endif
 	/* Do clocks and UART first so that printf() works */
 	clock_init();
 #ifdef CONFIG_SPI_UART_SWITCH
