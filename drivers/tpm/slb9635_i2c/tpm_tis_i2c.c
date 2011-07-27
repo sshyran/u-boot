@@ -415,6 +415,7 @@ static int tpm_tis_i2c_send(struct tpm_chip *chip, u8 *buf, size_t len)
 	int rc, status;
 	ssize_t burstcnt;
 	size_t count = 0;
+	int retry = 0;
 	u8 sts = TPM_STS_GO;
 
 	if (len > TPM_BUFSIZE)
@@ -434,18 +435,18 @@ static int tpm_tis_i2c_send(struct tpm_chip *chip, u8 *buf, size_t len)
 		}
 	}
 
+	burstcnt = get_burstcount(chip);
+
+	/* burstcount < 0 = tpm is busy */
+	if (burstcnt < 0)
+		return burstcnt;
+
 	while (count < len - 1) {
-		burstcnt = get_burstcount(chip);
-
-		/* burstcount < 0 = tpm is busy */
-		if (burstcnt < 0)
-			return burstcnt;
-
 		if (burstcnt > (len-1-count))
 			burstcnt = len-1-count;
 
 #ifdef CONFIG_TPM_I2C_BURST_LIMITATION
-		if (burstcnt > CONFIG_TPM_I2C_BURST_LIMITATION)
+		if (retry && burstcnt > CONFIG_TPM_I2C_BURST_LIMITATION)
 			burstcnt = CONFIG_TPM_I2C_BURST_LIMITATION;
 #endif /* CONFIG_TPM_I2C_BURST_LIMITATION */
 
@@ -453,13 +454,15 @@ static int tpm_tis_i2c_send(struct tpm_chip *chip, u8 *buf, size_t len)
 				   &(buf[count]), burstcnt);
 		if (rc == 0)
 			count += burstcnt;
+		else {
+			retry++;
+			wait_for_stat(chip, TPM_STS_VALID,
+					chip->vendor.timeout_c, &status);
 
-		wait_for_stat(chip, TPM_STS_VALID,
-				chip->vendor.timeout_c, &status);
-
-		if ((status & TPM_STS_DATA_EXPECT) == 0) {
-			rc = -EIO;
-			goto out_err;
+			if ((status & TPM_STS_DATA_EXPECT) == 0) {
+				rc = -EIO;
+				goto out_err;
+			}
 		}
 
 	}

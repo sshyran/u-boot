@@ -215,11 +215,17 @@ static int wait_for_tx_fifo_empty(struct i2c_control *control)
 {
 	u32 count;
 	int timeout_us = I2C_TIMEOUT_USEC;
+	int int_status;
 
 	while (timeout_us >= 0) {
 		count = bf_readl(TX_FIFO_EMPTY_CNT, &control->fifo_status);
 		if (count == I2C_FIFO_DEPTH)
 			return 1;
+
+		int_status = readl(&control->int_status);
+		if (bf_unpack(I2C_INT_NO_ACK, int_status))
+			return 0;
+
 		udelay(10);
 		timeout_us -= 10;
 	};
@@ -231,11 +237,17 @@ static int wait_for_rx_fifo_notempty(struct i2c_control *control)
 {
 	u32 count;
 	int timeout_us = I2C_TIMEOUT_USEC;
+	int int_status;
 
 	while (timeout_us >= 0) {
 		count = bf_readl(RX_FIFO_FULL_CNT, &control->fifo_status);
 		if (count)
 			return 1;
+
+		int_status = readl(&control->int_status);
+		if (bf_unpack(I2C_INT_NO_ACK, int_status))
+			return 0;
+
 		udelay(10);
 		timeout_us -= 10;
 	};
