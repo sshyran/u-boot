@@ -219,6 +219,12 @@ void	lcd_putc	(const char c);
 void	lcd_puts	(const char *s);
 void	lcd_printf	(const char *fmt, ...);
 int	lcd_clear	(void);
+int	lcd_get_pixel_width (void);
+int	lcd_get_pixel_height(void);
+int	lcd_get_screen_rows (void);
+int	lcd_get_screen_columns (void);
+int	lcd_display_bitmap (ulong, int, int);
+void	lcd_position_cursor (unsigned col, unsigned row);
 
 /* Allow boards to customize the information displayed */
 void lcd_show_board_info(void);
