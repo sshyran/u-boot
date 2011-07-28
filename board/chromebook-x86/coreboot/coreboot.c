@@ -23,8 +23,11 @@
  */
 
 #include <asm/u-boot-i386.h>
+#include <cbfs.h>
 #include <common.h>
+#include <config.h>
 #include <flash.h>
+#include <malloc.h>
 #include <netdev.h>
 #include <asm/ic/coreboot/tables.h>
 #include <asm/ic/coreboot/sysinfo.h>
@@ -57,12 +60,40 @@ int board_early_init_f(void)
 
 int board_early_init_r(void)
 {
-	/* CPU Speed to 100MHz */
-	gd->cpu_clk = 100000000;
+#if defined CONFIG_CMD_CBFS && defined CONFIG_OF_CONTROL
+	CbfsFile file;
+	void *dtb;
+	u32 size;
 
-	/* Crystal is 33.000MHz */
-	gd->bus_clk = 33000000;
-
+	file_cbfs_init(0xffffffff);
+	if (file_cbfs_result != CBFS_SUCCESS) {
+		printf("%s.\n", file_cbfs_error());
+		goto cbfs_failed;
+	}
+	file = file_cbfs_find("u-boot.dtb");
+	if (!file) {
+		if (file_cbfs_result != CBFS_FILE_NOT_FOUND)
+			printf("%s.\n", file_cbfs_error());
+		goto cbfs_failed;
+	}
+	size = file_cbfs_size(file);
+	if (file_cbfs_result != CBFS_SUCCESS) {
+		printf("%s.\n", file_cbfs_error());
+		goto cbfs_failed;
+	}
+	dtb = malloc(size);
+	if (!dtb) {
+		printf("Bad allocation!\n");
+		goto cbfs_failed;
+	}
+	if (size != file_cbfs_read(file, dtb, size)) {
+		free(dtb);
+		printf("%s.\n", file_cbfs_error());
+		goto cbfs_failed;
+	}
+	gd->blob = dtb;
+cbfs_failed:
+#endif /* CONFIG_CMD_CBFS && CONFIG_OF_CONTROL */
 	return 0;
 }
 
