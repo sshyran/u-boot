@@ -61,7 +61,9 @@ enum {
 #define KBC_RPT_RATE	4
 
 /* kbc globals */
-unsigned int kbc_repoll_time;
+static unsigned int kbc_repoll_time;
+static unsigned int kbc_init_dly;
+static unsigned long kbc_start_time;
 
 /*
  * Use a simple FIFO to convert some keys into escape sequences and to handle
@@ -404,8 +406,32 @@ static void kbd_fifo_refill(int key)
 	}
 }
 
+static void kbd_wait_for_fifo_init(void)
+{
+	unsigned long elapsed_time;
+	long delay;
+	static unsigned int kbc_initialized;
+
+	if (kbc_initialized)
+		return;
+	/*
+	 * In order to detect keys pressed on boot, wait for the hardware to
+	 * complete scanning the keys. This includes time to transition from
+	 * Wkup mode to Continous polling mode and the repoll time. We can
+	 * deduct the time thats already elapsed.
+	 */
+	elapsed_time = timer_get_us() - kbc_start_time;
+	delay = kbc_init_dly + kbc_repoll_time - elapsed_time;
+	if (delay > 0)
+		udelay(delay);
+
+	kbc_initialized = 1;
+}
+
 static int kbd_testc(void)
 {
+	kbd_wait_for_fifo_init();
+
 	if (kbd_fifo_empty())
 		kbd_fifo_refill(kbd_fetch_char(1));
 
@@ -480,21 +506,8 @@ static int tegra_kbc_open(void)
 
 	writel(val, &kbc->control);
 
-	/*
-	 * Atomically clear out any remaining entries in the key FIFO
-	 * and enable keyboard interrupts.
-	 */
-	while (1) {
-		val = readl(&kbc->interrupt);
-		val >>= 4;
-		if (val) {
-			readl(kbc->kp_ent[0]);
-			readl(kbc->kp_ent[1]);
-		} else {
-			break;
-		}
-	}
-	writel(0x7, &kbc->interrupt);
+	kbc_init_dly = readl(&kbc->init_dly) * (1000 / KBC_CYCLE_USEC);
+	kbc_start_time = timer_get_us();
 
 	return 0;
 }
