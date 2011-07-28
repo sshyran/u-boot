@@ -42,6 +42,10 @@
 #include <fdt_decode.h>
 #endif /* CONFIG_OF_CONTROL */
 
+#ifdef CONFIG_OF_LIBFDT
+#include <fdt_support.h>
+#endif /* CONFIG_OF_LIBFDT */
+
 #include <post.h>
 
 #if defined(CONFIG_SILENT_CONSOLE) || defined(CONFIG_POST) || defined(CONFIG_CMDLINE_EDITING)
@@ -494,6 +498,10 @@ void main_loop (void)
 	}
 #endif /* CONFIG_MENUKEY */
 #endif /* CONFIG_BOOTDELAY */
+
+#if defined CONFIG_OF_CONTROL
+	set_working_fdt_addr((void *)gd->blob);
+#endif /* CONFIG_OF_CONTROL */
 
 	/*
 	 * Main Loop for Monitor Command Processing
