@@ -281,6 +281,8 @@ static __inline__ int abortboot(int bootdelay)
  * printing the error message to console.
  */
 
+#ifdef CONFIG_OF_CONTROL
+
 static void secure_boot_cmd(char *cmd)
 {
 	cmd_tbl_t *cmdtp;
@@ -315,6 +317,8 @@ err:
 	while(1)
 		;
 }
+
+#endif /* CONFIG_OF_CONTROL */
 
 
 /****************************************************************************/
