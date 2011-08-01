@@ -60,6 +60,14 @@
 #define VDD_TRANSITION_STEP	0x06	/* 150mv */
 #define VDD_TRANSITION_RATE	0x07
 
+/*
+ * SMn PWM/PFM Mode Selection
+ */
+#define PMU_PWM_PFM_MODE_REG	0x47
+#define SM0_PWM_BIT		0
+#define SM1_PWM_BIT		1
+#define SM2_PWM_BIT		2
+
 int tegra2_pmu_is_voltage_nominal(void);
 
 #endif	/* PMU_H */

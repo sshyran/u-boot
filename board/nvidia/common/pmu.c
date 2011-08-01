@@ -276,6 +276,25 @@ static int pmu_adjust_voltage(void)
 	return 0;
 }
 
+static int pmu_set_pwm_mode(int smx)
+{
+	int ret = 0;
+	uchar val = 0;
+
+	ret = pmu_read(PMU_PWM_PFM_MODE_REG);
+	if (ret == -1)
+		return ret;
+
+	val = (uchar)ret;
+	val |= (1 << smx);
+
+	ret = pmu_write(PMU_PWM_PFM_MODE_REG, &val, 1);
+	if (ret == -1)
+		return ret;
+
+	return 0;
+}
+
 int pmu_set_nominal(void)
 {
 	/* fill in nominal values based on chip type */
@@ -284,6 +303,10 @@ int pmu_set_nominal(void)
 
 	/* select current i2c bus to DVC */
 	i2c_set_bus_num(DVC_I2C_BUS_NUMBER);
+
+	/* Set SM1 in PWM-only mode */
+	if (pmu_set_pwm_mode(SM1_PWM_BIT))
+		return -1;
 
 	/* get current voltage settings */
 	if (tegra2_get_voltage())
