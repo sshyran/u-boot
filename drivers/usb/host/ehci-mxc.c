@@ -25,7 +25,6 @@
 #include <errno.h>
 
 #include "ehci.h"
-#include "ehci-core.h"
 
 #define USBCTRL_OTGBASE_OFFSET	0x600
 
@@ -92,10 +91,13 @@ static int mxc_set_usbcontrol(int port, unsigned int flags)
 		return 0;
 }
 
-int ehci_hcd_init(void)
+int ehci_hcd_init(int index, struct ehci_hccr **ret_hccr,
+		struct ehci_hcor **ret_hcor)
 {
 	u32 tmp;
 	struct usb_ehci *ehci;
+	struct ehci_hccr *hccr;
+	struct ehci_hcor *hcor;
 	struct clock_control_regs *sc_regs =
 		(struct clock_control_regs *)CCM_BASE;
 
@@ -119,6 +121,8 @@ int ehci_hcd_init(void)
 
 	udelay(10000);
 
+	*ret_hccr = hccr;
+	*ret_hcor = hcor;
 	return 0;
 }
 
@@ -126,7 +130,7 @@ int ehci_hcd_init(void)
  * Destroy the appropriate control structures corresponding
  * the the EHCI host controller.
  */
-int ehci_hcd_stop(void)
+int ehci_hcd_stop(int index)
 {
 	return 0;
 }

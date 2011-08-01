@@ -28,7 +28,6 @@
 #include <usb/ehci-fsl.h>
 
 #include "ehci.h"
-#include "ehci-core.h"
 
 /*
  * Create the appropriate control structures to manage
@@ -36,9 +35,12 @@
  *
  * Excerpts from linux ehci fsl driver.
  */
-int ehci_hcd_init(void)
+int ehci_hcd_init(int index, struct ehci_hccr **ret_hccr,
+		struct ehci_hcor **ret_hcor)
 {
 	struct usb_ehci *ehci;
+	struct ehci_hccr *hccr;
+	struct ehci_hcor *hcor;
 
 	ehci = (struct usb_ehci *)CONFIG_SYS_FSL_USB_ADDR;
 	hccr = (struct ehci_hccr *)((uint32_t)&ehci->caplength);
@@ -53,9 +55,9 @@ int ehci_hcd_init(void)
 
 	/* Init phy */
 	if (!strcmp(getenv("usb_phy_type"), "utmi"))
-		out_le32(&(hcor->or_portsc[0]), PORT_PTS_UTMI);
+		out_le32(&hcor->or_portsc[0], PORT_PTS_UTMI);
 	else
-		out_le32(&(hcor->or_portsc[0]), PORT_PTS_ULPI);
+		out_le32(&hcor->or_portsc[0], PORT_PTS_ULPI);
 
 	/* Enable interface. */
 	setbits_be32(&ehci->control, USB_EN);
@@ -66,6 +68,8 @@ int ehci_hcd_init(void)
 
 	in_le32(&ehci->usbmode);
 
+	*ret_hccr = hccr;
+	*ret_hcor = hcor;
 	return 0;
 }
 
@@ -73,7 +77,7 @@ int ehci_hcd_init(void)
  * Destroy the appropriate control structures corresponding
  * the the EHCI host controller.
  */
-int ehci_hcd_stop(void)
+int ehci_hcd_stop(int index)
 {
 	return 0;
 }

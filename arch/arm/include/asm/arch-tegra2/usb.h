@@ -207,6 +207,8 @@ struct usb_ctlr {
 /* USB3_IF_USB_PHY_VBUS_SENSORS_0 */
 #define VBUS_VLD_STS_RANGE			26:26
 
+struct ehci_hccr;
+struct ehci_hcor;
 
 /* Change the USB host port into host mode */
 void usb_set_host_mode(void);
@@ -224,13 +226,15 @@ int board_usb_init(const void *blob);
  * @param hcor		returns start address of EHCI HCOR registers
  * @return 0 if ok, -1 on error (generally invalid port number)
  */
-int tegrausb_start_port(unsigned portnum, u32 *hccr, u32 *hcor);
+int tegrausb_start_port(unsigned portnum, struct ehci_hccr **hccr,
+                        struct ehci_hcor **hcor);
 
 /**
- * Stop the current port
+ * Stop the selected port
  *
+ * @param portnum	port number to stop
  * @return 0 if ok, -1 if no port was active
  */
-int tegrausb_stop_port(void);
+int tegrausb_stop_port(unsigned portnum);
 
 #endif	/* _TEGRA_USB_H_ */

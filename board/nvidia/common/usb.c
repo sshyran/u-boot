@@ -45,7 +45,6 @@ struct usb_port {
 
 static struct usb_port port[USB_PORTS_MAX];	/* List of valid USB ports */
 static unsigned port_count;			/* Number of available ports */
-static int port_current;			/* Current port (-1 = none) */
 
 /* Record which controller can switch from host to device mode */
 static struct usb_ctlr *host_dev_ctlr;
@@ -348,29 +347,29 @@ static int probe_port(struct usb_ctlr *usbctlr, const int params[])
 }
 #endif
 
-int tegrausb_start_port(unsigned portnum, u32 *hccr, u32 *hcor)
+int tegrausb_start_port(unsigned portnum, struct ehci_hccr **hccr,
+			struct ehci_hcor **hcor)
 {
 	struct usb_ctlr *usbctlr;
 
 	if (portnum >= port_count)
 		return -1;
-	tegrausb_stop_port();
+	tegrausb_stop_port(portnum);
 
 	usbctlr = port[portnum].reg;
-	*hccr = (u32)&usbctlr->cap_length;
-	*hcor = (u32)&usbctlr->usb_cmd;
-	port_current = portnum;
+	*hccr = (struct ehci_hccr *)&usbctlr->cap_length;
+	*hcor = (struct ehci_hcor *)&usbctlr->usb_cmd;
 	return 0;
 }
 
-int tegrausb_stop_port(void)
+int tegrausb_stop_port(unsigned portnum)
 {
 	struct usb_ctlr *usbctlr;
 
-	if (port_current == -1)
+	if (portnum >= port_count)
 		return -1;
 
-	usbctlr = port[port_current].reg;
+	usbctlr = port[portnum].reg;
 
 	/* Stop controller */
 	writel(0, &usbctlr->usb_cmd);
@@ -379,7 +378,6 @@ int tegrausb_stop_port(void)
 	/* Initiate controller reset */
 	writel(2, &usbctlr->usb_cmd);
 	udelay(1000);
-	port_current = -1;
 	return 0;
 }
 
@@ -435,6 +433,5 @@ int board_usb_init(const void *blob)
 	probe_port((struct usb_ctlr *)CONFIG_TEGRA2_USB1, params);
 #endif /* CONFIG_OF_CONTROL */
 	usb_set_host_mode();
-	port_current = -1;
 	return 0;
 }
