@@ -48,7 +48,7 @@ enum {
 #define KBC_ROW_SCAN_DLY	5
 
 /*  uses a 32KHz clock so a cycle = 1/32Khz */
-#define KBC_CYCLE_USEC	32
+#define KBC_CYCLE_IN_USEC	DIV_ROUND_UP(1000, 32)
 
 #define KBC_FIFO_TH_CNT_SHIFT(cnt)	(cnt << 14)
 #define KBC_DEBOUNCE_CNT_SHIFT(cnt)	(cnt << 4)
@@ -491,11 +491,11 @@ static int tegra_kbc_open(void)
 	 * the rows. There is an additional delay before the row scanning
 	 * starts. The repoll delay is computed in microseconds.
 	 */
-	rpt_cnt = 5 * (1000 / KBC_CYCLE_USEC);
+	rpt_cnt = 5 * DIV_ROUND_UP(1000, KBC_CYCLE_IN_USEC);
 	debounce_cnt = 2;
 	scan_time_rows = (KBC_ROW_SCAN_TIME + debounce_cnt) * KBC_MAX_ROW;
 	kbc_repoll_time = KBC_ROW_SCAN_DLY + scan_time_rows + rpt_cnt;
-	kbc_repoll_time = (kbc_repoll_time * KBC_CYCLE_USEC) + 999;
+	kbc_repoll_time = kbc_repoll_time * KBC_CYCLE_IN_USEC;
 
 	writel(rpt_cnt, &kbc->rpt_dly);
 
@@ -506,7 +506,7 @@ static int tegra_kbc_open(void)
 
 	writel(val, &kbc->control);
 
-	kbc_init_dly = readl(&kbc->init_dly) * (1000 / KBC_CYCLE_USEC);
+	kbc_init_dly = readl(&kbc->init_dly) * KBC_CYCLE_IN_USEC;
 	kbc_start_time = timer_get_us();
 
 	return 0;
