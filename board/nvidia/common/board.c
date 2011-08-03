@@ -230,7 +230,18 @@ int board_init(void)
 	i2c_init_board();
 
 	pmu_set_nominal();
+#endif
 
+	/* board id for Linux */
+#ifdef CONFIG_OF_CONTROL
+	gd->bd->bi_arch_number = fdt_decode_get_machine_arch_id(gd->blob);
+	if (gd->bd->bi_arch_number == -1U)
+		printf("Warning: No /config/machine-arch-id defined in fdt\n");
+#else
+	gd->bd->bi_arch_number = CONFIG_MACH_TYPE;
+#endif
+
+#ifdef CONFIG_TEGRA2_I2C
 	board_emc_init();
 #endif
 
@@ -242,14 +253,6 @@ int board_init(void)
 	/* boot param addr */
 	gd->bd->bi_boot_params = (NV_PA_SDRAM_BASE + 0x100);
 
-	/* board id for Linux */
-#ifdef CONFIG_OF_CONTROL
-	gd->bd->bi_arch_number = fdt_decode_get_machine_arch_id(gd->blob);
-	if (gd->bd->bi_arch_number == -1U)
-		printf("Warning: No /config/machine-arch-id defined in fdt\n");
-#else
-	gd->bd->bi_arch_number = CONFIG_MACH_TYPE;
-#endif
 	return 0;
 }
 
