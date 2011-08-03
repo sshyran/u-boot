@@ -16,6 +16,7 @@ COBJS-$(CONFIG_CHROMEOS) += boot_kernel.o
 COBJS-$(CONFIG_CHROMEOS) += crossystem_data.o
 COBJS-$(CONFIG_CHROMEOS) += fdt_decode.o
 COBJS-$(CONFIG_CHROMEOS) += firmware_storage_spi.o
+COBJS-$(CONFIG_CHROMEOS) += fmap.o
 COBJS-$(CONFIG_CHROMEOS) += gbb.o
 COBJS-$(CONFIG_CHROMEOS) += memory_wipe.o
 
