@@ -126,6 +126,22 @@ static void pin_mux_uart(int uart_ids)
 	}
 }
 
+/*
+ * Routine: pin_mux_switches
+ * Description: Disable internal pullups for the write protect, SDIO3 write
+ * protect and the Google Recovery switch.  All of these switches have external
+ * pull ups or pull downs.
+ */
+static void pin_mux_switches(void)
+{
+	/*
+	 * TODO(robotboy): Move this to the FDT once there is pin mux support
+	 * there.  Currently all Tegra based boards use the same GPIOs for
+	 * these switches.
+	 */
+	pinmux_set_pullupdown(PINGRP_ATD, PMUX_PULL_NORMAL);
+}
+
 #ifdef CONFIG_TEGRA2_MMC
 /*
  * Routine: pin_mux_mmc
@@ -160,6 +176,7 @@ static void pin_mux_mmc(void)
 static void pinmux_init(int uart_ids)
 {
 	pin_mux_uart(uart_ids);
+	pin_mux_switches();
 }
 
 /**
