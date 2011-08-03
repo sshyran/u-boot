@@ -80,7 +80,7 @@ static int pmu_read(int reg)
 	uchar	data;
 
 	for (i = 0; i < MAX_I2C_RETRY; ++i) {
-		if (!i2c_read(PMU_I2C_ADDRESS, reg, 0, &data, 1))
+		if (!i2c_read(PMU_I2C_ADDRESS, reg, 1, &data, 1))
 			return (int)data;
 
 		/* i2c access failed, retry */
@@ -95,7 +95,7 @@ static int pmu_write(int reg, uchar *data, uint len)
 	int i;
 
 	for (i = 0; i < MAX_I2C_RETRY; ++i) {
-		if (!i2c_write(PMU_I2C_ADDRESS, reg, 0, data, len))
+		if (!i2c_write(PMU_I2C_ADDRESS, reg, 1, data, len))
 			return 0;
 
 		/* i2c access failed, retry */
