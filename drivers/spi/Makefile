@@ -44,7 +44,6 @@ COBJS-$(CONFIG_TEGRA2_SPI) += tegra2_spi_new.o
 else
 COBJS-$(CONFIG_TEGRA2_SPI) += tegra2_spi.o
 endif
-COBJS-$(CONFIG_DUMMY_SPI) += dummy_spi.o
 
 COBJS	:= $(COBJS-y)
 SRCS	:= $(COBJS:.o=.c)
