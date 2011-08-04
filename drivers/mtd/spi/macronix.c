@@ -160,6 +160,26 @@ static int macronix_wait_ready(struct spi_flash *flash, unsigned long timeout)
 	return -1;
 }
 
+#ifdef CONFIG_SPI_FLASH_MACRONIX_NO_FAST_READ
+static int macronix_read(struct spi_flash *flash,
+			 u32 offset, size_t len, void *buf)
+{
+	struct macronix_spi_flash *mcx = to_macronix_spi_flash(flash);
+	unsigned long page_addr;
+	unsigned long page_size;
+	u8 cmd[4];
+
+	page_size = mcx->params->page_size;
+	page_addr = offset / page_size;
+
+	cmd[0] = CMD_MX25XX_READ;
+	cmd[1] = page_addr >> 8;
+	cmd[2] = page_addr;
+	cmd[3] = offset % page_size;
+
+	return spi_flash_read_common(flash, cmd, sizeof(cmd), buf, len);
+}
+#else
 static int macronix_read_fast(struct spi_flash *flash,
 			      u32 offset, size_t len, void *buf)
 {
@@ -179,6 +199,7 @@ static int macronix_read_fast(struct spi_flash *flash,
 
 	return spi_flash_read_common(flash, cmd, sizeof(cmd), buf, len);
 }
+#endif
 
 static int macronix_write(struct spi_flash *flash,
 			  u32 offset, size_t len, const void *buf)
@@ -338,7 +359,11 @@ struct spi_flash *spi_flash_probe_macronix(struct spi_slave *spi, u8 *idcode)
 
 	mcx->flash.write = macronix_write;
 	mcx->flash.erase = macronix_erase;
+#ifdef CONFIG_SPI_FLASH_MACRONIX_NO_FAST_READ
+	mcx->flash.read = macronix_read;
+#else
 	mcx->flash.read = macronix_read_fast;
+#endif
 	mcx->flash.size = params->page_size * params->pages_per_sector
 	    * params->sectors_per_block * params->nr_blocks;
 
