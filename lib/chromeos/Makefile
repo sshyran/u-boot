@@ -14,7 +14,7 @@ LIB	= $(obj)libchromeos.a
 
 COBJS-$(CONFIG_CHROMEOS) += boot_kernel.o
 COBJS-$(CONFIG_CHROMEOS) += crossystem_data.o
-COBJS-$(CONFIG_CHROMEOS) += fdt_decode.o
+COBJS-$(CONFIG_OF_CONTROL) += fdt_decode.o
 COBJS-$(CONFIG_CHROMEOS) += firmware_storage_spi.o
 COBJS-$(CONFIG_CHROMEOS) += fmap.o
 COBJS-$(CONFIG_CHROMEOS) += gbb.o
