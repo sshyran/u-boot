@@ -38,6 +38,7 @@
 #include <net.h>
 #include <ide.h>
 #include <serial.h>
+#include <spi.h>
 #include <asm/u-boot-i386.h>
 #include <elf.h>
 
@@ -358,6 +359,10 @@ void board_init_r(gd_t *id, ulong dest_addr)
 
 	/* Initialize the console (after the relocation and devices init) */
 	console_init_r();
+
+#ifdef CONFIG_CMD_SPI
+	spi_init();
+#endif
 
 #ifdef CONFIG_MISC_INIT_R
 	/* miscellaneous platform dependent initialisations */
