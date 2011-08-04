@@ -122,24 +122,36 @@ static int macronix_wait_ready(struct spi_flash *flash, unsigned long timeout)
 	u8 status;
 	u8 cmd = CMD_MX25XX_RDSR;
 
+#ifndef CONFIG_NEW_SPI_XFER
 	ret = spi_xfer(spi, 8, &cmd, NULL, SPI_XFER_BEGIN);
 	if (ret) {
 		debug("SF: Failed to send command %02x: %d\n", cmd, ret);
 		return ret;
 	}
+#endif
 
 	timebase = get_timer(0);
+
 	do {
+#ifdef CONFIG_NEW_SPI_XFER
+		ret = spi_xfer(spi, &cmd, 8, &status, 8);
+#else
 		ret = spi_xfer(spi, 8, NULL, &status, 0);
-		if (ret)
-			return -1;
+#endif
+		if (ret) {
+			debug("SF: Failed to send command %02x: %d\n",
+				cmd, ret);
+			return ret;
+		}
 
 		if ((status & MACRONIX_SR_WIP) == 0)
 			break;
 
 	} while (get_timer(timebase) < timeout);
 
+#ifndef CONFIG_NEW_SPI_XFER
 	spi_xfer(spi, 0, NULL, NULL, SPI_XFER_END);
+#endif
 
 	if ((status & MACRONIX_SR_WIP) == 0)
 		return 0;
