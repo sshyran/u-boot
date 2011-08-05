@@ -56,10 +56,8 @@
 #undef CONFIG_WATCHDOG
 #define CONFIG_HW_WATCHDOG
 
-/*-----------------------------------------------------------------------
- * Real Time Clock Configuration
- */
-#define CONFIG_DUMMY_TPM
+/* Generic TPM interfaced through LPC bus */
+#define CONFIG_GENERIC_LPC_TPM
 
 /*-----------------------------------------------------------------------
  * Real Time Clock Configuration

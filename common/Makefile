@@ -176,7 +176,8 @@ COBJS-$(CONFIG_BOOTSTAGE) += bootstage.o
 COBJS-$(CONFIG_CMD_GETTIME) += cmd_gettime.o
 COBJS-$(CONFIG_CMD_RAMCONFIG) += cmd_ramconfig.o
 COBJS-$(CONFIG_OF_CONTROL) += fdt_decode.o
-
+COBJS-$(CONFIG_GENERIC_LPC_TPM) += cmd_tpm.o
+COBJS-$(CONFIG_INFINEON_TPM_I2C) += cmd_tpm.o
 
 COBJS	:= $(sort $(COBJS-y))
 XCOBJS	:= $(sort $(XCOBJS-y))

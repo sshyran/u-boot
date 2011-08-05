@@ -12,7 +12,7 @@
 #include <chromeos/common.h>
 #include <chromeos/fmap.h>
 
-#define PREFIX "chromeos/fdt_decode: "
+#define PREFIX "chromeos/fmap: "
 
 static void
 dump_fmap_entry(const char *path, struct fmap_entry *entry)
