@@ -39,4 +39,6 @@ PLATFORM_RELFLAGS += -ffunction-sections -fvisibility=hidden
 PLATFORM_LDFLAGS += --emit-relocs -Bsymbolic -Bsymbolic-functions
 
 LDFLAGS_FINAL += --gc-sections -pie
+LDFLAGS_FINAL += --wrap=__divdi3 --wrap=__udivdi3
+LDFLAGS_FINAL += --wrap=__moddi3 --wrap=__umoddi3
 LDSCRIPT := $(SRCTREE)/$(CPUDIR)/u-boot.lds
