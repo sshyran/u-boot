@@ -28,6 +28,7 @@
  */
 
 #include <common.h>
+#include <libfdt.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -84,6 +85,87 @@ static int h_compare_record(const void *r1, const void *r2)
 	return rec1->time_us - rec2->time_us;
 }
 
+#define BOOTSTAGE_NODE "bootstage"
+
+/**
+ * This function add a new node to the device tree.
+ *
+ * @param pathp	the path where the new node is added.
+ * @param nodep	the name of the new node
+ * @return 0 on success, != 0 on failure.
+ */
+static int add_new_node(struct fdt_header *fdt,
+		const char *pathp, const char *nodep)
+{
+	int nodeoffset;
+	int err;
+
+	nodeoffset = fdt_path_offset(fdt, pathp);
+	if (nodeoffset < 0)
+		return nodeoffset;
+	err = fdt_add_subnode(working_fdt, nodeoffset, nodep);
+	if (err < 0)
+		return err;
+
+	return 0;
+}
+
+/**
+ * this function add all bootstage timings to the device tree.
+ *
+ * @param fdt	the point to the device tree.
+ * @return 0 on success, != 0 on failure.
+ */
+static int add_bootstages_devicetree(struct fdt_header *fdt)
+{
+	int id;
+	int i;
+	int ret = 0;
+
+	if (fdt == NULL)
+		return 0;
+
+	/*
+	 * Create the node for bootstage.
+	 * The address of flat device tree is set up by the command bootm.
+	 */
+	ret = add_new_node(fdt, "/", BOOTSTAGE_NODE);
+
+	/*
+	 * insert the timings to the device tree in the reverse order,
+	 * so that they can be printed in the Linux kernel in the right order.
+	 */
+	for (id = BOOTSTAGE_COUNT - 1, i = 0; id >= 0 && ret == 0; id--) {
+		struct bootstage_record *rec = &record[id];
+		static char path[32];
+		static char node[8];
+		int nodeoffset;
+
+		sprintf(path, "/%s/", BOOTSTAGE_NODE);
+		if (id != BOOTSTAGE_AWAKE && rec->time_us == 0)
+			continue;
+
+		sprintf(node, "%d", i);
+		if ((ret = add_new_node(fdt, path, node)))
+			break;
+
+		/* add properties to the node. */
+		strncat(path, node, sizeof(path) - strlen(path));
+		nodeoffset = fdt_path_offset(fdt, path);
+		if (nodeoffset < 0)
+			ret = nodeoffset;
+		if (!ret)
+			ret = fdt_setprop_string(fdt, nodeoffset, "name", rec->name);
+		if (!ret)
+			ret = fdt_setprop_cell(fdt, nodeoffset, "time", rec->time_us);
+
+		i++;
+	}
+	if (ret)
+		printf("add_bootstages: failed to add to device tree\n");
+	return ret;
+}
+
 void bootstage_report(void)
 {
 	struct bootstage_record *rec = record;
@@ -108,6 +190,9 @@ void bootstage_report(void)
 		if (rec->time_us != 0)
 			prev = print_time_record(id, rec, prev);
 	}
+
+	add_bootstages_devicetree(working_fdt);
+
 	if (flags & GD_FLG_SILENT)
 		gd->flags |= GD_FLG_SILENT;
 }
