@@ -183,9 +183,13 @@ OBJS := $(addprefix $(obj),$(OBJS))
 LIBS  = lib/libgeneric.o
 LIBS += lib/lzma/liblzma.o
 LIBS += lib/lzo/liblzo.o
+
+ifdef VBOOT
 LIBS += lib/chromeos/libchromeos.a
 LIBS += lib/vbexport/libvbexport.a
 LIBS += lib/vboot/libvboot.a
+endif
+
 LIBS += board/$(VENDOR)/chromeos/libchromeos_board.a
 LIBS += board/$(VENDOR)/vbexport/libvbexport_board.a
 LIBS += $(shell if [ -f board/$(VENDOR)/common/Makefile ]; then echo \
