@@ -243,10 +243,13 @@ void lcd_printf(const char *fmt, ...)
 static void lcd_drawchars (ushort x, ushort y, uchar *str, int count)
 {
 	uchar *dest;
-	ushort off, row;
+	ushort row;
 
-	dest = (uchar *)(lcd_base + y * lcd_line_length + x * (1 << LCD_BPP) / 8);
+#if LCD_BPP == LCD_MONOCHROME
+	ushort off;
 	off  = x * (1 << LCD_BPP) % 8;
+#endif
+	dest = (uchar *)(lcd_base + y * lcd_line_length + x * (1 << LCD_BPP) / 8);
 
 	for (row=0;  row < VIDEO_FONT_HEIGHT;  ++row, dest += lcd_line_length)  {
 		uchar *s = str;

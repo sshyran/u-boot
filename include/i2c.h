@@ -55,7 +55,7 @@
 #else
 #define CONFIG_SYS_MAX_I2C_BUS		1
 #define I2C_GET_BUS()		0
-#define I2C_SET_BUS(a)
+#define I2C_SET_BUS(a) { (void) a; }
 #endif
 
 /* define the I2C bus number for RTC and DTT if not already done */

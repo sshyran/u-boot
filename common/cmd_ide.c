@@ -975,7 +975,6 @@ static void ide_ident (block_dev_desc_t *dev_desc)
 
 #ifdef CONFIG_ATAPI
 	int retries = 0;
-	int do_retry = 0;
 #endif
 
 #ifdef CONFIG_TUNE_PIO
@@ -996,7 +995,6 @@ static void ide_ident (block_dev_desc_t *dev_desc)
 	dev_desc->if_type=IF_TYPE_IDE;
 #ifdef CONFIG_ATAPI
 
-    do_retry = 0;
     retries = 0;
 
     /* Warning: This will be tricky to read */

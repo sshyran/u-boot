@@ -241,6 +241,7 @@ static int asix_write_medium_mode(struct ueth_data *dev, u16 mode)
 	return ret;
 }
 
+#ifdef DEBUG
 static u16 asix_read_rx_ctl(struct ueth_data *dev)
 {
 	__le16 v;
@@ -252,6 +253,7 @@ static u16 asix_read_rx_ctl(struct ueth_data *dev)
 		ret = le16_to_cpu(v);
 	return ret;
 }
+#endif
 
 static int asix_write_rx_ctl(struct ueth_data *dev, u16 mode)
 {
@@ -313,7 +315,6 @@ static int full_init(struct eth_device *eth)
 	struct ueth_data *dev = (struct ueth_data *)eth->priv;
 	int embd_phy;
 	unsigned char buf[ETH_ALEN];
-	u16 rx_ctl;
 
 	if (asix_write_gpio(dev,
 			AX_GPIO_RSE | AX_GPIO_GPO_2 | AX_GPIO_GPO2EN, 5) < 0)
@@ -341,13 +342,11 @@ static int full_init(struct eth_device *eth)
 			goto out_err;
 	}
 
-	rx_ctl = asix_read_rx_ctl(dev);
-	debug("RX_CTL is 0x%04x after software reset\n", rx_ctl);
+	debug("RX_CTL is 0x%04x after software reset\n", asix_read_rx_ctl(dev));
 	if (asix_write_rx_ctl(dev, 0x0000) < 0)
 		goto out_err;
 
-	rx_ctl = asix_read_rx_ctl(dev);
-	debug("RX_CTL is 0x%04x setting to 0x0000\n", rx_ctl);
+	debug("RX_CTL is 0x%04x setting to 0x0000\n", asix_read_rx_ctl(dev));
 
 	/* Get the MAC address */
 	if (asix_read_cmd(dev, AX_CMD_READ_NODE_ID,

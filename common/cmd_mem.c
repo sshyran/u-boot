@@ -32,6 +32,7 @@
 #ifdef CONFIG_HAS_DATAFLASH
 #include <dataflash.h>
 #endif
+#include <linux/compiler.h>
 #include <watchdog.h>
 
 #include <u-boot/md5.h>
@@ -474,7 +475,8 @@ int do_mem_base (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 int do_mem_loop (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	ulong	addr, length, i, junk;
+	ulong	addr, length, i;
+	ulong junk __always_unused;
 	int	size;
 	volatile uint	*longp;
 	volatile ushort *shortp;
