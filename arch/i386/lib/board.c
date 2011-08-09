@@ -53,8 +53,17 @@
  */
 #undef	XTRN_DECLARE_GLOBAL_DATA_PTR
 #define XTRN_DECLARE_GLOBAL_DATA_PTR	/* empty = allocate here */
+#ifdef CONFIG_OF_CONTROL
+/*
+ * Place it in the initialized data segment, we were started by a bootstrap
+ * which already intialized memory.
+ */
+static gd_t gd_before_relocation = { .env_buf = { 0x20 } };
+DECLARE_GLOBAL_DATA_PTR = &gd_before_relocation;
+#else
+/* place it at a fixed location */
 DECLARE_GLOBAL_DATA_PTR = (gd_t *) (CONFIG_SYS_INIT_GD_ADDR);
-
+#endif
 
 /* Exports from the Linker Script */
 extern ulong __text_start;
@@ -192,8 +201,6 @@ init_fnc_t *init_sequence_r[] = {
 	NULL,
 };
 
-gd_t *gd;
-
 static int calculate_relocation_address(void)
 {
 	void *text_start = &__text_start;
@@ -271,12 +278,26 @@ void board_init_f(ulong boot_flags)
 {
 	init_fnc_t **init_fnc_ptr;
 
+	/*
+	 * TODO(vbendeb): find the reason for the crash and fix it. Then the
+	 * below two lines will be removed.
+	 *
+	 * This is a hack to work around the problem with the system crashing
+	 * when the gd is located at a fixed address in memory. We use the
+	 * structure located in the .data segment instead, and make it look as
+	 * if it was initialized by the assembler startup code.
+	 */
+	memset(gd, 0, sizeof(*gd));
+	gd->flags = boot_flags;
+
 	for (init_fnc_ptr = init_sequence_f; *init_fnc_ptr; ++init_fnc_ptr) {
 		if ((*init_fnc_ptr)() != 0)
 			hang();
 	}
 
 	gd->flags |= GD_FLG_RELOC;
+
+	printf("Relocating to %p\n", (void *)gd->relocaddr);
 
 	/* Enter the relocated U-Boot! */
 	relocate_code(gd->start_addr_sp, gd, gd->relocaddr);
@@ -301,8 +322,6 @@ void board_init_r(gd_t *id, ulong dest_addr)
 
 	/* compiler optimization barrier needed for GCC >= 3.4 */
 	__asm__ __volatile__("": : :"memory");
-
-	gd->blob = NULL;
 
 	gd->bd = &bd_data;
 	memset (gd->bd, 0, sizeof (bd_t));

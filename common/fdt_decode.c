@@ -285,7 +285,7 @@ int fdt_decode_uart_console(const void *blob, struct fdt_uart *uart,
 	uart->compat = fdt_decode_lookup(blob, node);
 
 	/* Calculate divisor if required */
-	if (uart->divisor == -1)
+	if ((uart->divisor == -1) && (uart->clock_freq != -1))
 		fdt_decode_uart_calc_divisor(uart);
 	return 0;
 }

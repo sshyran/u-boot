@@ -75,6 +75,7 @@
  * Serial Configuration
  */
 #define CONFIG_SERIAL_MULTI
+#define CONFIG_SYS_NS16550
 #define CONFIG_BAUDRATE			9600
 #define CONFIG_SYS_BAUDRATE_TABLE	{300, 600, 1200, 2400, 4800, \
 					 9600, 19200, 38400, 115200}
@@ -315,5 +316,9 @@
 #define CONFIG_LCD_vl_row	768
 #define CONFIG_LZMA		1
 #define CONFIG_SPLASH_SCREEN	1
+
+	/* FDT stuff */
+#define CONFIG_OF_LIBFDT
+#define CONFIG_OF_CONTROL
 
 #endif	/* __CONFIG_H */
