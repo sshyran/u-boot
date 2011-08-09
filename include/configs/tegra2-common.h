@@ -81,6 +81,11 @@
 #define CONFIG_SYS_CPU_OSC_FREQUENCY	1000000	/* Set CPU clock to 1GHz */
 
 /*
+ * Use the new spi_xfer interface
+ */
+#define CONFIG_NEW_SPI_XFER
+
+/*
  * NS16550 Configuration
  */
 #define CONFIG_SERIAL_MULTI
