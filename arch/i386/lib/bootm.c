@@ -25,16 +25,19 @@
 #include <command.h>
 #include <image.h>
 #include <u-boot/zlib.h>
+#include <asm/bootparam.h>
 #include <asm/byteorder.h>
 #include <asm/zimage.h>
+
+#define COMMAND_LINE_OFFSET 0x9000
 
 /*cmd_boot.c*/
 int do_bootm_linux(int flag, int argc, char * const argv[], bootm_headers_t *images)
 {
-	void		*base_ptr;
-	ulong		os_data, os_len;
-	image_header_t	*hdr;
-	void 		*load_address;
+	struct boot_params *base_ptr;
+	ulong os_data, os_len;
+	image_header_t *hdr;
+	void *load_address;
 
 #if defined(CONFIG_FIT)
 	const void	*data;
@@ -70,15 +73,20 @@ int do_bootm_linux(int flag, int argc, char * const argv[], bootm_headers_t *ima
 		goto error;
 	}
 
-	base_ptr = load_zimage ((void*)os_data, os_len,
-			images->rd_start, images->rd_end - images->rd_start,
-			0, &load_address);
+	base_ptr = load_zimage((void*)os_data, os_len, &load_address);
 
-	if (NULL == base_ptr) {
-		printf ("## Kernel loading failed ...\n");
+	if (base_ptr == NULL) {
+		printf("## Kernel loading failed ...\n");
 		goto error;
-
 	}
+
+	if (setup_zimage(base_ptr, (char *)base_ptr + COMMAND_LINE_OFFSET,
+			0, images->rd_start,
+			images->rd_end - images->rd_start)) {
+		printf("## Setting up boot parameters failed ...\n");
+		goto error;
+	}
+
 
 #ifdef DEBUG
 	printf ("## Transferring control to Linux (at address %08x) ...\n",
