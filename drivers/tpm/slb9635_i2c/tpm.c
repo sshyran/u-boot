@@ -412,15 +412,6 @@ out:
 
 #define TPM_ERROR_SIZE 10
 
-enum tpm_capabilities {
-	TPM_CAP_PROP = cpu_to_be32(5),
-};
-
-enum tpm_sub_capabilities {
-	TPM_CAP_PROP_TIS_TIMEOUT = cpu_to_be32(0x115),
-	TPM_CAP_PROP_TIS_DURATION = cpu_to_be32(0x120),
-};
-
 struct tpm_chip *tpm_register_hardware(const struct tpm_vendor_specific *entry)
 {
 	struct tpm_chip *chip;
