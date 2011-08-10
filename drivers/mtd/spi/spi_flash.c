@@ -8,11 +8,54 @@
  */
 
 #include <common.h>
+#include <config.h>
 #include <malloc.h>
 #include <spi.h>
 #include <spi_flash.h>
 
 #include "spi_flash_internal.h"
+
+#ifdef CONFIG_NEW_SPI_XFER
+
+int spi_flash_cmd(struct spi_slave *spi, u8 cmd, void *response, size_t len)
+{
+	int ret = spi_xfer(spi, &cmd, 8, response, len * 8);
+	if (ret)
+		debug("SF: Failed to send command %02x: %d\n", cmd, ret);
+
+	return ret;
+}
+
+int spi_flash_cmd_read(struct spi_slave *spi, const u8 *cmd,
+		size_t cmd_len, void *data, size_t data_len)
+{
+	int ret = spi_xfer(spi, cmd, cmd_len * 8, data, data_len * 8);
+	if (ret) {
+		debug("SF: Failed to send read command (%zu bytes): %d\n",
+				data_len, ret);
+	}
+
+	return ret;
+}
+
+int spi_flash_cmd_write(struct spi_slave *spi, const u8 *cmd, size_t cmd_len,
+		const void *data, size_t data_len)
+{
+	int ret;
+	u8 buff[cmd_len + data_len];
+	memcpy(buff, cmd, cmd_len);
+	memcpy(buff + cmd_len, data, data_len);
+
+	ret = spi_xfer(spi, buff, (cmd_len + data_len) * 8, NULL, 0);
+	if (ret) {
+		debug("SF: Failed to send write command (%zu bytes): %d\n",
+				data_len, ret);
+	}
+
+	return ret;
+}
+
+#else
 
 int spi_flash_cmd(struct spi_slave *spi, u8 cmd, void *response, size_t len)
 {
@@ -83,6 +126,8 @@ int spi_flash_cmd_write(struct spi_slave *spi, const u8 *cmd, size_t cmd_len,
 
 	return ret;
 }
+
+#endif /* CONFIG_NEW_SPI_XFER */
 
 
 int spi_flash_read_common(struct spi_flash *flash, const u8 *cmd,
