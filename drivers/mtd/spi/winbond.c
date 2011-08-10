@@ -115,15 +115,21 @@ static int winbond_wait_ready(struct spi_flash *flash, unsigned long timeout)
 	u8 status;
 	u8 cmd[4] = { CMD_W25_RDSR, 0xff, 0xff, 0xff };
 
+#ifndef CONFIG_NEW_SPI_XFER
 	ret = spi_xfer(spi, 32, &cmd[0], NULL, SPI_XFER_BEGIN);
 	if (ret) {
 		debug("SF: Failed to send command %02x: %d\n", cmd[0], ret);
 		return ret;
 	}
+#endif
 
 	timebase = get_timer(0);
 	do {
+#ifdef CONFIG_NEW_SPI_XFER
+		ret = spi_xfer(spi, cmd, 32, &status, 8);
+#else
 		ret = spi_xfer(spi, 8, NULL, &status, 0);
+#endif
 		if (ret) {
 			debug("SF: Failed to get status for cmd %02x: %d\n",
 				cmd[0], ret);
@@ -135,7 +141,9 @@ static int winbond_wait_ready(struct spi_flash *flash, unsigned long timeout)
 
 	} while (get_timer(timebase) < timeout);
 
+#ifndef CONFIG_NEW_SPI_XFER
 	spi_xfer(spi, 0, NULL, NULL, SPI_XFER_END);
+#endif
 
 	if ((status & WINBOND_SR_WIP) == 0)
 		return 0;
