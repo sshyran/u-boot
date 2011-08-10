@@ -79,8 +79,8 @@ void spi_init(void)
 	struct spi_tegra *spi = (struct spi_tegra *)TEGRA2_SPI_BASE;
 	u32 reg;
 
-	/* Change SPI clock to 24MHz, PLLP_OUT0 source */
-	clock_start_periph_pll(PERIPH_ID_SPI1, CLOCK_ID_PERIPH, CLK_24M);
+	/* Change SPI clock to 48MHz, PLLP_OUT0 source */
+	clock_start_periph_pll(PERIPH_ID_SPI1, CLOCK_ID_PERIPH, CLK_48M);
 
 	/* Clear stale status here */
 	reg = SPI_STAT_RDY | SPI_STAT_RXF_FLUSH | SPI_STAT_TXF_FLUSH | \
