@@ -36,7 +36,7 @@ struct bootstage_record {
 	const char *name;
 };
 
-static struct bootstage_record record[BOOTSTAGE_COUNT];
+static struct bootstage_record record[BOOTSTAGE_COUNT] = {{1, "avoid_bss"}};
 
 uint32_t bootstage_mark(enum bootstage_id id, const char *name)
 {
@@ -77,8 +77,16 @@ static uint32_t print_time_record(enum bootstage_id id,
 	return rec->time_us;
 }
 
+static int h_compare_record(const void *r1, const void *r2)
+{
+	const struct bootstage_record *rec1 = r1, *rec2 = r2;
+
+	return rec1->time_us - rec2->time_us;
+}
+
 void bootstage_report(void)
 {
+	struct bootstage_record *rec = record;
 	int id;
 	uint32_t prev;
 	u32 flags = gd->flags;
@@ -89,13 +97,15 @@ void bootstage_report(void)
 	printf("%11s%11s  %s\n", "Mark", "Elapsed", "Stage");
 
 	/* Fake the first record - we could get it from early boot */
-	prev = 0;
-	record[BOOTSTAGE_AWAKE].name = "awake";
+	rec->name = "reset";
+	rec->time_us = 0;
+	prev = print_time_record(BOOTSTAGE_AWAKE, rec, 0);
 
-	for (id = 0; id < BOOTSTAGE_COUNT; id++) {
-		struct bootstage_record *rec = &record[id];
+	/* Sort records by increasing time */
+	qsort(record, BOOTSTAGE_COUNT, ARRAY_SIZE(record), h_compare_record);
 
-		if (id == BOOTSTAGE_AWAKE || rec->time_us != 0)
+	for (id = 0; id < BOOTSTAGE_COUNT; id++, rec++) {
+		if (rec->time_us != 0)
 			prev = print_time_record(id, rec, prev);
 	}
 	if (flags & GD_FLG_SILENT)
