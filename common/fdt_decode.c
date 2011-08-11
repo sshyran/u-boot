@@ -643,3 +643,34 @@ int fdt_decode_i2c(const void *blob, int node, struct fdt_i2c *config)
 
 	return 0;
 }
+
+int fdt_decode_nand(const void *blob, int node, struct fdt_nand *config)
+{
+	int err;
+
+	config->page_data_bytes = get_int(blob, node, "page-data-bytes", -1);
+	config->tag_ecc_bytes = get_int(blob, node, "tag-ecc-bytes", -1);
+	config->tag_bytes = get_int(blob, node, "tag-bytes", -1);
+	config->data_ecc_bytes = get_int(blob, node, "data-ecc-bytes", -1);
+	config->skipped_spare_bytes = get_int(blob, node,
+			"skipped-spare-bytes", -1);
+	config->page_spare_bytes = get_int(blob, node, "page-spare-bytes", -1);
+	if (config->page_data_bytes == -1 || config->tag_ecc_bytes == -1 ||
+		config->tag_bytes == -1 || config->data_ecc_bytes == -1 ||
+		config->skipped_spare_bytes == -1 ||
+		config->page_spare_bytes == -1)
+		return -FDT_ERR_MISSING;
+	err = get_int_array(blob, node, "timing", config->timing,
+			     FDT_NAND_TIMING_COUNT);
+	if (err < 0)
+		return err;
+
+	/* Now look up the controller and decode that */
+	node = lookup_phandle(blob, node, "controller");
+	if (node < 0)
+		return node;
+	config->reg = (struct nand_ctlr *)get_addr(blob, node, "reg");
+	config->enabled = get_is_enabled(blob, node, 1);
+	config->width = get_int(blob, node, "width", 8);
+	return fdt_decode_gpio(blob, node, "wp-gpio", &config->wp_gpio);
+}

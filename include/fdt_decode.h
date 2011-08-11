@@ -219,6 +219,40 @@ struct fdt_i2c {
 	enum periph_id periph_id;
 };
 
+enum {
+	FDT_NAND_MAX_TRP_TREA,
+	FDT_NAND_TWB,
+	FDT_NAND_MAX_TCR_TAR_TRR,
+	FDT_NAND_TWHR,
+	FDT_NAND_MAX_TCS_TCH_TALS_TALH,
+	FDT_NAND_TWH,
+	FDT_NAND_TWP,
+	FDT_NAND_TRH,
+	FDT_NAND_TADL,
+
+	FDT_NAND_TIMING_COUNT
+};
+
+/* Information about an attached NAND chip */
+struct fdt_nand {
+	struct nand_ctlr *reg;
+	int enabled;		/* 1 to enable, 0 to disable */
+	struct fdt_gpio_state wp_gpio;	/* write-protect GPIO */
+	int width;		/* bit width, normally 8 */
+	int tag_ecc_bytes;	/* ECC bytes to be generated for tag bytes */
+	int tag_bytes;		/* Tag bytes in spare area */
+	int data_ecc_bytes;	/* ECC bytes for data area */
+	int skipped_spare_bytes;
+	/*
+	 * How many bytes in spare area:
+	 * spare area = skipped bytes + ECC bytes of data area
+	 * + tag bytes + ECC bytes of tag bytes
+	 */
+	int page_spare_bytes;
+	int page_data_bytes;	/* Bytes in data area */
+	int timing[FDT_NAND_TIMING_COUNT];
+};
+
 /**
  * Returns information from the FDT about the memory.
  *
@@ -467,8 +501,8 @@ int fdt_decode_get_config_int(const void *blob, const char *prop_name,
 		int default_val);
 
 /**
- * Returns information from the FDT about an i2c controler. This function reads
- * out the following attributes:
+ * Returns information from the FDT about an i2c controller. This function
+ * reads out the following attributes:
  *
  *	reg
  *	pinmux
@@ -486,8 +520,8 @@ int fdt_decode_get_config_int(const void *blob, const char *prop_name,
 int fdt_decode_i2c(const void *blob, int node, struct fdt_i2c *config);
 
 /**
- * Returns information from the FDT about the keboard controler. This function
- * reads out the following attributes:
+ * Returns information from the FDT about the keboard controller. This
+ * function reads out the following attributes:
  *
  *	reg
  *	keycode-plain
@@ -521,3 +555,33 @@ const char *fdt_decode_get_model(const void *blob);
  * \return architecture number or -1 if not found
  */
 int fdt_decode_get_machine_arch_id(const void *blob);
+
+/**
+ * Returns information from the FDT about the attached NAND chip. This
+ * function reads out the following attributes from the chip node:
+ *
+ *	controller
+ *	page-data-bytes
+ *	tag-ecc-bytes
+ *	tag-bytes
+ *	data-ecc-bytes
+ *	skipped-spare-bytes
+ *	page-spare-bytes
+ *	timing
+ *
+ * and these from the controller phandle:
+ *
+ *	reg
+ *	status
+ *	wp-gpio (optional)
+ *	width
+ *
+ * @param blob		FDT blob to use
+ * @param node		Node to read from
+ * @param config	structure to use to return information
+ * @returns 0 on success, -ve on error, in which case config may or may not be
+ *			unchanged. If the node is present but expected data is
+ *			missing then this will generally return
+ *			-FDT_ERR_MISSING.
+ */
+int fdt_decode_nand(const void *blob, int node, struct fdt_nand *config);
