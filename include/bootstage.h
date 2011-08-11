@@ -29,7 +29,8 @@
  */
 enum bootstage_id {
 	BOOTSTAGE_AWAKE,
-	BOOTSTAGE_START_UBOOT,
+	BOOTSTAGE_START_UBOOT_F,
+	BOOTSTAGE_START_UBOOT_R,
 	BOOTSTAGE_USB_START,
 	BOOTSTAGE_ETH_START,
 	BOOTSTAGE_BOOTP_START,
@@ -38,15 +39,20 @@ enum bootstage_id {
 	BOOTSTAGE_KERNELREAD_STOP,
 	BOOTSTAGE_BOOTM_START,
 	BOOTSTAGE_BOOTM_HANDOFF,
+	BOOTSTAGE_MAIN_LOOP,
+
+	BOOTSTAGE_CPU_AWAKE,
+	BOOTSTAGE_MAIN_CPU_AWAKE,
+	BOOTSTAGE_MAIN_CPU_READY,
 
 	/* a few spare for the user, from here */
 	BOOTSTAGE_USER,
 
 	/*
-	 * Total number of entries - increase this at the cost of some BSS
-	 * and ATAG space.
+	 * Total number of entries - increase this at the cost of some space
+	 * in the data region of the U-Boot image.
 	 */
-	BOOTSTAGE_COUNT = 10
+	BOOTSTAGE_COUNT = 30
 };
 
 #ifdef CONFIG_BOOTSTAGE

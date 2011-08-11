@@ -290,7 +290,7 @@ void board_init_f (ulong bootflag)
 	 */
 	arch_cpu_init();
 #endif
-	bootstage_mark(BOOTSTAGE_START_UBOOT, "start_armboot");
+	bootstage_mark(BOOTSTAGE_START_UBOOT_F, "board_init_f start");
 
 	/* Pointer is writable since we allocated a register for it */
 	gd = (gd_t *) ((CONFIG_SYS_INIT_SP_ADDR) & ~0x07);
@@ -533,6 +533,7 @@ void board_init_r (gd_t *id, ulong dest_addr)
 	 */
 	dcache_enable();
 
+	bootstage_mark(BOOTSTAGE_START_UBOOT_R, "board_init_r start");
 	monitor_flash_len = _end_ofs;
 	debug ("monitor flash len: %08lX\n", monitor_flash_len);
 	board_init();	/* Setup chipselects */

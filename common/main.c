@@ -363,6 +363,7 @@ void main_loop (void)
 #endif
 	trab_vfd (bmp);
 #endif	/* CONFIG_VFD && VFD_TEST_LOGO */
+	bootstage_mark(BOOTSTAGE_MAIN_LOOP, "main_loop");
 
 #ifdef CONFIG_BOOTCOUNT_LIMIT
 	bootcount = bootcount_load();
