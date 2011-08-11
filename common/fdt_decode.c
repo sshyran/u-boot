@@ -363,21 +363,8 @@ int fdt_decode_memory(const void *blob, struct fdt_memory *config)
 	return 0;
 }
 
-/**
- * Decode a list of GPIOs from an FDT. This creates a list of GPIOs with no
- * terminating item.
- *
- * @param blob		FDT blob to use
- * @param node		Node to look at
- * @param property	Node property name
- * @param gpio		Array of gpio elements to fill from FDT. This will be
- *			untouched if either 0 or an error is returned
- * @param max_count	Maximum number of elements allowed
- * @return number of GPIOs read if ok, -FDT_ERR_BADLAYOUT if max_count would
- * be exceeded, or -FDT_ERR_MISSING if the property is missing.
- */
-static int decode_gpios(const void *blob, int node, const char *property,
-		 struct fdt_gpio_state *gpio, int max_count)
+int fdt_decode_gpios(const void *blob, int node, const char *property,
+		struct fdt_gpio_state *gpio, int max_count)
 {
 	const u32 *cell;
 	int len, i;
@@ -389,7 +376,7 @@ static int decode_gpios(const void *blob, int node, const char *property,
 
 	len /= sizeof(u32) * 3;		/* 3 cells per GPIO record */
 	if (len > max_count) {
-		printf("FDT: decode_gpios: too many GPIOs / cells for "
+		printf("FDT: fdt_decode_gpios: too many GPIOs / cells for "
 			"property '%s'\n", property);
 		return -FDT_ERR_BADLAYOUT;
 	}
@@ -417,7 +404,7 @@ static int decode_gpios(const void *blob, int node, const char *property,
 static int decode_gpio_list(const void *blob, int node, const char *property,
 		 struct fdt_gpio_state *gpio, int max_count)
 {
-	int err = decode_gpios(blob, node, property, gpio, max_count - 1);
+	int err = fdt_decode_gpios(blob, node, property, gpio, max_count - 1);
 
 	/* terminate the list */
 	if (err < 0)
@@ -427,22 +414,13 @@ static int decode_gpio_list(const void *blob, int node, const char *property,
 }
 #endif
 
-/**
- * Decode a single GPIOs from an FDT.
- *
- * @param blob		FDT blob to use
- * @param node		Node to look at
- * @param property	Node property name
- * @param gpio		gpio elements to fill from FDT
- * @return 0 if ok, -FDT_ERR_MISSING if the property is missing.
- */
-static int decode_gpio(const void *blob, int node, const char *property,
-		 struct fdt_gpio_state *gpio)
+int fdt_decode_gpio(const void *blob, int node, const char *property,
+		struct fdt_gpio_state *gpio)
 {
 	int err;
 
 	gpio->gpio = FDT_GPIO_NONE;
-	err = decode_gpios(blob, node, property, gpio, 1);
+	err = fdt_decode_gpios(blob, node, property, gpio, 1);
 	return err == 1 ? 0 : err;
 }
 
@@ -518,13 +496,13 @@ int fdt_decode_lcd(const void *blob, struct fdt_lcd *config)
 		return -FDT_ERR_MISSING;
 	config->frame_buffer = get_addr(blob, node, "frame-buffer");
 
-	err |= decode_gpio(blob, node, "backlight-enable",
+	err |= fdt_decode_gpio(blob, node, "backlight-enable",
 			   &config->backlight_en);
-	err |= decode_gpio(blob, node, "lvds-shutdown",
+	err |= fdt_decode_gpio(blob, node, "lvds-shutdown",
 			   &config->lvds_shutdown);
-	err |= decode_gpio(blob, node, "backlight-vdd",
+	err |= fdt_decode_gpio(blob, node, "backlight-vdd",
 			   &config->backlight_vdd);
-	err |= decode_gpio(blob, node, "panel-vdd", &config->panel_vdd);
+	err |= fdt_decode_gpio(blob, node, "panel-vdd", &config->panel_vdd);
 	if (err)
 		return -FDT_ERR_MISSING;
 
@@ -569,9 +547,9 @@ int fdt_decode_sdmmc(const void *blob, int node, struct fdt_sdmmc *config)
 		return -FDT_ERR_MISSING;
 
 	/* These GPIOs are optional */
-	decode_gpio(blob, node, "cd-gpio", &config->cd_gpio);
-	decode_gpio(blob, node, "wp-gpio", &config->wp_gpio);
-	decode_gpio(blob, node, "power-gpio", &config->power_gpio);
+	fdt_decode_gpio(blob, node, "cd-gpio", &config->cd_gpio);
+	fdt_decode_gpio(blob, node, "wp-gpio", &config->wp_gpio);
+	fdt_decode_gpio(blob, node, "power-gpio", &config->power_gpio);
 	return 0;
 }
 

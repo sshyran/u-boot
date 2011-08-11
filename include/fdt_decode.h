@@ -314,6 +314,34 @@ int fdt_decode_next_alias(const void *blob, const char *name,
 int fdt_decode_get_spi_switch(const void *blob, struct fdt_spi_uart *config);
 
 /**
+ * Decode a single GPIOs from an FDT.
+ *
+ * @param blob		FDT blob to use
+ * @param node		Node to look at
+ * @param property	Node property name
+ * @param gpio		gpio elements to fill from FDT
+ * @return 0 if ok, -FDT_ERR_MISSING if the property is missing.
+ */
+int fdt_decode_gpio(const void *blob, int node, const char *property,
+		struct fdt_gpio_state *gpio);
+
+/**
+ * Decode a list of GPIOs from an FDT. This creates a list of GPIOs with no
+ * terminating item.
+ *
+ * @param blob		FDT blob to use
+ * @param node		Node to look at
+ * @param property	Node property name
+ * @param gpio		Array of gpio elements to fill from FDT. This will be
+ *			untouched if either 0 or an error is returned
+ * @param max_count	Maximum number of elements allowed
+ * @return number of GPIOs read if ok, -FDT_ERR_BADLAYOUT if max_count would
+ * be exceeded, or -FDT_ERR_MISSING if the property is missing.
+ */
+int fdt_decode_gpios(const void *blob, int node, const char *property,
+		struct fdt_gpio_state *gpio, int max_count);
+
+/**
  * Set up a GPIO pin according to the provided gpio. This sets it to either
  * input or output. If an output, then the defined value is assigned.
  *
