@@ -94,10 +94,16 @@ int checkboard(void)
 int arch_cpu_init(void)
 {
 	/* Fire up the Cortex A9 */
+	if (ap20_cpu_is_cortexa9())
+		bootstage_mark(BOOTSTAGE_MAIN_CPU_AWAKE, "arch_cpu_init A9");
+	else
+		bootstage_mark(BOOTSTAGE_CPU_AWAKE, "arch_cpu_init AVP");
 	tegra_start();
+	/* If tegra_start() returns, we are running on the A9 */
 
 	/* We didn't do this init in start.S, so do it now */
 	cpu_init_crit();
+	bootstage_mark(BOOTSTAGE_MAIN_CPU_READY, "arch_cpu_init done");
 	return 0;
 }
 #endif
