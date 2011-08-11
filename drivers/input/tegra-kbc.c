@@ -85,6 +85,9 @@ u8 *kbc_ctrl_keycode;
 
 #ifdef CONFIG_OF_CONTROL
 struct fdt_kbc config;	/* Our keyboard config */
+#if (FDT_KBC_KEY_COUNT) != (KBC_KEY_COUNT)
+#error definition mismatch
+#endif
 #endif
 
 static int tegra_kbc_keycode(int r, int c, int modifier)
@@ -535,7 +538,7 @@ int drv_keyboard_init(void)
 		return node;
 	if (fdt_decode_kbc(gd->blob, node, &config))
 		return -1;
-	assert(FDT_KBC_KEY_COUNT == KBC_KEY_COUNT);
+
 	kbc_plain_keycode = config.plain_keycode;
 	kbc_shift_keycode = config.shift_keycode;
 	kbc_fn_keycode    = config.fn_keycode;
