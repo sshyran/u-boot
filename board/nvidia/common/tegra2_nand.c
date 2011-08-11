@@ -36,21 +36,12 @@
 #define NAND_CMD_TIMEOUT_MS		10
 
 static struct nand_ecclayout eccoob = {
-	.eccbytes = CONFIG_NAND_RS_DATA_ECC_BYTES +
-		CONFIG_NAND_TAG_ECC_BYTES,
 	.eccpos = {
 		4,  5,  6,  7,  8,  9,  10, 11, 12,
 		13, 14, 15, 16, 17, 18, 19, 20, 21,
 		22, 23, 24, 25, 26, 27, 28, 29, 30,
 		31, 32, 33, 34, 35, 36, 37, 38, 39,
 		60, 61, 62, 63,
-	},
-	.oobavail = CONFIG_NAND_TAG_BYTES,
-	.oobfree = {
-		{ .offset = (CONFIG_NAND_SKIPPED_SPARE_BYTES +
-				CONFIG_NAND_RS_DATA_ECC_BYTES),
-		  .length = CONFIG_NAND_TAG_BYTES,
-		},
 	},
 };
 
@@ -941,6 +932,12 @@ int board_nand_init(struct nand_chip *nand)
 	nand->cmd_ctrl = nand_hwcontrol;
 	nand->dev_ready  = nand_dev_ready;
 
+	eccoob.eccbytes = CONFIG_NAND_RS_DATA_ECC_BYTES +
+		CONFIG_NAND_TAG_ECC_BYTES;
+	eccoob.oobavail = CONFIG_NAND_TAG_BYTES;
+	eccoob.oobfree[0].offset = CONFIG_NAND_SKIPPED_SPARE_BYTES +
+				CONFIG_NAND_RS_DATA_ECC_BYTES;
+	eccoob.oobfree[0].length = CONFIG_NAND_TAG_BYTES;
 	nand->ecc.mode = NAND_ECC_HW;
 	nand->ecc.layout = &eccoob;
 	nand->ecc.size = CONFIG_NAND_PAGE_DATA_BYTES;
