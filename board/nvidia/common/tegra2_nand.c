@@ -51,6 +51,17 @@ enum {
 	ECC_DATA_ERROR = 1 << 1
 };
 
+struct nand_config {
+	int	bus_width;	/* n bits */
+	int	page_data_bytes; /* n bytes in the data area of each page */
+	int	page_spare_bytes;/* n bytes in the spare area of each page */
+	int	skipped_spare_bytes;	/* At the beginning of spare area. */
+	int	rs_data_ecc_bytes;	/* How many ECC bytes for data area */
+	int	tag_bytes;	/* How many tag bytes in spare area */
+	int	tag_ecc_bytes;	/* How many ECC bytes for tag bytes */
+	int	wp_gpio;	/* GPIO to enable WRITE */
+};
+
 struct nand_info {
 	struct nand_ctlr *reg;
 /*
@@ -62,14 +73,7 @@ struct nand_info {
  * And our controller returns 4 bytes at once in register RESP_0.
  */
 	int	pio_byte_index;
-	int	bus_width;	/* n bits */
-	int	page_data_bytes; /* n bytes in the data area of each page */
-	int	page_spare_bytes;/* n bytes in the spare area of each page */
-	int	skipped_spare_bytes;	/* At the beginning of spare area. */
-	int	rs_data_ecc_bytes;	/* How many ECC bytes for data area */
-	int	tag_bytes;	/* How many tag bytes in spare area */
-	int	tag_ecc_bytes;	/* How many ECC bytes for tag bytes */
-	int	wp_gpio;	/* GPIO to enable WRITE */
+	struct nand_config config;
 };
 
 struct nand_info nand_ctrl;
@@ -478,21 +482,21 @@ static void stop_command(struct nand_ctlr *reg)
  * @param *reg_val: address of reg_val
  * @return: value is set in reg_val
  */
-static void set_bus_width_page_size(struct nand_info *info,
+static void set_bus_width_page_size(struct nand_config *config,
 	u32 *reg_val)
 {
-	if (info->bus_width == 8)
+	if (config->bus_width == 8)
 		*reg_val = CFG_BUS_WIDTH_8BIT;
 	else
 		*reg_val = CFG_BUS_WIDTH_16BIT;
 
-	if (info->page_data_bytes == 256)
+	if (config->page_data_bytes == 256)
 		*reg_val |= CFG_PAGE_SIZE_256;
-	else if (info->page_data_bytes == 512)
+	else if (config->page_data_bytes == 512)
 		*reg_val |= CFG_PAGE_SIZE_512;
-	else if (info->page_data_bytes == 1024)
+	else if (config->page_data_bytes == 1024)
 		*reg_val |= CFG_PAGE_SIZE_1024;
-	else if (info->page_data_bytes == 2048)
+	else if (config->page_data_bytes == 2048)
 		*reg_val |= CFG_PAGE_SIZE_2048;
 }
 
@@ -517,6 +521,7 @@ static int nand_rw_page(struct mtd_info *mtd, struct nand_chip *chip,
 	u32 tag_buf[128];
 	char *tag_ptr;
 	struct nand_info *info;
+	struct nand_config *config;
 
 	if (((int) buf) & 0x03) {
 		printf("buf 0x%X has to be 4-byte aligned\n", (u32) buf);
@@ -524,6 +529,7 @@ static int nand_rw_page(struct mtd_info *mtd, struct nand_chip *chip,
 	}
 
 	info = (struct nand_info *) chip->priv;
+	config = &info->config;
 
 	/* Need to be 4-byte aligned */
 	tag_ptr = (char *) &tag_buf;
@@ -537,16 +543,16 @@ static int nand_rw_page(struct mtd_info *mtd, struct nand_chip *chip,
 		writel((u32) tag_ptr, &info->reg->tag_ptr);
 		if (is_writing)
 			memcpy(tag_ptr, chip->oob_poi + free->offset,
-				info->tag_bytes +
-				info->tag_ecc_bytes);
+				config->tag_bytes +
+				config->tag_ecc_bytes);
 	} else
 		writel((u32) chip->oob_poi, &info->reg->tag_ptr);
 
-	set_bus_width_page_size(info, &reg_val);
+	set_bus_width_page_size(&info->config, &reg_val);
 
 	/* Set ECC selection, configure ECC settings */
 	if (with_ecc) {
-		tag_size = info->tag_bytes + info->tag_ecc_bytes;
+		tag_size = config->tag_bytes + config->tag_ecc_bytes;
 		reg_val |= (CFG_SKIP_SPARE_SEL_4
 			| CFG_SKIP_SPARE_ENABLE
 			| CFG_HW_ECC_CORRECTION_ENABLE
@@ -557,7 +563,7 @@ static int nand_rw_page(struct mtd_info *mtd, struct nand_chip *chip,
 			| (tag_size - 1));
 
 		if (!is_writing) {
-			tag_size += info->skipped_spare_bytes;
+			tag_size += config->skipped_spare_bytes;
 			invalidate_dcache_range((unsigned long) tag_ptr,
 				((unsigned long) tag_ptr) + tag_size);
 		} else
@@ -640,14 +646,14 @@ static int nand_rw_page(struct mtd_info *mtd, struct nand_chip *chip,
 
 	if (with_ecc && !is_writing) {
 		memcpy(chip->oob_poi, tag_ptr,
-			info->skipped_spare_bytes);
+			config->skipped_spare_bytes);
 		memcpy(chip->oob_poi + free->offset,
-			tag_ptr + info->skipped_spare_bytes,
-			info->tag_bytes);
+			tag_ptr + config->skipped_spare_bytes,
+			config->tag_bytes);
 		reg_val = (u32) check_ecc_error(info->reg, (u8 *) buf,
 			1 << chip->page_shift,
-			(u8 *) (tag_ptr + info->skipped_spare_bytes),
-			info->tag_bytes);
+			(u8 *) (tag_ptr + config->skipped_spare_bytes),
+			config->tag_bytes);
 		if (reg_val & ECC_TAG_ERROR)
 			printf("Read Page 0x%X tag ECC error\n", page);
 		if (reg_val & ECC_DATA_ERROR)
@@ -757,7 +763,7 @@ static int nand_rw_oob(struct mtd_info *mtd, struct nand_chip *chip,
 
 	writel((u32) chip->oob_poi, &info->reg->tag_ptr);
 
-	set_bus_width_page_size(info, &reg_val);
+	set_bus_width_page_size(&info->config, &reg_val);
 
 	/* Set ECC selection */
 	tag_size = mtd->oobsize;
@@ -782,7 +788,7 @@ static int nand_rw_oob(struct mtd_info *mtd, struct nand_chip *chip,
 	writel(BCH_CONFIG_BCH_ECC_DISABLE, &info->reg->bch_config);
 
 	if (is_writing && with_ecc)
-		tag_size -= info->tag_ecc_bytes;
+		tag_size -= info->config.tag_ecc_bytes;
 
 	writel(tag_size - 1, &info->reg->dma_cfg_b);
 
@@ -823,7 +829,7 @@ static int nand_rw_oob(struct mtd_info *mtd, struct nand_chip *chip,
 	if (with_ecc && !is_writing) {
 		reg_val = (u32) check_ecc_error(info->reg, 0, 0,
 			(u8 *) (chip->oob_poi + free->offset),
-			info->tag_bytes);
+			info->config.tag_bytes);
 		if (reg_val & ECC_TAG_ERROR)
 			printf("Read OOB of Page 0x%X tag ECC error\n", page);
 	}
@@ -875,17 +881,18 @@ static int nand_write_oob(struct mtd_info *mtd, struct nand_chip *chip,
 int board_nand_init(struct nand_chip *nand)
 {
 	struct nand_info *info = &nand_ctrl;
+	struct nand_config *config = &info->config;
 	u32 reg_val, clk_rate, clk_period;
 
 	/* get configuration settings from header file */
 	info->reg = (struct nand_ctlr *) CONFIG_SYS_NAND_BASE;
-	info->bus_width = CONFIG_NAND_BUS_WIDTH;
-	info->page_data_bytes = CONFIG_NAND_PAGE_DATA_BYTES;
-	info->page_spare_bytes = CONFIG_NAND_PAGE_SPARE_BYTES;
-	info->skipped_spare_bytes = CONFIG_NAND_SKIPPED_SPARE_BYTES;
-	info->rs_data_ecc_bytes = CONFIG_NAND_RS_DATA_ECC_BYTES;
-	info->tag_bytes = CONFIG_NAND_TAG_BYTES;
-	info->tag_ecc_bytes = CONFIG_NAND_TAG_ECC_BYTES;
+	config->bus_width = CONFIG_NAND_BUS_WIDTH;
+	config->page_data_bytes = CONFIG_NAND_PAGE_DATA_BYTES;
+	config->page_spare_bytes = CONFIG_NAND_PAGE_SPARE_BYTES;
+	config->skipped_spare_bytes = CONFIG_NAND_SKIPPED_SPARE_BYTES;
+	config->rs_data_ecc_bytes = CONFIG_NAND_RS_DATA_ECC_BYTES;
+	config->tag_bytes = CONFIG_NAND_TAG_BYTES;
+	config->tag_ecc_bytes = CONFIG_NAND_TAG_ECC_BYTES;
 
 	/* Adjust controller clock rate */
 	clock_start_periph_pll(PERIPH_ID_NDFLASH, CLOCK_ID_PERIPH, CLK_52M);
@@ -926,22 +933,22 @@ int board_nand_init(struct nand_chip *nand)
 	/* Pinmux ATC_SEL uses NAND */
 	pinmux_set_func(PINGRP_ATC, PMUX_FUNC_NAND);
 
-	info->wp_gpio = CONFIG_NAND_WP_GPIO;
-	gpio_direction_output(info->wp_gpio, 1);
+	info->config.wp_gpio = CONFIG_NAND_WP_GPIO;
+	gpio_direction_output(info->config.wp_gpio, 1);
 
 	nand->cmd_ctrl = nand_hwcontrol;
 	nand->dev_ready  = nand_dev_ready;
 
-	eccoob.eccbytes = CONFIG_NAND_RS_DATA_ECC_BYTES +
-		CONFIG_NAND_TAG_ECC_BYTES;
-	eccoob.oobavail = CONFIG_NAND_TAG_BYTES;
-	eccoob.oobfree[0].offset = CONFIG_NAND_SKIPPED_SPARE_BYTES +
-				CONFIG_NAND_RS_DATA_ECC_BYTES;
-	eccoob.oobfree[0].length = CONFIG_NAND_TAG_BYTES;
+	eccoob.eccbytes = config->rs_data_ecc_bytes + config->tag_ecc_bytes;
+	eccoob.oobavail = config->tag_bytes;
+	eccoob.oobfree[0].offset = config->skipped_spare_bytes +
+				config->rs_data_ecc_bytes;
+	eccoob.oobfree[0].length = config->tag_bytes;
+
 	nand->ecc.mode = NAND_ECC_HW;
 	nand->ecc.layout = &eccoob;
-	nand->ecc.size = CONFIG_NAND_PAGE_DATA_BYTES;
-	nand->ecc.bytes = CONFIG_NAND_PAGE_SPARE_BYTES;
+	nand->ecc.size = config->page_data_bytes;
+	nand->ecc.bytes = config->page_spare_bytes;
 
 	nand->options = LP_OPTIONS;
 	nand->cmdfunc = nand_command;
