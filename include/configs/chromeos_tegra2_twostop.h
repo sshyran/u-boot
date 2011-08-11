@@ -12,6 +12,9 @@
 
 #include "chromeos.h"
 
+/* We initialize Chrome OS -specific GPIOs here */
+#define CONFIG_MISC_INIT_R
+
 /* Store the VbNvContext in the first block of the disk. */
 #define CHROMEOS_VBNVCONTEXT_LBA	0
 

@@ -94,6 +94,7 @@ enum {
 
 	FDT_GPIO_OUTPUT	= 1 << 0,	/* set as output (else input) */
 	FDT_GPIO_HIGH	= 1 << 1,	/* set output as high (else low) */
+	FDT_GPIO_ACTIVE_LOW = 1 << 2,	/* input is active low (else high) */
 };
 
 /* This is the state of a GPIO pin. For now it only handles output pins */

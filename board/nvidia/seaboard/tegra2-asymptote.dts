@@ -14,15 +14,16 @@
 		hwid = "ARM ASYMPTOTE TEST 8314";
 		machine-arch-id = <3624>;
 
-		/* Chrome OS specific GPIO port number */
-		gpio_port_write_protect_switch	= <59>;
-		gpio_port_recovery_switch	= <56>;
-		gpio_port_developer_switch	= <168>;
-
-		/* GPIO polarity: 0=active_low, 1=active_high */
-		polarity_write_protect_switch	= <1>;
-		polarity_recovery_switch	= <0>;
-		polarity_developer_switch	= <1>;
+		/* Chrome OS specific GPIO */
+		/*
+		 * Parameter 3 bits
+		 * bit 0: 1=output, 0=input
+		 * bit 1: 1=high, 0=low
+		 * bit 2: 1=active low, 0=active high
+		 */
+		write-protect-switch	= <&gpio 59 0>;
+		recovery-switch		= <&gpio 56 4>;
+		developer-switch	= <&gpio 168 0>;
 	};
 
 	aliases {
