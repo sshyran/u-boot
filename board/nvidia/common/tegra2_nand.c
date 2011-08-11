@@ -946,10 +946,6 @@ int board_nand_init(struct nand_chip *nand)
 	config->tag_bytes = CONFIG_NAND_TAG_BYTES;
 	config->tag_ecc_bytes = CONFIG_NAND_TAG_ECC_BYTES;
 
-	/* Adjust controller clock rate */
-	clock_start_periph_pll(PERIPH_ID_NDFLASH, CLOCK_ID_PERIPH, CLK_52M);
-
-	/* Adjust timing for NAND device */
 	config->timing[TIMING_MAX_TRP_TREA] = CONFIG_NAND_MAX_TRP_TREA;
 	config->timing[TIMING_TWB] = CONFIG_NAND_TWB;
 	config->timing[TIMING_MAX_TCR_TAR_TRR] =CONFIG_NAND_MAX_TCR_TAR_TRR;
@@ -960,16 +956,8 @@ int board_nand_init(struct nand_chip *nand)
 	config->timing[TIMING_TWP] = CONFIG_NAND_TWP;
 	config->timing[TIMING_TRH] = CONFIG_NAND_TRH;
 	config->timing[TIMING_TADL] = CONFIG_NAND_TADL;
-	setup_timing(config->timing, info->reg);
-
-	/* Pinmux ATC_SEL uses NAND */
-	pinmux_set_func(PINGRP_ATC, PMUX_FUNC_NAND);
 
 	info->config.wp_gpio = CONFIG_NAND_WP_GPIO;
-	gpio_direction_output(info->config.wp_gpio, 1);
-
-	nand->cmd_ctrl = nand_hwcontrol;
-	nand->dev_ready  = nand_dev_ready;
 
 	eccoob.eccbytes = config->rs_data_ecc_bytes + config->tag_ecc_bytes;
 	eccoob.oobavail = config->tag_bytes;
@@ -993,6 +981,19 @@ int board_nand_init(struct nand_chip *nand)
 	nand->ecc.write_page_raw = nand_write_page_raw;
 	nand->ecc.read_oob = nand_read_oob;
 	nand->ecc.write_oob = nand_write_oob;
+	nand->cmd_ctrl = nand_hwcontrol;
+	nand->dev_ready  = nand_dev_ready;
 	nand->priv = &nand_ctrl;
+
+	/* Adjust controller clock rate */
+	clock_start_periph_pll(PERIPH_ID_NDFLASH, CLOCK_ID_PERIPH, CLK_52M);
+
+	/* Adjust timing for NAND device */
+	setup_timing(config->timing, info->reg);
+
+	/* Pinmux ATC_SEL uses NAND */
+	pinmux_set_func(PINGRP_ATC, PMUX_FUNC_NAND);
+	gpio_direction_output(info->config.wp_gpio, 1);
+
 	return 0;
 }
