@@ -202,4 +202,46 @@
 				    00  00  00  11  00  00  00  00
 				    00  00  00  00  00  00  00  00];
 		};
+
+	flash@0 {
+		compatible = "hynix,HY27UF4G2B", "nand-flash";
+		controller = <&nand>;
+
+		/* How many bytes for data area */
+		page-data-bytes = <2048>;
+
+		/* How many ECC bytes to be generated for tag bytes */
+		tag-ecc-bytes = <4>;
+
+		/* How many tag bytes in spare area */
+		tag-bytes = <20>;
+
+		/* How many ECC bytes for data area */
+		data-ecc-bytes = <36>;
+
+		skipped-spare-bytes = <4>;
+
+		/*
+		 * How many bytes in spare area
+		 * spare area = skipped bytes + ECC bytes of data area
+		 * + tag bytes + ECC bytes of tag bytes
+		 */
+		page-spare-bytes = <64>;
+
+		/*
+		 * MAX_TRP_TREA:
+		 * non-EDO mode: value (in ns) = Max(tRP, tREA) + 6ns
+		 * EDO mode: value (in ns) = tRP timing
+		 *
+		 * Timing values: MAX_TRP_TREA, TWB, Max(tCS, tCH, tALS, tALH),
+		 *	TWHR, Max(tCS, tCH, tALS, tALH), TWH, TWP, TRH, TADL
+		 */
+		timing = <26 100 20 80 20 10 12 10 70>;
+	};
+
+	nand-controller@0x70008000 {
+		status = "ok";
+		wp-gpio = <&gpio 59 0>;		/* PH3 */
+		width = <8>;
+	};
 };

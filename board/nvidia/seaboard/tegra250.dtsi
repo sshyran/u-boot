@@ -251,5 +251,11 @@
 		speed = <100000>;
 		periph-id = <47>;	// PERIPH_ID_DVC_I2C
 	};
+
+	nand: nand-controller@0x70008000 {
+		compatible = "nvidia,tegra2-nand";
+		reg = <0x70008000 0x100>;
+		status = "disabled";
+	};
 };
 
