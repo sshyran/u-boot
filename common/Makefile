@@ -74,11 +74,11 @@ COBJS-$(CONFIG_CMD_BOOTLDR) += cmd_bootldr.o
 COBJS-$(CONFIG_CMD_CACHE) += cmd_cache.o
 COBJS-$(CONFIG_CMD_CONSOLE) += cmd_console.o
 COBJS-$(CONFIG_CMD_CPLBINFO) += cmd_cplbinfo.o
-COBJS-$(CONFIG_CMD_VBEXPORT_TEST) += cmd_vbexport_test.o
 COBJS-$(CONFIG_CMD_VBOOT_BOOTSTUB) += cmd_vboot_bootstub.o
 COBJS-$(CONFIG_CMD_VBOOT_MAIN) += cmd_vboot_main.o
-COBJS-$(CONFIG_CMD_VBOOT_TEST) += cmd_vboot_test.o
 COBJS-$(CONFIG_CHROMEOS) += cmd_vboot_twostop.o
+COBJS-$(CONFIG_CHROMEOS_TEST) += cmd_vbexport_test.o
+COBJS-$(CONFIG_CHROMEOS_TEST) += cmd_vboot_test.o
 COBJS-$(CONFIG_DATAFLASH_MMC_SELECT) += cmd_dataflash_mmc_mux.o
 COBJS-$(CONFIG_CMD_DATE) += cmd_date.o
 ifdef CONFIG_4xx

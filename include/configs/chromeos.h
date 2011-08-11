@@ -15,6 +15,11 @@
 /* Enable verified boot */
 #define CONFIG_CHROMEOS
 
+/* Enable test codes */
+#ifdef VBOOT_DEBUG
+#define CONFIG_CHROMEOS_TEST
+#endif /* VBOOT_DEBUG */
+
 /* Enable graphics display */
 #define CONFIG_LCD_BMP_RLE8
 #define CONFIG_LZMA
@@ -37,9 +42,24 @@
  */
 #define CONFIG_OF_UPDATE_FDT_BEFORE_BOOT
 
+/*
+ * We use fixed memory address for the parameters --- this should be simpler
+ * than atags or a register holding the address of the parameters. Besides,
+ * Chrome OS kernel is loaded to a fixed location, we could simply use this
+ * location as our anchor for the location of the parameters.
+ */
+/*
+ * Layout: first, the kernel buffer, then the crossystem data (and the
+ * VbSharedData), and finally, the GBB.
+ */
 /* For security reason, Chrome OS kernel must be loaded to specific location. */
 #define CHROMEOS_KERNEL_LOADADDR	0x00100000
 #define CHROMEOS_KERNEL_BUFSIZE		0x00800000
+#define CROSSYSTEM_DATA_ADDRESS \
+	(CHROMEOS_KERNEL_LOADADDR + CHROMEOS_KERNEL_BUFSIZE)
+#define CROSSYSTEM_DATA_MAXSIZE		0x8000
+#define GBB_ADDRESS \
+	(CROSSYSTEM_DATA_ADDRESS + CROSSYSTEM_DATA_MAXSIZE)
 
 /*
  * This is the default kernel command line to a Chrome OS kernel. An ending
