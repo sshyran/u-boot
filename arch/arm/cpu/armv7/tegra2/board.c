@@ -95,6 +95,9 @@ int arch_cpu_init(void)
 {
 	/* Fire up the Cortex A9 */
 	tegra_start();
+
+	/* We didn't do this init in start.S, so do it now */
+	cpu_init_crit();
 	return 0;
 }
 #endif

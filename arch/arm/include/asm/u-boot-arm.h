@@ -74,4 +74,7 @@ void	udelay_masked		(unsigned long usec);
 /* cpu/.../timer.c */
 int	timer_init		(void);
 
+/* cpu/.../start.S */
+void cpu_init_crit(void);
+
 #endif	/* _U_BOOT_ARM_H_ */
