@@ -11,9 +11,23 @@
  * Infineon slb9635), so this driver provides access to locality 0 only.
  */
 
+/* #define DEBUG */
 #include <common.h>
 #include <asm/io.h>
 #include <tpm.h>
+
+#ifdef DEBUG
+#define TPM_DEBUG_ON	1
+#else
+#define TPM_DEBUG_ON	0
+#endif
+
+#define PREFIX "lpc_tpm: "
+#define	TPM_DEBUG(fmt, args...)		\
+	if (TPM_DEBUG_ON) {		\
+		printf(PREFIX);		\
+		printf(fmt , ##args);	\
+	}
 
 #ifndef CONFIG_TPM_TIS_BASE_ADDRESS
 /* Base TPM address standard for x86 systems */
@@ -84,6 +98,38 @@ static const struct vendor_name vendor_names[] = {
  */
 static u32 vendor_dev_id;
 
+static int is_byte_reg(u32 reg)
+{
+	/*
+	 * These TPM registers are 8 bits wide and as such require byte access
+	 * on writes and truncated value on reads.
+	 */
+	return ((reg == TIS_REG_ACCESS)	||
+		(reg == TIS_REG_INT_VECTOR) ||
+		(reg == TIS_REG_DATA_FIFO));
+}
+
+/* TPM access functions are carved out to make tracing easier. */
+static u32 tpm_read(int locality, u32 reg)
+{
+	u32 value;
+	value = readl(TIS_REG(locality, reg));
+	if (is_byte_reg(reg))
+		value &= 0xff;
+	TPM_DEBUG("Read reg 0x%x returns 0x%x\n", reg, value);
+	return value;
+}
+
+static void tpm_write(u32 value, int locality,  u32 reg)
+{
+	TPM_DEBUG("Write reg 0x%x with 0x%x\n", reg, value);
+
+	if (is_byte_reg(reg))
+		writeb(value & 0xff, TIS_REG(locality, reg));
+	else
+		writel(value, TIS_REG(locality, reg));
+}
+
 /*
  * tis_wait_reg()
  *
@@ -101,7 +147,7 @@ static u32 vendor_dev_id;
 static u32 tis_wait_reg(u8 reg, u8 locality, u32 time_ms, u8 mask, u8 expected)
 {
 	while (time_ms > 0) {
-		u8 value = readb(TIS_REG(locality, reg));
+		u32 value = tpm_read(locality, reg);
 		if ((value & mask) == expected)
 			return 0;
 		udelay(1000); /* 1 ms */
@@ -118,7 +164,7 @@ static u32 tis_wait_reg(u8 reg, u8 locality, u32 time_ms, u8 mask, u8 expected)
  */
 static u32 tis_probe(void)
 {
-	u32 didvid = readl(TIS_REG(0, TIS_REG_DID_VID));
+	u32 didvid = tpm_read(0, TIS_REG_DID_VID);
 	int i;
 	const char *device_name = "unknown";
 	const char *vendor_name = device_name;
@@ -153,8 +199,7 @@ static u32 tis_probe(void)
 		break;
 	}
 	/* this will have to be converted into debug printout */
-	printf("%s:%d found TPM %s by %s\n", __FILE__, __LINE__,
-	       device_name, vendor_name);
+	TPM_DEBUG("Found TPM %s by %s\n", device_name, vendor_name);
 	return 0;
 }
 
@@ -179,7 +224,7 @@ static u32 tis_senddata(const u8 * const data, u32 len)
 
 	while (1) {
 		while (!burst && (ctr < 2000)) {
-			burst = (u16) readl(TIS_REG(locality, TIS_REG_STS)) >> 8;
+			burst = (u16) (tpm_read(locality, TIS_REG_STS) >> 8);
 			if (!burst) {
 				udelay(100);
 				ctr++;
@@ -192,8 +237,7 @@ static u32 tis_senddata(const u8 * const data, u32 len)
 		}
 
 		while (1) {
-			writeb(data[offset++],
-			       TIS_REG(locality, TIS_REG_DATA_FIFO));
+			tpm_write(data[offset++], locality, TIS_REG_DATA_FIFO);
 			burst--;
 
 			if (burst == 0 || offset == len)
@@ -222,9 +266,9 @@ static u32 tis_readresponse(u8 *buffer, u32 *len)
 	u32 offset = 0;
 	u8 locality = 0;
 
-	while ((readb(TIS_REG(locality, TIS_REG_STS)) & TIS_STS_DATA_AVAILABLE) &&
-	       (offset < *len))
-		buffer[offset++] = readb(TIS_REG(locality, TIS_REG_DATA_FIFO));
+	while ((tpm_read(locality, TIS_REG_STS) & TIS_STS_DATA_AVAILABLE) &&
+		(offset < *len))
+		buffer[offset++] = (u8) tpm_read(locality, TIS_REG_DATA_FIFO);
 
 	*len = offset;
 	return 0;
@@ -259,7 +303,7 @@ int tis_open(void)
 		return ~0;
 
 	/* now request access to locality */
-	writeb(TIS_ACCESS_REQUEST_USE, TIS_REG(locality, TIS_REG_ACCESS));
+	tpm_write(TIS_ACCESS_REQUEST_USE, locality, TIS_REG_ACCESS);
 
 	/* did we get a lock? */
 	if (tis_wait_reg(TIS_REG_ACCESS, locality, TPM_MAX_EXECUTION_DELAY_MS,
@@ -270,8 +314,8 @@ int tis_open(void)
 		return ~0;
 	}
 
-        writeb(TIS_STS_COMMAND_READY, TIS_REG(locality, TIS_REG_STS));
-        if (tis_wait_reg(TIS_REG_STS, locality, TPM_MAX_EXECUTION_DELAY_MS,
+	tpm_write(TIS_STS_COMMAND_READY, locality, TIS_REG_STS);
+	if (tis_wait_reg(TIS_REG_STS, locality, TPM_MAX_EXECUTION_DELAY_MS,
 			 TIS_STS_COMMAND_READY, TIS_STS_COMMAND_READY)) {
 		printf("%s:%d - failed to get 'command_ready' status\n",
 		       __FILE__, __LINE__);
@@ -290,10 +334,9 @@ int tis_open(void)
 int tis_close(void)
 {
 	u8 locality = 0;
-	if (readb(TIS_REG(locality, TIS_REG_ACCESS)) &
+	if (tpm_read(locality, TIS_REG_ACCESS) &
 	    TIS_ACCESS_ACTIVE_LOCALITY) {
-		writeb(TIS_ACCESS_ACTIVE_LOCALITY,
-		       TIS_REG(locality, TIS_REG_ACCESS));
+		tpm_write(TIS_ACCESS_ACTIVE_LOCALITY, locality, TIS_REG_ACCESS);
 
 		if (tis_wait_reg(TIS_REG_ACCESS, locality,
 				 TPM_MAX_EXECUTION_DELAY_MS,
