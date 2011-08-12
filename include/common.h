@@ -272,6 +272,14 @@ int	last_stage_init(void);
 extern ulong monitor_flash_len;
 int mac_read_from_eeprom(void);
 
+/*
+ * Called during a panic() when no console is available. The board should do
+ * its best to get a message to the user any way it can. This function should
+ * return if it can, in which case the system will either hang or reset.
+ * See panic().
+ */
+void board_panic_no_console(const char *str);
+
 /* common/flash.c */
 void flash_perror (int);
 

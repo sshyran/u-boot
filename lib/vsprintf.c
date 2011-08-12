@@ -23,6 +23,8 @@
 # define NUM_TYPE long long
 #define noinline __attribute__((noinline))
 
+DECLARE_GLOBAL_DATA_PTR;
+
 const char hex_asc[] = "0123456789abcdef";
 #define hex_asc_lo(x)   hex_asc[((x) & 0x0f)]
 #define hex_asc_hi(x)   hex_asc[((x) & 0xf0) >> 4]
@@ -663,13 +665,33 @@ int sprintf(char * buf, const char *fmt, ...)
 	return i;
 }
 
+/* Provide a default function for when no console is available */
+static void __board_panic_no_console(const char *msg)
+{
+	/* Just return since we can't access the console */
+}
+
+void board_panic_no_console(const char *msg) __attribute__((weak,
+					alias("__board_panic_no_console")));
+
 void panic(const char *fmt, ...)
 {
+	char str[CONFIG_SYS_PBSIZE];
 	va_list	args;
+
 	va_start(args, fmt);
-	vprintf(fmt, args);
-	putc('\n');
+
+	/* TODO)sjg): Move to vsnprintf() when available */
+	vsprintf(str, fmt, args);
 	va_end(args);
+
+	if (gd->have_console) {
+		puts(str);
+		putc('\n');
+	} else {
+		board_panic_no_console(str);
+	}
+
 #if defined (CONFIG_PANIC_HANG)
 	hang();
 #else
