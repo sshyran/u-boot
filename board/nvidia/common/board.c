@@ -28,6 +28,7 @@
 #include <asm/arch/bitfield.h>
 #include <asm/arch/tegra2.h>
 #include <asm/arch/sys_proto.h>
+#include <asm/arch/gpio.h>
 
 #include <asm/arch/clk_rst.h>
 #include <asm/arch/clock.h>
@@ -58,6 +59,7 @@ enum {
 	UARTA	= 1 << 0,
 	UARTB	= 1 << 1,
 	UARTD	= 1 << 3,
+	UART_ALL	= 0xf
 };
 
 #ifndef CONFIG_OF_CONTROL
@@ -335,5 +337,63 @@ int tegra_get_chip_type(void)
 	default:
 		/* unknown sku id */
 		return TEGRA_SOC_UNKNOWN;
+	}
+}
+
+
+/*
+ * Possible UART locations: we ignore UARTC at 0x70006200 and UARTE at
+ * 0x70006400, since we don't have code to init them
+ */
+static u32 uart_reg_addr[] = {
+	NV_PA_APB_UARTA_BASE,
+	NV_PA_APB_UARTB_BASE,
+	NV_PA_APB_UARTD_BASE,
+	0
+};
+
+/*
+ * This is called when we have no console. About the only reason that this
+ * happen is if we don't have a valid fdt. So we don't know what kind of
+ * Tegra board we are. We blindly try to print a message every which way we
+ * know.
+ */
+void board_panic_no_console(const char *str)
+{
+	int uart_ids = UART_ALL;	/* turn it all on! */
+	u32 *uart_addr;
+	int clock_freq, multiplier, baudrate, divisor;
+
+	/* Try to enable all possible UARTs */
+	clock_init_uart(uart_ids);
+	pin_mux_uart(uart_ids);
+
+	/*
+	 * Seaboard has a UART switch on PI3. We might be a Seaboard,
+	 * so flip it!
+	 */
+#ifdef CONFIG_SPI_UART_SWITCH
+	gpio_direction_output(GPIO_PI3, 0);
+#endif
+
+	/*
+	 * Now send the string out all the Tegra UARTs. We don't try all
+	 * possible configurations, but this could be added if required.
+	 */
+	clock_freq = CONFIG_DEFAULT_NS16550_CLK;
+	multiplier = CONFIG_DEFAULT_NS16550_MULT;
+	baudrate = CONFIG_BAUDRATE;
+	divisor = (clock_freq + (baudrate * (multiplier / 2))) /
+			(multiplier * baudrate);
+
+	for (uart_addr = uart_reg_addr; *uart_addr; uart_addr++) {
+		const char *s;
+
+		NS16550_init((NS16550_t)*uart_addr, divisor);
+		for (s = str; *s; s++) {
+			NS16550_putc((NS16550_t)*uart_addr, *s);
+			if (*s == '\n')
+				NS16550_putc((NS16550_t)*uart_addr, '\r');
+		}
 	}
 }

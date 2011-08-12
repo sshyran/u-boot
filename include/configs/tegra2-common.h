@@ -93,13 +93,17 @@
 #define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_REG_SIZE	(-4)
 
+/* Default serial clock and multiplier */
+#define CONFIG_DEFAULT_NS16550_CLK	216000000	/* 216MHz */
+#define CONFIG_DEFAULT_NS16550_MULT	16
+
 #ifdef CONFIG_OF_CONTROL
 #define CONFIG_COMPAT_STRING		"nvidia,tegra250"
 #else
-#define V_NS16550_CLK			216000000	/* 216MHz (pllp_out0) */
 
 #define CONFIG_SYS_NS16550_SERIAL
-#define CONFIG_SYS_NS16550_CLK		V_NS16550_CLK
+#define CONFIG_SYS_NS16550_CLK		CONFIG_DEFAULT_NS16550_CLK
+
 
 /*
  * select serial console configuration
