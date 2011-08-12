@@ -36,8 +36,6 @@
 #include <asm/arch/armada100.h>
 #elif defined(CONFIG_PANTHEON)
 #include <asm/arch/pantheon.h>
-#elif defined(CONFIG_OXPCIE952)
-#include <oxpcie952.h>
 #endif
 
 #if defined (CONFIG_SERIAL_MULTI)

@@ -50,9 +50,6 @@ extern struct serial_device eserial2_device;
 extern struct serial_device eserial3_device;
 extern struct serial_device eserial4_device;
 #endif
-#if defined(CONFIG_SYS_OXPCIE952)
-extern struct serial_device oxpcie952_device;
-#endif
 #endif
 
 #if defined(CONFIG_MPC512X)
