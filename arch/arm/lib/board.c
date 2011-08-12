@@ -202,6 +202,17 @@ static int arm_pci_init(void)
 }
 #endif /* CONFIG_CMD_PCI || CONFIG_PCI */
 
+#ifdef CONFIG_OF_CONTROL
+static int check_fdt(void)
+{
+	/* We must have an fdt */
+	if (fdt_check_header(gd->blob))
+		panic("No valid fdt found - please append one to U-Boot\n"
+			"binary or define CONFIG_OF_EMBED\n");
+	return 0;
+}
+#endif
+
 /*
  * Breathe some life into the board...
  *
@@ -243,6 +254,9 @@ init_fnc_t *init_sequence[] = {
 #endif
 #if defined(CONFIG_BOARD_EARLY_INIT_F)
 	board_early_init_f,
+#endif
+#ifdef CONFIG_OF_CONTROL
+	check_fdt,
 #endif
 	timer_init,		/* initialize timer */
 #ifdef CONFIG_FSL_ESDHC
