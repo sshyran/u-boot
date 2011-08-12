@@ -340,7 +340,7 @@ void putc(const char c)
 	if (gd->flags & GD_FLG_DEVINIT) {
 		/* Send to the standard output */
 		fputc(stdout, c);
-	} else {
+	} else if (gd->have_console) {
 		/* Send directly to the handler */
 		serial_putc(c);
 	}
@@ -361,7 +361,7 @@ void puts(const char *s)
 	if (gd->flags & GD_FLG_DEVINIT) {
 		/* Send to the standard output */
 		fputs(stdout, s);
-	} else {
+	} else if (gd->have_console) {
 		/* Send directly to the handler */
 		serial_puts(s);
 	}
