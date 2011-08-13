@@ -90,7 +90,9 @@ static void build_command_line(char *command_line, int auto_boot)
 	}
 
 
-	printf("Kernel command line: \"%s\"\n", command_line);
+	puts("Kernel command line: \"");
+	puts(command_line);
+	puts("\"\n");
 }
 
 static int kernel_magic_ok(struct setup_header *hdr)
