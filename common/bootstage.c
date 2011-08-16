@@ -102,7 +102,7 @@ void bootstage_report(void)
 	prev = print_time_record(BOOTSTAGE_AWAKE, rec, 0);
 
 	/* Sort records by increasing time */
-	qsort(record, BOOTSTAGE_COUNT, ARRAY_SIZE(record), h_compare_record);
+	qsort(record, ARRAY_SIZE(record), sizeof(*rec), h_compare_record);
 
 	for (id = 0; id < BOOTSTAGE_COUNT; id++, rec++) {
 		if (rec->time_us != 0)
