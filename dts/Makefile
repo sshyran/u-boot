@@ -46,10 +46,35 @@ DT_BIN	:= $(obj)dt.dtb
 $(DT_BIN): $(TOPDIR)/board/$(BOARDDIR)/$(DEVICE_TREE).dts
 	$(DTC) -R 4 -p 0x1000 -O dtb -o ${DT_BIN} $<
 
-# TODO: get arch properly for objcopy line.
+process_lds = \
+	$(1) | sed -r -n 's/^OUTPUT_$(2)[ ("]*([^")]*).*/\1/p'
+
+# Run the compiler and get the link script from the linker
+GET_LDS = $(CC) $(CFLAGS) $(LDFLAGS) -Wl,--verbose 2>&1
+
 $(obj)dt.o: $(DT_BIN)
+	# We want the output format and arch.
+	# We also hope to win a prize for ugliest Makefile / shell interaction
+	# We look in the LDSCRIPT first.
+	# Then try the linker which should give us the answer.
+	# Then check it worked.
+	oformat=`$(call process_lds,cat $(LDSCRIPT),FORMAT)` ;\
+	oarch=`$(call process_lds,cat $(LDSCRIPT),ARCH)` ;\
+	\
+	[ -z $${oformat} ] && \
+		oformat=`$(call process_lds,$(GET_LDS),FORMAT)` ;\
+	[ -z $${oarch} ] && \
+		oarch=`$(call process_lds,$(GET_LDS),ARCH)` ;\
+	\
+	[ -z $${oformat} ] && \
+		echo "Cannot read OUTPUT_FORMAT from lds file $(LDSCRIPT)" && \
+		exit 1 || true ;\
+	[ -z $${oarch} ] && \
+		echo "Cannot read OUTPUT_ARCH from lds file $(LDSCRIPT)" && \
+		exit 1 || true ;\
+	\
 	cd $(dir ${DT_BIN}) && \
-	$(OBJCOPY) -B armv5te -I binary -O elf32-littlearm \
+	$(OBJCOPY) -I binary -O $${oformat} -B $${oarch} \
 		$(notdir ${DT_BIN}) $@
 	rm $(DT_BIN)
 
