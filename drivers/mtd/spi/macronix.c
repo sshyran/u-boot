@@ -347,7 +347,7 @@ struct spi_flash *spi_flash_probe_macronix(struct spi_slave *spi, u8 *idcode)
 		return NULL;
 	}
 
-	mcx = malloc(sizeof(*mcx));
+	mcx = calloc(sizeof(*mcx), 1);
 	if (!mcx) {
 		debug("SF: Failed to allocate memory\n");
 		return NULL;

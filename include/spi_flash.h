@@ -44,6 +44,21 @@ struct spi_flash {
 				size_t len, const void *buf);
 	int		(*erase)(struct spi_flash *flash, u32 offset,
 				size_t len);
+
+	/**
+	 * Probe an offset in the flash to find out the minimum program length
+	 * and erase length at that location.
+	 *
+	 * @param flash		flash context pointer
+	 * @param offset	flash offset to write
+	 * @param program_len	returns minimum program block length
+	 * @param erase_len	returns minimum erase block length
+	 *
+	 * @return 0 if ok, -1 if offset is invalid or information is not
+	 *		available
+	 */
+	int		(*probe_block)(struct spi_flash *flash, u32 offset,
+				size_t *program_len, size_t *erase_len);
 };
 
 struct spi_flash *spi_flash_probe(unsigned int bus, unsigned int cs,

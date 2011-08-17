@@ -349,7 +349,7 @@ spi_flash_probe_sst(struct spi_slave *spi, u8 *idcode)
 		return NULL;
 	}
 
-	stm = malloc(sizeof(*stm));
+	stm = calloc(sizeof(*stm), 1);
 	if (!stm) {
 		debug("SF: Failed to allocate memory\n");
 		return NULL;

@@ -252,7 +252,7 @@ struct spi_flash *spi_flash_probe_eon(struct spi_slave *spi, u8 *idcode)
 		return NULL;
 	}
 
-	eon = malloc(sizeof(*eon));
+	eon = calloc(sizeof(*eon), 1);
 	if (!eon) {
 		debug("SF: Failed to allocate memory\n");
 		return NULL;

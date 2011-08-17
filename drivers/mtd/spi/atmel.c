@@ -486,7 +486,7 @@ struct spi_flash *spi_flash_probe_atmel(struct spi_slave *spi, u8 *idcode)
 		return NULL;
 	}
 
-	asf = malloc(sizeof(struct atmel_spi_flash));
+	asf = calloc(sizeof(struct atmel_spi_flash), 1);
 	if (!asf) {
 		debug("SF: Failed to allocate memory\n");
 		return NULL;

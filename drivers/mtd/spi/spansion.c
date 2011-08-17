@@ -335,7 +335,7 @@ struct spi_flash *spi_flash_probe_spansion(struct spi_slave *spi, u8 *idcode)
 		return NULL;
 	}
 
-	spsn = malloc(sizeof(struct spansion_spi_flash));
+	spsn = calloc(sizeof(struct spansion_spi_flash), 1);
 	if (!spsn) {
 		debug("SF: Failed to allocate memory\n");
 		return NULL;

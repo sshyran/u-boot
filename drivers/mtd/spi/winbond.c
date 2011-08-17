@@ -323,6 +323,25 @@ out:
 	return ret;
 }
 
+static int windbond_probe_block(struct spi_flash *flash, u32 offset,
+		size_t *program_len, size_t *erase_len)
+{
+	struct winbond_spi_flash *stm = to_winbond_spi_flash(flash);
+	unsigned long sector_size;
+	unsigned int page_shift;
+
+	page_shift = stm->params->l2_page_size;
+	sector_size = (1 << page_shift) * stm->params->pages_per_sector;
+	if (offset % sector_size) {
+		debug("SF: Probe block offset not multiple of sector size\n");
+		return -1;
+	}
+
+	*program_len = 1 << page_shift;
+	*erase_len = sector_size;
+	return 0;
+}
+
 struct spi_flash *spi_flash_probe_winbond(struct spi_slave *spi, u8 *idcode)
 {
 	const struct winbond_spi_flash_params *params;
@@ -342,7 +361,7 @@ struct spi_flash *spi_flash_probe_winbond(struct spi_slave *spi, u8 *idcode)
 		return NULL;
 	}
 
-	stm = malloc(sizeof(struct winbond_spi_flash));
+	stm = calloc(sizeof(struct winbond_spi_flash), 1);
 	if (!stm) {
 		debug("SF: Failed to allocate memory\n");
 		return NULL;
@@ -361,6 +380,7 @@ struct spi_flash *spi_flash_probe_winbond(struct spi_slave *spi, u8 *idcode)
 	stm->flash.size = page_size * params->pages_per_sector
 				* params->sectors_per_block
 				* params->nr_blocks;
+	stm->flash.probe_block = windbond_probe_block;
 
 	printf("SF: Detected %s with page size %u, total ",
 	       params->name, page_size);
