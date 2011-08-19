@@ -77,6 +77,7 @@ struct fdt_uart {
 	int enabled;	/* 1 to enable, 0 to disable */
 	int interrupt;	/* interrupt line */
 	int silent;	/* 1 for silent UART (supresses output by default) */
+	int io_mapped;	/* 1 for IO mapped UART, 0 for memory mapped UART */
 	enum fdt_compat_id compat; /* our selected driver */
 };
 
