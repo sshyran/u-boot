@@ -94,7 +94,6 @@ static int spi_flash_update(struct spi_flash *flash, u32 offset,
 	size_t cmp_size = 0;
 	size_t todo;	/* number of bytes to do in this pass */
 	size_t skipped, written;		/* statistics */
-	const char *end = buf + len;
 
 	for (skipped = written = 0; !err && len > 0;
 			buf += todo, offset += todo, len -= todo) {
