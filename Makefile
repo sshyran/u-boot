@@ -355,6 +355,10 @@ $(obj)u-boot.dtb:	$(obj)u-boot
 		$(MAKE) -C dts binary
 		mv $(obj)dts/dt.dtb $@
 
+ifdef DEV_TREE_SEPARATE
+all:		$(obj)u-boot.dtb
+endif
+
 $(obj)u-boot.hex:	$(obj)u-boot
 		$(OBJCOPY) ${OBJCFLAGS} -O ihex $< $@
 
