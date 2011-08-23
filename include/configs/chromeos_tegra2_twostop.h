@@ -10,6 +10,9 @@
 /* So far all our tegra2-based boards share the seaboard config. */
 #include <configs/seaboard.h>
 
+/* Support USB booting */
+#define CONFIG_CHROMEOS_USB
+
 #include "chromeos.h"
 
 /* We initialize Chrome OS -specific GPIOs here */
