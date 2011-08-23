@@ -50,6 +50,10 @@
 #include <libfdt.h>
 #endif
 
+#ifdef CONFIG_CHROMEOS
+#include <chromeos/common.h>
+#endif
+
 #include <asm/arch/warmboot.h>
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -257,6 +261,10 @@ int board_init(void)
 
 	/* boot param addr */
 	gd->bd->bi_boot_params = (NV_PA_SDRAM_BASE + 0x100);
+
+#ifdef CONFIG_CHROMEOS
+	vbexport_init();
+#endif
 
 	return 0;
 }
