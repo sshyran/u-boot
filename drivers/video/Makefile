@@ -43,6 +43,7 @@ COBJS-$(CONFIG_VIDEO_SMI_LYNXEM) += smiLynxEM.o videomodes.o
 COBJS-$(CONFIG_VIDEO_TEGRA2) += tegra2.o
 COBJS-$(CONFIG_VIDEO_VCXK) += bus_vcxk.o
 COBJS-$(CONFIG_VIDEO_COREBOOT) += coreboot_fb.o
+COBJS-$(CONFIG_VIDEO_TEST) += test_lcd.o
 
 COBJS	:= $(COBJS-y)
 SRCS	:= $(COBJS:.o=.c)
