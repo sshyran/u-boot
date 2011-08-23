@@ -116,8 +116,8 @@ void lcd_sync(void)
 	int line_length;
 
 	if (lcd_flush_dcache)
-		flush_dcache_range((u32)lcd_base,
-			(u32)(lcd_base + lcd_get_size(&line_length)));
+		flush_dcache_range((ulong)lcd_base,
+			(ulong)(lcd_base + lcd_get_size(&line_length)));
 }
 
 void lcd_set_flush_dcache(int flush)
