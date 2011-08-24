@@ -282,7 +282,7 @@ int fdt_decode_uart_console(const void *blob, struct fdt_uart *uart,
 	uart->enabled = get_is_enabled(blob, node, 1);
 	uart->interrupt = get_int(blob, node, "interrupts", -1);
 	uart->silent = fdt_decode_get_config_int(blob, "silent_console", 0);
-	uart->io_mapped = fdt_decode_get_config_int(blob, "io-mapped", 0);
+	uart->io_mapped = get_int(blob, node, "io-mapped", 0);
 	uart->compat = fdt_decode_lookup(blob, node);
 
 	/* Calculate divisor if required */
