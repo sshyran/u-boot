@@ -39,8 +39,3 @@ uint32_t VbExIsShutdownRequested(void)
 
 	return 0;
 }
-
-int vbexport_init(void)
-{
-	return 0;
-}
