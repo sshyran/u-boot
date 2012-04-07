@@ -154,6 +154,9 @@
 /* U-boot copy size from boot Media to DRAM.*/
 #define BL2_START_OFFSET	(CONFIG_BL2_OFFSET/512)
 
+/* Set the emmc bus width to 8 */
+#define CONFIG_MSHC_BUS_WIDTH	8
+
 #if BUILD_PART_FS_STUFF
 #define CONFIG_DOS_PARTITION
 #define CONFIG_EFI_PARTITION

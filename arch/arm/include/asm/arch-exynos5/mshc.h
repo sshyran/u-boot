@@ -1,6 +1,5 @@
 /*
  * (C) Copyright 2012 Samsung Electronics
- * Minkyu Kang <mk7.kang@samsung.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,10 +18,12 @@
  *
  */
 
-#ifndef __ASM_ARM_ARCH_EXYNOS5_CLK_H__
-#define __ASM_ARM_ARCH_EXYNOS5_CLK_H__
+#ifndef __ASM_ARM_ARCH_EXYNOS5_MSHC_H__
+#define __ASM_ARM_ARCH_EXYNOS5_MSHC_H__
 
-#include <asm/arch-exynos/clk.h>
-int get_mshc_clk_div(void);
+#include <asm/arch-exynos/mshc.h>
 
-#endif  /* __ASM_ARM_ARCH_EXYNOS5_CLK_H__ */
+#define COMMAND_TIMEOUT 10000
+#define TIMEOUT_MS	100
+
+#endif  /* __ASM_ARM_ARCH_EXYNOS5_MSHC_H__ */
