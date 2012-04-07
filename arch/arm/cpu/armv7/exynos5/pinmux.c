@@ -102,6 +102,32 @@ int exynos_pinmux_config(enum periph_id peripheral, int flags)
 			gpio_set_drv(start + i, GPIO_DRV_4X);
 		}
 		break;
+	case PERIPH_ID_SDMMC4:
+		bank = &gpio1->c0; bank_ext = &gpio1->c1;
+
+		if ((flags & PINMUX_FLAG_8BIT_MODE) && !bank_ext) {
+			debug("SDMMC device %d does not support 8bit mode",
+					peripheral);
+			return -1;
+		}
+		if (flags & PINMUX_FLAG_8BIT_MODE) {
+			for (i = 3; i <= 6; i++) {
+				s5p_gpio_cfg_pin(bank_ext, i, GPIO_FUNC(0x4));
+				s5p_gpio_set_pull(bank_ext, i, GPIO_PULL_UP);
+				s5p_gpio_set_drv(bank_ext, i, GPIO_DRV_2X);
+			}
+		}
+		for (i = 0; i < 2; i++) {
+			s5p_gpio_cfg_pin(bank, i, GPIO_FUNC(0x3));
+			s5p_gpio_set_pull(bank, i, GPIO_PULL_NONE);
+			s5p_gpio_set_drv(bank, i, GPIO_DRV_2X);
+		}
+		for (i = 2; i <= 6; i++) {
+			s5p_gpio_cfg_pin(bank, i, GPIO_FUNC(0x3));
+			s5p_gpio_set_pull(bank, i, GPIO_PULL_UP);
+			s5p_gpio_set_drv(bank, i, GPIO_DRV_2X);
+		}
+		break;
 	case PERIPH_ID_SROMC:
 		/*
 		 * SROM:CS1 and EBI
