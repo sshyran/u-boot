@@ -22,6 +22,8 @@
 
 #include <common.h>
 #include <config.h>
+#include <asm/arch/clock.h>
+#include <asm/arch/clk.h>
 
 #define OM_STAT		(0x1f << 1)
 
@@ -34,6 +36,15 @@
  * @return 1 = True or 0 = False
  */
 typedef u32 (*mmc_copy_func_t)(u32 offset, u32 nblock, u32 dst);
+
+/**
+ * Copy data from eMMC device to RAM.
+ *
+ * @param nblock	Number of blocks
+ * @param dst		Destination address
+ * @return 1 = True or 0 = False
+ */
+typedef u32 (*emmc_copy_func_t)(u32 offset, u32 dst);
 
 /**
  * Copy data from SPI flash to RAM.
@@ -52,6 +63,24 @@ typedef u32 (*spi_copy_func_t)(u32 offset, u32 nblock, u32 dst);
  * @return 1 = True or 0 = False
  */
 typedef u32 (*usb_copy_func_t)(void);
+
+/**
+ * Change the mshc controller clock divider
+ * to clock mshc at 40Mhz.
+ * This is needed to support emmc boot.
+ */
+static int emmc_divider_change()
+{
+	struct exynos5_clock *clk =
+		(struct exynos5_clock *)samsung_get_base_clock();
+	unsigned int addr;
+	unsigned int div_mmc;
+
+	addr = (unsigned int)&clk->div_fsys3;
+	div_mmc = readl(addr) & ~0xff0f;
+	div_mmc |= (1 << 8) | 9;
+	writel(div_mmc, addr);
+}
 
 /*
  * Set/clear program flow prediction and return the previous state.
@@ -75,6 +104,7 @@ static void copy_uboot_to_ram(void)
 	int is_cr_z_set;
 	enum boot_mode boot_source;
 	mmc_copy_func_t mmc_copy;
+	emmc_copy_func_t emmc_copy;
 
 #if defined(CONFIG_EXYNOS_SPI_BOOT)
 	spi_copy_func_t spi_copy;
@@ -113,6 +143,11 @@ static void copy_uboot_to_ram(void)
 		assert(!(uboot_size & 511));
 		mmc_copy(BL2_START_OFFSET, uboot_size / 512,
 				CONFIG_SYS_TEXT_BASE);
+		break;
+	case BOOT_MODE_EMMC:
+		emmc_divider_change();
+		emmc_copy = *(emmc_copy_func_t *)EXYNOS_COPY_EMMC_FNPTR_ADDR;
+		emmc_copy(EMMC_UBOOT_BLKCNT, CONFIG_SYS_TEXT_BASE);
 		break;
 	default:
 		/* TODO: Call panic() here */

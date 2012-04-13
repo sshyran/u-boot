@@ -29,6 +29,9 @@
 /* Address of address of function that copys data from SD or MMC */
 #define EXYNOS_COPY_MMC_FNPTR_ADDR	0x02020030
 
+/* Address of address of function that copys data from eMMC4.4 */
+#define EXYNOS_COPY_EMMC_FNPTR_ADDR	0x02020044
+
 /* Address of address of function that copys data from SPI */
 #define EXYNOS_COPY_SPI_FNPTR_ADDR	0x02020058
 
@@ -50,6 +53,7 @@ enum boot_mode {
 	 * pin values are the same across Exynos4 and Exynos5.
 	 */
 	BOOT_MODE_MMC = 4,
+	BOOT_MODE_EMMC = 8,
 	BOOT_MODE_SERIAL = 20,
 	/* Boot based on Operating Mode pin settings */
 	BOOT_MODE_OM = 32,
