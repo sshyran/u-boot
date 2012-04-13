@@ -147,7 +147,7 @@ static void copy_uboot_to_ram(void)
 	case BOOT_MODE_EMMC:
 		emmc_divider_change();
 		emmc_copy = *(emmc_copy_func_t *)EXYNOS_COPY_EMMC_FNPTR_ADDR;
-		emmc_copy(EMMC_UBOOT_BLKCNT, CONFIG_SYS_TEXT_BASE);
+		emmc_copy(CONFIG_EMMC_UBOOT_BLKCNT, CONFIG_SYS_TEXT_BASE);
 		break;
 	default:
 		/* TODO: Call panic() here */
