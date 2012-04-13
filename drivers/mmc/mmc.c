@@ -1310,3 +1310,114 @@ int mmc_initialize(bd_t *bis)
 
 	return 0;
 }
+
+int mmc_boot_partition_size_change(struct mmc *mmc, unsigned long bootsize,
+					unsigned long rpmbsize)
+{
+	int err;
+	struct mmc_cmd cmd;
+
+	/* Only use this command for raw eMMC */
+	cmd.cmdidx = MMC_CMD_RES_MAN;
+	cmd.resp_type = MMC_RSP_R1b;
+	cmd.cmdarg = 0xefac62ec; /* TODO: write some comments for this value */
+	cmd.flags = 0;
+
+	err = mmc_send_cmd(mmc, &cmd, NULL);
+	if (err)
+		return err;
+
+	/* Boot partition changing mode */
+	cmd.cmdidx = MMC_CMD_RES_MAN;
+	cmd.resp_type = MMC_RSP_R1b;
+	cmd.cmdarg = 0xcbaea7; /* TODO: write some comments for this value */
+	cmd.flags = 0;
+
+	err = mmc_send_cmd(mmc, &cmd, NULL);
+	if (err)
+		return err;
+
+	/* Two boot partitions and RPMB partition size is multiple of 128KB */
+	bootsize = (bootsize * 1024) / 128;
+	rpmbsize = (rpmbsize * 1024) / 128;
+
+	/* Arg: boot partition size */
+	cmd.cmdidx = 62;
+	cmd.resp_type = MMC_RSP_R1b;
+	cmd.cmdarg = bootsize;
+	cmd.flags = 0;
+
+	err = mmc_send_cmd(mmc, &cmd, NULL);
+	if (err)
+		return err;
+
+
+	/* Arg: RPMB partition size */
+	cmd.cmdidx = 62;
+	cmd.resp_type = MMC_RSP_R1b;
+	cmd.cmdarg = rpmbsize;
+	cmd.flags = 0;
+
+	err = mmc_send_cmd(mmc, &cmd, NULL);
+	if (err)
+		return err;
+
+	return 0;
+}
+
+int mmc_boot_open(struct mmc *mmc)
+{
+	int err;
+	struct mmc_cmd cmd;
+
+	/* Boot ack enable, boot partition enable , boot partition access */
+	cmd.cmdidx = MMC_CMD_SWITCH;
+	cmd.resp_type = MMC_RSP_R1b;
+	cmd.cmdarg = (MMC_SWITCH_MODE_WRITE_BYTE << 24 |
+			EXT_CSD_PART_CONF << 16 |
+			(EXT_CSD_BOOT_ACK_ENABLE |
+			 EXT_CSD_BOOT_PARTITION_ENABLE |
+			 EXT_CSD_PARTITION_ACCESS_ENABLE) << 8);
+	cmd.flags = 0;
+
+	err = mmc_send_cmd(mmc, &cmd, NULL);
+	if (err)
+		return err;
+
+	/* 4bit transfer mode at booting time. */
+	cmd.cmdidx = MMC_CMD_SWITCH;
+	cmd.resp_type = MMC_RSP_R1b;
+	cmd.cmdarg = (MMC_SWITCH_MODE_WRITE_BYTE << 24|
+			EXT_CSD_BOOT_BUS_WIDTH << 16|
+			 EXT_CSD_BOOT_BUS_WIDTH << 8);
+	cmd.flags = 0;
+
+	err = mmc_send_cmd(mmc, &cmd, NULL);
+	if (err)
+		return err;
+
+	return 0;
+}
+
+int mmc_boot_close(struct mmc *mmc)
+{
+	int err;
+	struct mmc_cmd cmd;
+
+	/* Boot ack enable, boot partition enable , boot partition access */
+	cmd.cmdidx = MMC_CMD_SWITCH;
+	cmd.resp_type = MMC_RSP_R1b;
+	cmd.cmdarg = (MMC_SWITCH_MODE_WRITE_BYTE << 24|
+			EXT_CSD_PART_CONF << 16|
+			(EXT_CSD_BOOT_ACK_ENABLE |
+			 EXT_CSD_BOOT_PARTITION_ENABLE |
+			 EXT_CSD_PARTITION_ACCESS_DISABLE) << 8);
+
+	cmd.flags = 0;
+
+	err = mmc_send_cmd(mmc, &cmd, NULL);
+	if (err)
+		return err;
+
+	return 0;
+}

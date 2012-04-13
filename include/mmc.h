@@ -82,6 +82,7 @@
 #define MMC_CMD_APP_CMD			55
 #define MMC_CMD_SPI_READ_OCR		58
 #define MMC_CMD_SPI_CRC_ON_OFF		59
+#define MMC_CMD_RES_MAN			62
 
 #define SD_CMD_SEND_RELATIVE_ADDR	3
 #define SD_CMD_SWITCH_FUNC		6
@@ -147,6 +148,7 @@
  */
 #define EXT_CSD_PARTITIONING_SUPPORT	160	/* RO */
 #define EXT_CSD_ERASE_GROUP_DEF		175	/* R/W */
+#define EXT_CSD_BOOT_BUS_WIDTH		177	/* R/W */
 #define EXT_CSD_PART_CONF		179	/* R/W */
 #define EXT_CSD_BUS_WIDTH		183	/* R/W */
 #define EXT_CSD_HS_TIMING		185	/* R/W */
@@ -169,6 +171,13 @@
 #define EXT_CSD_BUS_WIDTH_1	0	/* Card is in 1 bit mode */
 #define EXT_CSD_BUS_WIDTH_4	1	/* Card is in 4 bit mode */
 #define EXT_CSD_BUS_WIDTH_8	2	/* Card is in 8 bit mode */
+
+/* EXT_CSD boot partition field definitions */
+#define	EXT_CSD_PARTITION_ACCESS_ENABLE		(1 << 0) /* R/W/E */
+#define	EXT_CSD_PARTITION_ACCESS_DISABLE	(0 << 0) /* R/W/E */
+#define EXT_CSD_BOOT_PARTITION_ENABLE		(1 << 3) /* R/W/E */
+#define EXT_CSD_BOOT_ACK_ENABLE			(1 << 6) /* R/W/E */
+#define EXT_CSD_BOOT_BUS_WIDTH			(1 << 0) /* R/W/E */
 
 #define R1_ILLEGAL_COMMAND		(1 << 22)
 #define R1_APP_CMD			(1 << 5)
@@ -318,6 +327,10 @@ int get_mmc_num(void);
 int board_mmc_getcd(struct mmc *mmc);
 int mmc_switch_part(int dev_num, unsigned int part_num);
 int mmc_getcd(struct mmc *mmc);
+int mmc_boot_partition_size_change(struct mmc *mmc, unsigned long bootsize,
+						unsigned long rpmbsize);
+int mmc_boot_open(struct mmc *mmc);
+int mmc_boot_close(struct mmc *mmc);
 
 #ifdef CONFIG_GENERIC_MMC
 int atmel_mci_init(void *regs);
