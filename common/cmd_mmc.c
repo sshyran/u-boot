@@ -166,6 +166,91 @@ U_BOOT_CMD(
 	""
 );
 
+int do_emmc(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	int rc = 0;
+	u32 dev;
+	dev = simple_strtoul(argv[2], NULL, 10);
+	struct mmc *mmc = find_mmc_device(dev);
+
+	if (!mmc) {
+		printf("no mmc device at slot %x\n", dev);
+		return 1;
+	}
+
+	switch (argc) {
+	case 5:
+		if (strcmp(argv[1], "setpart") == 0) {
+			u32 bootsize = simple_strtoul(argv[3], NULL, 10);
+			u32 rpmbsize = simple_strtoul(argv[4], NULL, 10);
+
+			rc = mmc_boot_partition_size_change(mmc,
+							bootsize, rpmbsize);
+			if (rc == 0) {
+				printf("eMMC boot partition Size"
+					"is %d MB.!!\n", bootsize);
+				printf("eMMC RPMB partition Size"
+					"is %d MB.!!\n", rpmbsize);
+			} else {
+				printf("eMMC boot partition Size"
+					"change Failed.!!\n");
+			}
+		} else {
+			printf("Usage:\n%s\n", cmdtp->usage);
+			rc = 1;
+			return CMD_RET_USAGE;
+		}
+		break;
+
+	case 3:
+		if (strcmp(argv[1], "bootopen") == 0) {
+
+			rc = mmc_boot_open(mmc);
+
+			if (rc == 0)
+				debug("eMMC OPEN Success.!!\n");
+			else
+				printf("eMMC OPEN Failed.!!\n");
+
+		} else if (strcmp(argv[1], "bootclose") == 0) {
+
+			rc = mmc_boot_close(mmc);
+
+			if (rc == 0)
+				debug("eMMC CLOSE Success.!!\n");
+			 else
+				printf("eMMC CLOSE Failed.!!\n");
+		} else {
+			printf("Usage:\n%s\n", cmdtp->usage);
+			rc = 1;
+			return CMD_RET_USAGE;
+		}
+		break;
+	default:
+		printf("Usage:\n%s\n", cmdtp->usage);
+		rc = 1;
+		return CMD_RET_USAGE;
+		break;
+	}
+	return rc;
+}
+
+
+U_BOOT_CMD(
+	emmc,	5,	0,	do_emmc,
+	"Open/Close eMMC boot Partition",
+	"emmc boootopen <device num>\n"
+	"emmc bootclose <device num>\n"
+	"emmc setpart <device num> <boot partiton size MB>"
+				"<RPMB partition size MB>\n"
+	"\t\t\t!!!Notice!!!\n"
+	"!You must close eMMC boot Partition"
+	"after all image writing!\n"
+	"!eMMC boot partition has continuity"
+	"at image writing time.!\n"
+	"!So, Do not close boot partition,"
+	"Before, all images is written.!\n");
+
 int do_mmcops(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	enum mmc_state state;
