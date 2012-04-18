@@ -248,8 +248,17 @@
 #define PCLK_CDREX_RATIO	0x1
 #define ACLK_CDREX_RATIO	0x1
 
+#if defined(CONFIG_LPDDR3)
 #define CLK_DIV_CDREX_VAL	0x71720071
 
+#elif defined(CONFIG_DDR3)
+#define CLK_DIV_CDREX_VAL	((MCLK_DPHY_RATIO << 20)        \
+                                | (MCLK_CDREX_RATIO << 16)      \
+				| (ACLK_C2C_200_RATIO << 12)	\
+				| (C2C_CLK_400_RATIO << 8)	\
+				| (PCLK_CDREX_RATIO << 4)	\
+				| (ACLK_CDREX_RATIO))
+#endif
 /* CLK_SRC_TOP0	*/
 #define MUX_ACLK_300_GSCL_SEL           0x0
 #define MUX_ACLK_300_GSCL_MID_SEL       0x0
