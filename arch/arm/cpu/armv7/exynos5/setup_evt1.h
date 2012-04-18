@@ -384,6 +384,27 @@
 				| (UART1_SEL << 4)      \
 				| (UART0_SEL))
 
+/* CLK_SRC_PERIC1 */
+/* SRC_CLOCK = SCLK_MPLL */
+#define SPI0_SEL		6
+#define SPI1_SEL		6
+#define SPI2_SEL		6
+#define CLK_SRC_PERIC1_VAL	((SPI2_SEL << 24) \
+				| (SPI1_SEL << 20) \
+				| (SPI0_SEL << 16))
+
+/* SCLK_SRC_ISP - set SPI0/1 to 6 = SCLK_MPLL_USER */
+#define SPI0_ISP_SEL		6
+#define SPI1_ISP_SEL		6
+#define SCLK_SRC_ISP_VAL	(SPI1_ISP_SEL << 4) \
+				| (SPI0_ISP_SEL << 0)
+
+/* SCLK_DIV_ISP - set SPI0/1 to 0xf = divide by 16 */
+#define SPI0_ISP_RATIO		0xf
+#define SPI1_ISP_RATIO		0xf
+#define SCLK_DIV_ISP_VAL	(SPI1_ISP_RATIO << 12) \
+				| (SPI0_ISP_RATIO << 0)
+
 /* CLK_DIV_PERIL0	*/
 #define UART5_RATIO	7
 #define UART4_RATIO	7
@@ -396,6 +417,22 @@
 				| (UART2_RATIO << 8)    \
 				| (UART1_RATIO << 4)    \
 				| (UART0_RATIO))
+/* CLK_DIV_PERIC1 */
+#define SPI1_RATIO		0xf
+#define SPI0_RATIO		0xf
+#define SPI1_SUB_RATIO		0x0
+#define SPI0_SUB_RATIO		0x0
+#define CLK_DIV_PERIC1_VAL	((SPI1_SUB_RATIO << 24) \
+				| ((SPI1_RATIO << 16) \
+				| (SPI0_SUB_RATIO << 8) \
+				| (SPI0_RATIO << 0)))
+
+/* CLK_DIV_PERIC2 */
+#define SPI2_RATIO		0xf
+#define SPI2_SUB_RATIO		0x0
+#define CLK_DIV_PERIC2_VAL	((SPI2_SUB_RATIO << 8) \
+				| (SPI2_RATIO << 0))
+
 /* CLK_SRC_LEX */
 #define CLK_SRC_LEX_VAL         0x0
 

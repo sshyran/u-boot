@@ -225,6 +225,9 @@ void system_clock_init()
 	writel(CLK_SRC_PERIC0_VAL, &clk->src_peric0);
 	writel(CLK_DIV_PERIC0_VAL, &clk->div_peric0);
 
+	writel(CLK_SRC_PERIC1_VAL, &clk->src_peric1);
+	writel(CLK_DIV_PERIC1_VAL, &clk->div_peric1);
+
 	val = readl(&clk->div_fsys2);
 	val &= ~(0xff << 8);
 	val &= ~0xf;
