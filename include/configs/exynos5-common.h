@@ -29,6 +29,8 @@
 #define CONFIG_SAMSUNG			/* in a SAMSUNG core */
 #define CONFIG_S5P			/* S5P Family */
 #define CONFIG_EXYNOS5			/* which is in a Exynos5 Family */
+#define CONFIG_CPU_EXYNOS5250_EVT1	/* Exynos5250 Rev 1.0 */
+#define CONFIG_CLK_ARM_1000_APLL_1000	/* APLL running at 1GHz */
 #define BUILD_PART_FS_STUFF	1	/* Disk Partition Support */
 
 #include <asm/arch/cpu.h>		/* get chip and board defs */
