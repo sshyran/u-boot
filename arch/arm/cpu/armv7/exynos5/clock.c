@@ -88,6 +88,14 @@ unsigned long get_pll_clk(int pllreg)
 			s = 1;
 		/* FOUT = MDIV * FIN / (PDIV * 2^(SDIV - 1)) */
 		fout = m * (freq / (p * (1 << (s - 1))));
+
+#ifdef CONFIG_CPU_EXYNOS5250_EVT1
+		/* According to the user manual, in EVT1 MPLL always gives
+		 * 1.6Ghz clock, so divide by 2 to get 800Mhz MPLL clock.
+		 */
+		if (pllreg == MPLL)
+			fout /= 2;
+#endif
 	}
 
 	return fout;
