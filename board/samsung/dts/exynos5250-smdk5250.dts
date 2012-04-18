@@ -18,7 +18,8 @@
 
 	aliases {
 		serial0 = "/serial@12C30000";
-		sdmmc0 = "/sdhci@12220000";
+		mshci0 = "/mshci@12200000";
+		mshci2 = "/mshci@12220000";
 	};
 
 	serial@12C30000 {
@@ -50,8 +51,16 @@
 		status = "disabled";
 	};
 
-	mshci@12240000 {
+	mshci@12200000 {
+		id = <0>;
 		samsung,mshci-bus-width = <8>;
+		reg = <0x12200000 0x1000>;
+	};
+
+	mshci@12220000 {
+		reg = <0x12220000 0x1000>;
+		id = <2>;
+		samsung,mshci-bus-width = <4>;
 	};
 
 	sromc@12250000 {
