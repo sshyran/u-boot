@@ -24,12 +24,14 @@
 #include <fdtdec.h>
 #include <mmc.h>
 #include <asm/arch/clk.h>
+#include <asm/arch/clock.h>
 #include <asm/arch/cpu.h>
 #include <asm/arch/mshc.h>
+#define MAX_MMC_CHANNEL		4
 
 /* Support just the one mshc host */
-struct mmc mshci_dev;
-struct mshci_host mshci_host;
+struct mmc mshci_dev[MAX_MMC_CHANNEL];
+struct mshci_host mshci_host[MAX_MMC_CHANNEL];
 
 /* Struct to hold mshci register and bus width */
 struct fdt_mshci {
@@ -160,7 +162,6 @@ static void mshci_prepare_data(struct mshci_host *host, struct mmc_data *data)
 	ret = mshci_reset_fifo(host);
 	if (ret < 0) {
 		debug("Fail to reset FIFO\n");
-		return -1;
 	}
 
 	pdesc_dmac = idmac_desc;
@@ -373,7 +374,7 @@ static void mshci_clock_onoff(struct mshci_host *host, int val)
 	}
 }
 
-#define MAX_EMMC_CLOCK	(40000000) /* Limit mshc clock to 40Mhz */
+#define MAX_EMMC_CLOCK	(52000000) /* Limit mshc clock to 40Mhz */
 
 /*
  * change host controller clock
@@ -386,6 +387,8 @@ static void mshci_change_clock(struct mshci_host *host, uint clock)
 	int div;
 	u32 mpll_clock;
 	u32 sclk_mshc;
+	u32 div_mmc, div_mmc_pre, sclk_mmc;
+	struct exynos5_clock *clk = (struct exynos5_clock *)samsung_get_base_clock();
 
 	if (clock == host->clock)
 		return;
@@ -399,17 +402,53 @@ static void mshci_change_clock(struct mshci_host *host, uint clock)
 	/* disable the clock before changing it */
 	mshci_clock_onoff(host, CLK_DISABLE);
 
-	sclk_mshc = get_mshc_clk_div();
+#if defined(CONFIG_CPU_EXYNOS5250_EVT1)
+#ifdef USE_MMC0
+	/* Calculate SCLK_MMC0 */
+		div_mmc = ((readl(&clk->div_fsys1)) & (0x0000000f)) + 1;
+		div_mmc_pre = ((readl(&clk->div_fsys1) & (0x0000ff00))>>8) + 1;
+		mpll_clock = 800000000; //get_MPLL_CLK();
+		sclk_mmc = (mpll_clock/div_mmc)/div_mmc_pre;
+#endif
+#endif
+#if defined(CONFIG_CPU_EXYNOS5250_EVT1)
+#ifdef USE_MMC2
+	/* Calculate SCLK_MMC2 */
+		div_mmc = (readl(&clk->div_fsys2) & (0x0000000f)) + 1;
+		div_mmc_pre = ((readl(&clk->div_fsys2) & (0x0000ff00))>>8) + 1;
+		mpll_clock = 800000000; //get_MPLL_CLK();
+		sclk_mmc = (mpll_clock/div_mmc)/div_mmc_pre;
+#endif
+#endif
+	dbg("mpll_clock: %dMHz\n", mpll_clock/1000000);
+	dbg("sclk_mmc: %dKHz\n", sclk_mmc/1000);
+#if defined(CONFIG_CPU_EXYNOS5250_EVT1)
+	dbg("Phase Shift CLK: %dKHz\n", (sclk_mmc/4)/1000);
+#else
+	dbg("Phase Shift CLK: %dKHz\n", (sclk_mmc/2)/1000);
+#endif
 
-	/* clkdiv */
-	for (div = 1 ; div <= 0xFF; div++) {
-		if (((sclk_mshc / 2) / (2*div)) <= clock) {
+	/* CLKDIV */
+	for (div=1 ; div <= 0xFF; div++)
+	{
+#if defined(CONFIG_CPU_EXYNOS5250_EVT1)
+		if (((sclk_mmc / 4) /(2*div)) <= clock) {
+#else
+		if (((sclk_mmc / 2) /(2*div)) <= clock) {
+#endif
 			writel(div, &host->reg->clkdiv);
 			break;
 		}
 	}
+	dbg("div: %08d\n", div);
+#if defined(CONFIG_CPU_EXYNOS5250_EVT1)
+	dbg("CLOCK:: %dKHz\n", ((sclk_mmc/4)/(div*2))/1000);
+#else
+	dbg("CLOCK:: %dKHz\n", ((sclk_mmc/2)/(div*2))/1000);
+#endif
 
-	writel(div, &host->reg->clkdiv);
+			writel(div, &host->reg->clkdiv);
+
 	writel(0, &host->reg->cmd);
 	writel(CMD_ONLY_CLK, &host->reg->cmd);
 
@@ -446,8 +485,11 @@ static void s5p_mshci_set_ios(struct mmc *mmc)
 		writel(PORT0_CARD_WIDTH4, &host->reg->ctype);
 	else
 		writel(PORT0_CARD_WIDTH1, &host->reg->ctype);
-
-	writel(0x00020001, &host->reg->clksel);
+#ifdef USE_MMC0
+	writel(0x03030001, &host->reg->clksel);
+#else
+	writel(0x03020001, &host->reg->clksel);
+#endif
 }
 
 /*
@@ -459,7 +501,10 @@ static void mshci_fifo_init(struct mshci_host *host)
 
 	fifo_val = readl(&host->reg->fifoth);
 
-	fifo_depth = 0x80;
+	if (host->version == 0x240a)
+		fifo_depth = 0x80;
+	else
+		fifo_depth = 0x20;
 	fifo_threshold = fifo_depth / 2;
 
 	fifo_val &= ~(RX_WMARK | TX_WMARK | MSIZE_MASK);
@@ -488,9 +533,11 @@ static int s5p_mphci_init(struct mmc *mmc)
 	struct mshci_host *host = (struct mshci_host *)mmc->priv;
 	unsigned int ier;
 
+	host->version = GET_VERID(readl(&host->reg->verid));
 	mshci_init(host);
 
 	/* enumerate at 400KHz */
+
 	mshci_change_clock(host, 400000);
 
 	/* set auto stop command */
@@ -514,33 +561,31 @@ static int s5p_mphci_init(struct mmc *mmc)
 	return 0;
 }
 
-static int s5p_mshci_initialize(int bus_width, struct s5p_mshci *reg)
+static int s5p_mshci_initialize(int bus_width, struct s5p_mshci *reg,
+					int channel)
 {
 	struct mmc *mmc;
 	u32 chip_version, main_rev, sub_rev;
 
-	mmc = &mshci_dev;
+	mmc = &mshci_dev[channel];
 
-	sprintf(mmc->name, "S5P MSHC");
+	sprintf(mmc->name, "S5P MSHC%d",channel);
 
-	mmc->priv = &mshci_host;
+	mmc->priv = &mshci_host[channel];
 	mmc->send_cmd = s5p_mshci_send_command;
 	mmc->set_ios = s5p_mshci_set_ios;
 	mmc->init = s5p_mphci_init;
 
 	mmc->voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
-	mmc->host_caps = MMC_MODE_HS_52MHz | MMC_MODE_HS | MMC_MODE_HC;
+	mmc->host_caps = MMC_MODE_HS_52MHz | MMC_MODE_HS |
+			MMC_MODE_HC | MMC_MODE_8BIT | MMC_MODE_4BIT;
 
-	if (bus_width == 8)
-		mmc->host_caps |= MMC_MODE_8BIT;
-	else
-		mmc->host_caps |= MMC_MODE_4BIT;
 
 	mmc->f_min = 400000;
-	mmc->f_max = 40000000;
+	mmc->f_max = 50000000;
 
-	mshci_host.clock = 0;
-	mshci_host.reg =  reg;
+	mshci_host[channel].clock = 0;
+	mshci_host[channel].reg =  reg;
 	mmc->b_max = 1;
 	mmc_register(mmc);
 
@@ -548,16 +593,10 @@ static int s5p_mshci_initialize(int bus_width, struct s5p_mshci *reg)
 }
 
 #ifdef CONFIG_OF_CONTROL
-int fdtdec_decode_mshci(const void *blob, struct fdt_mshci *config)
+int fdtdec_decode_mshci(const void *blob, int node, struct fdt_mshci *config)
 {
-	int node;
-
-	node = fdtdec_next_compatible(blob, 0, COMPAT_SAMSUNG_EXYNOS5_MSHC);
-	if (node < 0)
-		return node;
-
 	config->width = fdtdec_get_int(blob, node,
-				"samsung,mshci-bus-width", 8);
+				"samsung,mshci-bus-width", 4);
 
 	config->reg = (struct s5p_mshci *)fdtdec_get_addr(blob, node, "reg");
 	if ((fdt_addr_t)config->reg == FDT_ADDR_T_NONE)
@@ -572,18 +611,23 @@ int fdtdec_decode_mshci(const void *blob, struct fdt_mshci *config)
 }
 #endif
 
-int s5p_mshci_init(const void *blob)
+int s5p_mshci_init(int id, const void *blob)
 {
 	struct fdt_mshci config;
 	struct s5p_mshci *base_addr =
 			(struct s5p_mshci *)(samsung_get_base_mshci());
+	int index = 0;
+	int node;
+	char alias[10];
 
-	if (!blob) {
-		if (fdtdec_decode_mshci(blob, &config)) {
+	sprintf(alias, "mshci%d", id);
+	if (blob) {
+		node = fdtdec_find_alias_node(blob, alias);
+		if (fdtdec_decode_mshci(blob, node, &config)) {
 			debug("mshc configuration failed\n");
 			return -1;
 		}
-		return s5p_mshci_initialize(config.width, config.reg);
+		return s5p_mshci_initialize(config.width, config.reg, id);
 	}
-	return s5p_mshci_initialize(CONFIG_MSHC_BUS_WIDTH, base_addr);
+	return s5p_mshci_initialize(0, CONFIG_MSHC_BUS_WIDTH, base_addr);
 }

@@ -20,10 +20,12 @@
 #ifndef __ASM_ARCH_COMMON_MSHC_H
 #define __ASM_ARCH_COMMON_MSHC_H
 
-#ifndef __ASSEMBLY__
+#ifndef __ASSEMBLY_
+#define GET_VERID(x)	((x) & 0xFFFF)
 struct mshci_host {
 	struct s5p_mshci	*reg;		/* Mapped address */
 	unsigned int		clock;		/* Current clock in MHz */
+	unsigned int		version;
 };
 
 struct s5p_mshci {
@@ -161,7 +163,7 @@ struct mshci_idmac {
 #define MSHCI_IDMAC_FS		(0x1 << 3)
 #define MSHCI_IDMAC_LD		(0x1 << 2)
 
-int s5p_mshci_init(const void *blob);
+int s5p_mshci_init(int id, const void *blob);
 
 #endif
 #endif
