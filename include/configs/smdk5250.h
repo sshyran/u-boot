@@ -33,6 +33,8 @@
 
 /* High Level Configuration Options */
 #define CONFIG_SMDK5250
+#define USE_MMC0	1
+#define USE_MMC2	1
 
 /* Choose DDR Type below: Uncomment the type of DDR present on your board */
 #define CONFIG_DDR3
