@@ -11,6 +11,9 @@
 
 /dts-v1/;
 /include/ "exynos5250.dtsi"
+/include/ "flashmap-exynos-ro.dtsi"
+/include/ "flashmap-4mb-rw.dtsi"
+/include/ "chromeos-exynos.dtsi"
 
 / {
 	model = "SAMSUNG SMDK5250 board based on EXYNOS5250";
@@ -27,6 +30,7 @@
 	};
 
 	config {
+		hwid = "SMDK5250 EVT1 TEST 0767";
 		machine-arch-id = <3774>;
 	};
 
