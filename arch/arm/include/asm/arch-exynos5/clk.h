@@ -24,5 +24,6 @@
 
 #include <asm/arch-exynos/clk.h>
 int get_mshc_clk_div(void);
+void setup_mshci_clock(void);
 
 #endif  /* __ASM_ARM_ARCH_EXYNOS5_CLK_H__ */

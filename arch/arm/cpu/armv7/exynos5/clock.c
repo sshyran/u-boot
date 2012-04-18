@@ -307,6 +307,45 @@ void clock_ll_set_pre_ratio(enum periph_id periph_id, unsigned divisor)
 	clrsetbits_le32(reg, mask << shift, (divisor & mask) << shift);
 }
 
+void setup_mshci_clock(void)
+{
+	struct exynos5_clock *clk =
+		(struct exynos5_clock *)samsung_get_base_clock();
+	u32 tmp;
+	u32 clock;
+	u32 i;
+#ifdef USE_MMC0
+	tmp = readl(&clk->src_fsys) & ~(0x0000000f);
+	writel(tmp | 0x00000006, &clk->src_fsys);
+
+	tmp = readl(&clk->div_fsys1) & ~(0x0000ff0f);
+
+	clock = get_pll_clk(MPLL)/1000000;
+        for(i=0; i<= 0xf; i++)
+        {
+                if((clock / (i+1)) <= 400) {
+                        writel(tmp | i<<0, &clk->div_fsys1);
+                        break;
+                }
+        }
+#endif
+#ifdef USE_MMC2
+        tmp = readl(&clk->src_fsys) & ~(0x00000f00);
+        writel(tmp | 0x00000600, &clk->src_fsys);
+
+        /* MMC2 clock div */
+        tmp = readl(&clk->div_fsys2) & ~(0x0000ff0f);
+        clock = get_pll_clk(MPLL)/1000000;
+        for(i=0; i<= 0xf; i++)
+        {
+                if((clock / (i+1)) <= 400) {
+                        writel(tmp | i<<0, &clk->div_fsys2);
+                        break;
+                }
+        }
+#endif
+}
+
 #ifdef CONFIG_OF_CONTROL
 int clock_decode_periph_id(const void *blob, int node)
 {
