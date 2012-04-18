@@ -25,6 +25,27 @@
 #ifndef __EXYNOS_CLOCK_INIT_H
 #define __EXYNOS_CLOCK_INIT_H
 
+
+#define MUX_APLL_SEL_MASK	(1 << 0)
+#define MUX_MPLL_SEL_MASK	(1 << 8)
+#define MPLL_SEL_MOUT_MPLLFOUT	(2 << 8)
+#define MUX_CPLL_SEL_MASK	(1 << 8)
+#define MUX_EPLL_SEL_MASK	(1 << 12)
+#define MUX_VPLL_SEL_MASK	(1 << 16)
+#define MUX_GPLL_SEL_MASK	(1 << 28)
+#define MUX_BPLL_SEL_MASK	(1 << 0)
+#define MUX_HPM_SEL_MASK	(1 << 20)
+#define HPM_SEL_SCLK_MPLL	(1 << 21)
+#define APLL_CON0_LOCKED	(1 << 29)
+#define MPLL_CON0_LOCKED	(1 << 29)
+#define BPLL_CON0_LOCKED	(1 << 29)
+#define CPLL_CON0_LOCKED	(1 << 29)
+#define EPLL_CON0_LOCKED	(1 << 29)
+#define GPLL_CON0_LOCKED	(1 << 29)
+#define VPLL_CON0_LOCKED	(1 << 29)
+#define CLK_REG_DISABLE		0x0
+#define TOP2_VAL		0x0110000
+
 enum {
 	MEM_TIMINGS_MSR_COUNT	= 4,
 };
@@ -81,5 +102,6 @@ struct mem_timings {
  * @return pointer to the memory timings that we should use
  */
 struct mem_timings *clock_get_mem_timings(void);
-
+void sdelay(unsigned long);
+void system_clock_init(void);
 #endif
