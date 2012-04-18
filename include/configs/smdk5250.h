@@ -113,9 +113,16 @@
 #define CONFIG_TPS65090_POWER
 #define CONFIG_TPS65090_I2C_BUS	0x4
 
+#ifdef CONFIG_CPU_EXYNOS5250_EVT1
+#define CONFIG_VDD_ARM		1300
+#define CONFIG_VDD_INT		1150
+#define CONFIG_VDD_MIF		1200
+#define CONFIG_VDD_LDO21	1350
+#else
 #define CONFIG_VDD_ARM		1150 /* 1.15v */
 #define CONFIG_VDD_INT		1100 /* 1.1v */
 #define CONFIG_VDD_MIF		1200 /* 1.2v */
+#endif
 #define CONFIG_VDD_LDO2		1500 /* 1.5v */
 #define CONFIG_VDD_LDO3		1800 /* 1.8v */
 #define CONFIG_VDD_LDO5		1800 /* 1.8v */
