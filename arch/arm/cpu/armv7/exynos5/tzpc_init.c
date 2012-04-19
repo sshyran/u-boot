@@ -43,6 +43,9 @@ void tzpc_init(void)
 		if (addr != TZPC9_BASE) {
 			writel(DECPROTXSET, &tzpc->decprot2set);
 			writel(DECPROTXSET, &tzpc->decprot3set);
+		} else {
+			writel(0xf0, &tzpc->decprot2set);
+			writel(0x50, &tzpc->decprot3set);
 		}
 	}
 }
