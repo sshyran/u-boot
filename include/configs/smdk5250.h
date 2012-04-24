@@ -125,6 +125,7 @@
 #define CONFIG_VDD_INT		1100 /* 1.1v */
 #define CONFIG_VDD_MIF		1200 /* 1.2v */
 #endif
+#define CONFIG_VDD_G3D		1200 /* 1.2 v */
 #define CONFIG_VDD_LDO2		1500 /* 1.5v */
 #define CONFIG_VDD_LDO3		1800 /* 1.8v */
 #define CONFIG_VDD_LDO5		1800 /* 1.8v */
