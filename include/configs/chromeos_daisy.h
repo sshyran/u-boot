@@ -59,4 +59,9 @@
 #endif
 #define CONFIG_BOOTCOMMAND CONFIG_NON_VERIFIED_BOOTCOMMAND
 
+#define CONFIG_CMD_NET
+#define CONFIG_NET_MULTI
+#define CONFIG_CMD_PING
+#define CONFIG_CMD_DHCP
+
 #endif /* __configs_chromeos_daisy_h__ */
