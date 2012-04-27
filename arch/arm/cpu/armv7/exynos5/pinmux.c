@@ -96,6 +96,14 @@ int exynos_pinmux_config(enum periph_id peripheral, int flags)
 			gpio_set_pull(start + i, GPIO_PULL_NONE);
 			gpio_set_drv(start + i, GPIO_DRV_4X);
 		}
+		/* eMMC overloads the reset pin as the power enable pin */
+		if (peripheral == PERIPH_ID_SDMMC0) {
+			i = 2;
+			gpio_cfg_pin(start + i, GPIO_OUTPUT);
+			gpio_set_pull(start + i, GPIO_PULL_NONE);
+			gpio_set_drv(start + i, GPIO_DRV_4X);
+			gpio_set_value(start + i, 1);	/* Power on */
+		}
 		for (i = 3; i <= 6; i++) {
 			gpio_cfg_pin(start + i, GPIO_FUNC(0x2));
 			gpio_set_pull(start + i, GPIO_PULL_UP);
