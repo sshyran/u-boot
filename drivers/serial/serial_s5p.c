@@ -28,6 +28,7 @@
 #include <asm/arch/clk.h>
 #include <fdtdec.h>
 #include <serial.h>
+#include "serial_fdt.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -45,7 +46,7 @@ struct fdt_serial {
 
 static inline struct s5p_uart *s5p_get_base_uart(int dev_index)
 {
-#ifdef CONFIG_OF_CONTROL
+#ifdef CONFIG_OF_SERIAL
 	return (struct s5p_uart *)(config.base_addr);
 #else
 	u32 offset = dev_index * sizeof(struct s5p_uart);
@@ -79,7 +80,7 @@ static const int udivslot[] = {
 	0xffdf,
 };
 
-void serial_setbrg_dev(const int dev_index)
+static void serial_setbrg_dev(const int dev_index)
 {
 	struct s5p_uart *const uart = s5p_get_base_uart(dev_index);
 	u32 uclk = get_uart_clk(dev_index);
@@ -100,7 +101,7 @@ void serial_setbrg_dev(const int dev_index)
  * Initialise the serial port with the given baudrate. The settings
  * are always 8 data bits, no parity, 1 stop bit, no start bits.
  */
-int serial_init_dev(const int dev_index)
+static int serial_init_dev(const int dev_index)
 {
 	struct s5p_uart *const uart = s5p_get_base_uart(dev_index);
 
@@ -142,7 +143,7 @@ static int serial_err_check(const int dev_index, int op)
  * otherwise. When the function is succesfull, the character read is
  * written into its argument c.
  */
-int serial_getc_dev(const int dev_index)
+static int serial_getc_dev(const int dev_index)
 {
 	struct s5p_uart *const uart = s5p_get_base_uart(dev_index);
 
@@ -159,7 +160,7 @@ int serial_getc_dev(const int dev_index)
 /*
  * Output a single byte to the serial port.
  */
-void serial_putc_dev(const char c, const int dev_index)
+static void serial_putc_dev(const char c, const int dev_index)
 {
 	struct s5p_uart *const uart = s5p_get_base_uart(dev_index);
 
@@ -179,14 +180,14 @@ void serial_putc_dev(const char c, const int dev_index)
 /*
  * Test whether a character is in the RX buffer
  */
-int serial_tstc_dev(const int dev_index)
+static int serial_tstc_dev(const int dev_index)
 {
 	struct s5p_uart *const uart = s5p_get_base_uart(dev_index);
 
 	return (int)(readl(&uart->utrstat) & 0x1);
 }
 
-void serial_puts_dev(const char *s, const int dev_index)
+static void serial_puts_dev(const char *s, const int dev_index)
 {
 	while (*s)
 		serial_putc_dev(*s++, dev_index);
@@ -224,60 +225,62 @@ DECLARE_S5P_SERIAL_FUNCTIONS(3);
 struct serial_device s5p_serial3_device =
 	INIT_S5P_SERIAL_STRUCTURE(3, "s5pser3");
 
-#ifdef CONFIG_OF_CONTROL
-int fdtdec_decode_console(int *index, struct fdt_serial *uart)
+static struct serial_device *s5p_consoles[] = {
+	&s5p_serial0_device, &s5p_serial1_device,
+	&s5p_serial2_device, &s5p_serial3_device
+};
+
+static struct serial_device *pick_console(int index)
+{
+	if (index >= ARRAY_SIZE(s5p_consoles)) {
+		debug("Unknown console index: %d.\n", index);
+		return NULL;
+	} else {
+		return s5p_consoles[index];
+	}
+}
+
+#ifdef CONFIG_OF_SERIAL
+struct serial_device *serial_s5p_fdt_init(void)
 {
 	const void *blob = gd->fdt_blob;
+	int index = 0;
 	int node;
 
 	node = fdtdec_next_alias(blob, "serial", COMPAT_SAMSUNG_EXYNOS5_SERIAL,
 			index);
-	if (node < 0)
-		return node;
-
-	uart->base_addr = fdtdec_get_addr(blob, node, "reg");
-	if (uart->base_addr == FDT_ADDR_T_NONE)
-		return -FDT_ERR_NOTFOUND;
-
-	uart->port_id = fdtdec_get_int(blob, node, "id", -1);
-
-	return 0;
-}
-#endif
-
-__weak struct serial_device *default_serial_console(void)
-{
-#ifdef CONFIG_OF_CONTROL
-	int index = 0;
-	if (fdtdec_decode_console(&index, &config)) {
-		debug("Cannot decode default console node\n");
+	if (node < 0) {
+		debug("\"serial\" alias not found.\n");
 		return NULL;
 	}
 
-	if (config.port_id == 0)
-		return &s5p_serial0_device;
-	else if (config.port_id == 1)
-		return &s5p_serial1_device;
-	else if (config.port_id == 2)
-		return &s5p_serial2_device;
-	else if (config.port_id == 3)
-		return &s5p_serial3_device;
-	else
-		debug("Unknown config.port_id: %d", config.port_id);
+	config.base_addr = fdtdec_get_addr(blob, node, "reg");
+	if (config.base_addr == FDT_ADDR_T_NONE) {
+		debug("Uart base address not found.\n");
+		return NULL;
+	}
 
-	return NULL;
+	config.port_id = fdtdec_get_int(blob, node, "id", -1);
+
+	return pick_console(config.port_id);
+}
+
 #else
 
+struct serial_device *default_serial_console(void)
+{
+	int index;
 #if defined(CONFIG_SERIAL0)
-	return &s5p_serial0_device;
+	index = 0;
 #elif defined(CONFIG_SERIAL1)
-	return &s5p_serial1_device;
+	index = 1;
 #elif defined(CONFIG_SERIAL2)
-	return &s5p_serial2_device;
+	index = 2;
 #elif defined(CONFIG_SERIAL3)
-	return &s5p_serial3_device;
+	index = 3;
 #else
 #error "CONFIG_SERIAL? missing."
 #endif
-#endif
+	return pick_console(index);
 }
+#endif
