@@ -228,12 +228,18 @@ void system_clock_init()
 	writel(CLK_SRC_PERIC1_VAL, &clk->src_peric1);
 	writel(CLK_DIV_PERIC1_VAL, &clk->div_peric1);
 
-	val = readl(&clk->div_fsys2);
-	val &= ~(0xff << 8);
-	val &= ~0xf;
-	val |= (0x9 << 8);
-	val |= 0x3;
-	writel(val, &clk->div_fsys2);
+	/*
+	 * Init DWMMC3 and DWMMC2.  For DWMMC3 we're initting in a way that
+	 * will end up with 400 MHz come out (and get divided by 4 in the
+	 * DWMMC controller).  Nothing else in U-Boot is changing it right now.
+	 * For DWMMC2, we expect that later code will update clocks and get
+	 * something similar.
+	 *
+	 * TODO: Kernel assumes that we setup DWMMC3 clocks even though U-Boot
+	 * doesn't use it, which is why we're initting it.  Need to figure out
+	 * a good long term solution.
+	 */
+	writel(0x00010903, &clk->div_fsys2);
 }
 
 #ifdef CONFIG_SPL_BUILD
