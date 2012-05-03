@@ -70,6 +70,7 @@
 /* select serial console configuration */
 #define EXYNOS_UART			PERIPH_ID_UART3
 #define CONFIG_SERIAL3
+#define CONFIG_OF_SERIAL
 
 /* SD/MMC configuration */
 #define CONFIG_GENERIC_MMC
