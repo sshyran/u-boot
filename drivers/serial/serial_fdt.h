@@ -19,7 +19,7 @@
  * MA 02111-1307 USA
  */
 
-#include <config.h>
+struct serial_device;
 
 struct serial_device *serial_s5p_fdt_init(void);
 struct serial_device *NS16550_fdt_init(void);

@@ -226,8 +226,10 @@ struct serial_device s5p_serial3_device =
 	INIT_S5P_SERIAL_STRUCTURE(3, "s5pser3");
 
 static struct serial_device *s5p_consoles[] = {
-	&s5p_serial0_device, &s5p_serial1_device,
-	&s5p_serial2_device, &s5p_serial3_device
+	&s5p_serial0_device,
+	&s5p_serial1_device,
+	&s5p_serial2_device,
+	&s5p_serial3_device
 };
 
 static struct serial_device *pick_console(int index)

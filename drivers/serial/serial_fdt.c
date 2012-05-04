@@ -74,17 +74,7 @@ struct serial_device *default_serial_console(void)
 	 * by the linker and doesn't have a relocation entry.
 	 */
 	if (!relocated && (gd->flags & GD_FLG_RELOC)) {
-		uintptr_t console_addr;
-
-		/*
-		 * If console_ptr is NULL, leave it alone. Otherwise
-		 * relocate it.
-		 */
-		if (console_ptr) {
-			console_addr = (uintptr_t)console_ptr;
-			console_addr += gd->reloc_off;
-			console_ptr = (struct serial_device *)console_addr;
-		}
+		console_ptr = NULL;
 		relocated = 1;
 	}
 	if (console_ptr)
