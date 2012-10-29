@@ -26,6 +26,7 @@
 #include <malloc.h>
 #include <usb.h>
 #include <asm/arch/cpu.h>
+#include <asm/arch/gpio.h>
 #include <asm/arch/ehci.h>
 #include <asm/arch/system.h>
 #include <asm/arch/power.h>
@@ -36,6 +37,9 @@
 
 /* Declare global data pointer */
 DECLARE_GLOBAL_DATA_PTR;
+
+/* reset line to the HSIC USB chip */
+static struct fdt_gpio_state hsichub_reset;
 
 /**
  * Contains pointers to register base addresses
@@ -104,6 +108,8 @@ static int exynos_usb_parse_dt(const void *blob, struct exynos_ehci *exynos)
 /* Setup the EHCI host controller. */
 static void setup_usb_phy(struct exynos_usb_phy *usb)
 {
+	int node;
+
 	set_usbhost_mode(USB20_PHY_CFG_HOST_LINK_EN);
 
 	set_usbhost_phy_ctrl(POWER_USB_HOST_PHY_CTRL_EN);
@@ -136,6 +142,29 @@ static void setup_usb_phy(struct exynos_usb_phy *usb)
 			EHCICTRL_ENAINCR4 |
 			EHCICTRL_ENAINCR8 |
 			EHCICTRL_ENAINCR16);
+
+	/* HSIC USB Hub initialization. */
+	node = fdtdec_next_compatible(gd->fdt_blob, 0, COMPAT_SMSC_USB3503);
+	if (node > 0) {
+		fdtdec_decode_gpio(gd->fdt_blob, node, "reset-gpio",
+				   &hsichub_reset);
+		fdtdec_setup_gpio(&hsichub_reset);
+		gpio_direction_output(hsichub_reset.gpio, 0);
+		udelay(100);
+		gpio_direction_output(hsichub_reset.gpio, 1);
+		udelay(5000);
+
+		clrbits_le32(&usb->hsicphyctrl1,
+			     HOST_CTRL0_SIDDQ |
+			     HOST_CTRL0_FORCESLEEP |
+			     HOST_CTRL0_FORCESUSPEND);
+		setbits_le32(&usb->hsicphyctrl1, HOST_CTRL0_PHYSWRST);
+		udelay(10);
+		clrbits_le32(&usb->hsicphyctrl1, HOST_CTRL0_PHYSWRST);
+	}
+
+	/* PHY clock and power setup time */
+	mdelay(50);
 }
 
 /* Reset the EHCI host controller. */
@@ -148,6 +177,16 @@ static void reset_usb_phy(struct exynos_usb_phy *usb)
 			HOST_CTRL0_SIDDQ |
 			HOST_CTRL0_FORCESUSPEND |
 			HOST_CTRL0_FORCESLEEP);
+
+	/* reset HSIC PHY and remote USB chip if we have one */
+	if (hsichub_reset.gpio) {
+		setbits_le32(&usb->hsicphyctrl1, HOST_CTRL0_SIDDQ |
+						 HOST_CTRL0_FORCESLEEP |
+						 HOST_CTRL0_FORCESUSPEND |
+						 HOST_CTRL0_PHYSWRST);
+
+		gpio_direction_output(hsichub_reset.gpio, 0);
+	}
 
 	set_usbhost_phy_ctrl(POWER_USB_HOST_PHY_CTRL_DISABLE);
 }

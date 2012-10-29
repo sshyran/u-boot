@@ -120,6 +120,7 @@ enum fdt_compat_id {
 	COMPAT_MAXIM_98090_CODEC,	/* MAX98090 Codec */
 	COMPAT_SANDBOX_HOST_EMULATION,	/* Sandbox emulation of a function */
 	COMPAT_SANDBOX_LCD_SDL,		/* Sandbox LCD emulation with SDL */
+	COMPAT_SMSC_USB3503,		/* HSIC USB hub reset GPIO */
 
 	COMPAT_COUNT,
 };

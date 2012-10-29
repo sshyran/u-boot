@@ -95,6 +95,7 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(COMPAT_MAXIM_98090_CODEC, "maxim,max98090-codec"),
 	COMPAT(COMPAT_SANDBOX_HOST_EMULATION, "sandbox,host-emulation"),
 	COMPAT(COMPAT_SANDBOX_LCD_SDL, "sandbox,lcd-sdl"),
+	COMPAT(COMPAT_SMSC_USB3503, "smsc,usb3503"),
 };
 
 const char *fdtdec_get_compatible(enum fdt_compat_id id)
