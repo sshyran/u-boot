@@ -23,6 +23,7 @@
 #include <fdtdec.h>
 #include <i2c.h>
 #include <rtc.h>
+#include <asm/arch-exynos/spl.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -114,11 +115,22 @@ static int max77802_rtc_read(unsigned int reg, uint8_t *val)
 
 static int rtc_init(void)
 {
+#ifdef CONFIG_SPL_BUILD
+	struct spl_machine_param *params = spl_get_machine_params();
+#else
 	int node, parent;
+#endif
 
 	if (init_done)
 		return 0;
 
+#ifdef CONFIG_SPL_BUILD
+	if (params->rtc_type != SPL_RTC_TYPE_MAX77802)
+		/* Not the right type of RTC. */
+		return -1;
+	i2c_bus = CONFIG_SPL_MAX77802_BUS;
+	i2c_addr = CONFIG_SPL_MAX77802_ADDR;
+#else
 	node = fdt_node_offset_by_compatible(gd->fdt_blob, 0,
 					     "maxim,max77802-pmic");
 	if (node < 0) {
@@ -138,19 +150,24 @@ static int rtc_init(void)
 		return -1;
 	}
 	i2c_addr = fdtdec_get_int(gd->fdt_blob, node, "reg", 9);
+#endif
 
 	i2c_set_bus_num(i2c_bus);
 
 	if (max77802_rtc_write(MAX77802_RTCCNTLM,
 			       MAX77802_RTCCNTLM_BCDM |
 			       MAX77802_RTCCNTLM_HRMODEM)) {
+#ifndef CONFIG_SPL_BUILD
 		printf("%s: Failed to set rtccntlm.\n", __func__);
+#endif
 		return -1;
 	}
 
 	if (max77802_rtc_write(MAX77802_RTCCNTL,
 			       MAX77802_RTCCNTL_HRMODE)) {
+#ifndef CONFIG_SPL_BUILD
 		printf("%s: Failed to set rtccntl.\n", __func__);
+#endif
 		return -1;
 	}
 
