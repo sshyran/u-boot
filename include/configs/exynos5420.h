@@ -40,9 +40,6 @@
 #define CONFIG_DEVICE_TREE_LIST "exynos5420-peach-pit" \
 	" exynos5420-peach-pit-rev1 exynos5420-smdk5420"
 
-/* This defines maximum number of channels available for dwmmc */
-#define	DWMMC_MAX_CH_NUM		3
-
 /* DRAM Memory Banks */
 #define CONFIG_NR_DRAM_BANKS	7
 #define SDRAM_BANK_SIZE		(512UL << 20)	/* 512 MB */

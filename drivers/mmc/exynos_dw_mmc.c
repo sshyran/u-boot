@@ -135,14 +135,14 @@ int board_mmc_getcd(struct mmc *mmc)
 int exynos_dwmmc_init(const void *blob)
 {
 	int index, bus_width, removable;
-	int node_list[DWMMC_MAX_CH_NUM];
+	int node_list[8];	/* We allow a maximum of 8 interfaces on Exynos */
 	int err = 0, dev_id, flag, count, i;
 	u32 clksel_val, base, timing[3];
 	int pre_init;
 
 	count = fdtdec_find_aliases_for_id(blob, "mmc",
 				COMPAT_SAMSUNG_EXYNOS5_DWMMC, node_list,
-				DWMMC_MAX_CH_NUM);
+				ARRAY_SIZE(node_list));
 
 	for (i = 0; i < count; i++) {
 		struct fdt_gpio_state gpio;
