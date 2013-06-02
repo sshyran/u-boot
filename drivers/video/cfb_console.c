@@ -614,18 +614,22 @@ static inline void video_drawstring(int xx, int yy, unsigned char *s)
 	video_drawchars(xx, yy, s, strlen((char *) s));
 }
 
+#ifndef CONFIG_VIDEO_NO_TEXT
 static void video_putchar(int xx, int yy, unsigned char c)
 {
 	video_drawchars(xx, yy + video_logo_height, &c, 1);
 }
+#endif
 
 #if defined(CONFIG_CONSOLE_CURSOR) || defined(CONFIG_VIDEO_SW_CURSOR)
+#ifndef CONFIG_VIDEO_NO_TEXT
 static void video_set_cursor(void)
 {
 	if (cursor_state)
 		console_cursor(0);
 	console_cursor(1);
 }
+#endif
 
 static void video_invertchar(int xx, int yy)
 {
@@ -694,6 +698,7 @@ static void memsetl(int *p, int c, int v)
 }
 #endif
 
+#ifndef CONFIG_VIDEO_NO_TEXT
 #ifndef VIDEO_HW_BITBLT
 static void memcpyl(int *d, int *s, int c)
 {
@@ -774,6 +779,7 @@ static void console_back(void)
 			console_row = 0;
 	}
 }
+#endif
 
 #ifdef CONFIG_CFB_CONSOLE_ANSI
 
@@ -863,6 +869,7 @@ static inline int console_cursor_is_visible(void)
 }
 #endif
 
+#ifndef CONFIG_VIDEO_NO_TEXT
 static void console_newline(int n)
 {
 	console_row += n;
@@ -882,9 +889,11 @@ static void console_cr(void)
 {
 	console_col = 0;
 }
+#endif
 
 static void parse_putc(const char c)
 {
+#ifndef CONFIG_VIDEO_NO_TEXT
 	static int nl = 1;
 
 	if (console_cursor_is_visible())
@@ -930,6 +939,7 @@ static void parse_putc(const char c)
 
 	if (console_cursor_is_visible())
 		CURSOR_SET;
+#endif /* !CONFIG_VIDEO_NO_TEXT */
 }
 
 void video_putc(const char c)

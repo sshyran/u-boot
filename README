@@ -1448,6 +1448,11 @@ CBFS (Coreboot Filesystem) support
 		Define this to enable video support (for output to
 		video).
 
+		CONFIG_VIDEO_NO_TEXT
+		Define this to get a video display for graphics only. The
+		text and fonts will not be available. This reduces the image
+		size somewhat.
+
 		CONFIG_VIDEO_CT69000
 
 		Enable Chips & Technologies 69000 Video chip
