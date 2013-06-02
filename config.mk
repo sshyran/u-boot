@@ -285,6 +285,8 @@ endif
 
 ifdef CROS_SMALL
 CPPFLAGS += -DCONFIG_CROS_SMALL
+else
+CROS_FULL=1
 endif
 
 ifdef CROS_FULL

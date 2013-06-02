@@ -54,33 +54,103 @@
 
 /* Enable verified boot */
 #define CONFIG_CHROMEOS
-#define CONFIG_CHROMEOS_TEST
 
 /* Enable test codes */
-#ifdef VBOOT_DEBUG
+#ifdef CONFIG_CROS_FULL
 #define CONFIG_CHROMEOS_TEST
 #endif /* VBOOT_DEBUG */
-
-/* Enable graphics display */
-#define CONFIG_LCD_BMP_RLE8
-#define CONFIG_LZMA
-#define CONFIG_SPLASH_SCREEN
-#define CONFIG_CHROMEOS_DISPLAY
-
-/* Enable vboot twostop with SPI flash */
-#define CONFIG_CHROMEOS_SPI
-
-/* Enable USB, used for recovery mode */
-#define CONFIG_CHROMEOS_USB
 
 /* Support constant vboot flag from fdt */
 #define CONFIG_CHROMEOS_CONST_FLAG
 
-/*
- * Use the fdt to decide whether to load the environment early in start-up
- * (even before we decide if we're entering developer mode).
- */
-#define CONFIG_OF_LOAD_ENVIRONMENT
+/* Enable vboot twostop with SPI flash */
+#define CONFIG_CHROMEOS_SPI
+
+#ifndef CONFIG_CROS_RO
+#define CONFIG_CHROMEOS_DISPLAY
+#endif
+
+#ifndef CONFIG_CROS_FULL
+#undef CONFIG_CMDLINE
+#undef CONFIG_SYS_LONGHELP
+#undef CONFIG_SYS_CONSOLE_IS_IN_ENV
+#undef CONFIG_SYS_STDIO_DEREGISTER
+#undef CONFIG_SYS_HUSH_PARSER
+#undef CONFIG_CBMEM_CONSOLE
+#undef CONFIG_CMDLINE_EDITING
+#undef CONFIG_COMMAND_HISTORY
+#undef CONFIG_AUTOCOMPLETE
+#undef CONFIG_CONSOLE_MUX
+#undef CONFIG_SHOW_BOOT_PROGRESS
+
+#undef CONFIG_I8042_KBD
+#define CONFIG_VGA_AS_SINGLE_DEVICE
+#undef CONFIG_VIDEO_SW_CURSOR
+
+#undef CONFIG_SUPPORT_VFAT
+#undef CONFIG_ATAPI
+#undef CONFIG_EFI_PARTITION
+#undef CONFIG_DOS_PARTITION
+#undef CONFIG_MAC_PARTITION
+#undef CONFIG_ISO_PARTITION
+#undef CONFIG_PARTITION_UUIDS
+
+#undef CONFIG_CMD_PART
+#undef CONFIG_CMD_CBFS
+#undef CONFIG_CMD_EXT4
+#undef CONFIG_CMD_EXT4_WRITE
+#undef CONFIG_CMD_NET
+#undef CONFIG_CMD_CRC32
+#undef CONFIG_CMD_CROS_EC
+
+#undef CONFIG_USB_HOST_ETHER
+#undef CONFIG_USB_ETHER_ASIX
+#undef CONFIG_USB_ETHER_SMSC95XX
+
+#undef CONFIG_GENERIC_MMC
+#undef CONFIG_MMC
+
+#define DYNAMIC_CRC_TABLE
+#undef CONFIG_BOOTDELAY
+
+#endif
+
+/* Enable graphics display */
+#ifdef CONFIG_CHROMEOS_DISPLAY
+#define CONFIG_LCD_BMP_RLE8
+#define CONFIG_LZMA
+#define CONFIG_SPLASH_SCREEN
+#define CONFIG_VIDEO_NO_TEXT
+#else
+#undef CONFIG_LCD
+#undef CONFIG_EXYNOS_FB
+#undef CONFIG_EXYNOS_DP
+#undef CONFIG_VIDEO_ANALOGIX
+#undef CONFIG_VIDEO_PARADE
+#undef CONFIG_CMD_BMP
+#endif
+
+#ifdef CONFIG_CROS_RO
+#undef CONFIG_USB_EHCI
+#undef CONFIG_USB_EHCI_PCI
+#undef CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS
+#undef CONFIG_USB_MAX_CONTROLLER_COUNT
+#undef CONFIG_USB_STORAGE
+#undef CONFIG_USB_KEYBOARD
+#undef CONFIG_SYS_USB_EVENT_POLL
+
+#undef CONFIG_CMD_USB
+#undef CONFIG_CMD_SOUND
+#undef CONFIG_SOUND_INTEL_HDA
+#undef CONFIG_CRC32_VERIFY
+#undef CONFIG_TPM
+#undef CONFIG_FIT
+#define CONFIG_CRC32
+#undef CONFIG_LZO
+#else
+/* USB is used in recovery mode */
+#define CONFIG_CHROMEOS_USB
+#endif
 
 /*
  * Enable this feature to embed crossystem data into device tree before booting
@@ -326,6 +396,10 @@
  *   directly.
  */
 
+#ifdef CONFIG_CROS_RO
+#define CONFIG_CHROMEOS_EXTRA_ENV_SETTINGS \
+	CONFIG_STD_DEVICES_SETTINGS
+#else
 #define CONFIG_CHROMEOS_EXTRA_ENV_SETTINGS \
 	CONFIG_STD_DEVICES_SETTINGS \
 	CONFIG_REGEN_ALL_SETTINGS \
@@ -366,6 +440,7 @@
 		\
 		"run mmc1_boot; " \
 		"run mmc0_boot\0"
+#endif
 
 #define CONFIG_NON_VERIFIED_BOOTCOMMAND "run non_verified_boot"
 
