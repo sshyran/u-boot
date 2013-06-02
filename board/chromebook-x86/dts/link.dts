@@ -21,6 +21,18 @@
 
         gpio: gpio {};
 
+	chromeos-config {
+		ec-software-sync;
+		virtual-dev-switch;
+		oprom-matters;
+		firmware-storage = <&firmware_storage_spi>;
+		vboot-flag-ec-in-rw {
+			compatible = "google,gpio-flag";
+			gpio = <&gpio 21 0>;
+		};
+
+	};
+
 	serial {
 		reg = <0x3f8 8>;
 		clock-frequency = <115200>;
