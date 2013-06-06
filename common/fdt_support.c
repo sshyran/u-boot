@@ -357,7 +357,7 @@ void do_fixup_by_compat_u32(void *fdt, const char *compat,
  *     if #NNNN-cells property is 2 then len is 8
  *     otherwise len is 4
  */
-static int get_cells_len(void *blob, char *nr_cells_name)
+int fdt_get_cells_len(const void *blob, char *nr_cells_name)
 {
 	const fdt32_t *cell;
 
@@ -422,8 +422,8 @@ int fdt_fixup_memory_banks(void *blob, u64 start[], u64 size[], int banks)
 		return err;
 	}
 
-	addr_cell_len = get_cells_len(blob, "#address-cells");
-	size_cell_len = get_cells_len(blob, "#size-cells");
+	addr_cell_len = fdt_get_cells_len(blob, "#address-cells");
+	size_cell_len = fdt_get_cells_len(blob, "#size-cells");
 
 	for (bank = 0, len = 0; bank < banks; bank++) {
 		if (size[bank] == 0)

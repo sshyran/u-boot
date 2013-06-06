@@ -71,6 +71,7 @@ typedef struct global_data {
 	/* TODO: is this the same as relocaddr, or something else? */
 	unsigned long dest_addr;	/* Post-relocation address of U-Boot */
 	unsigned long dest_addr_sp;
+	unsigned long ram_base;	/* Base address of RAM used by U-Boot */
 	unsigned long ram_top;	/* Top address of RAM used by U-Boot */
 
 	unsigned long relocaddr;	/* Start address of U-Boot in RAM */

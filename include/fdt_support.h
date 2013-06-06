@@ -156,5 +156,15 @@ static inline int fdt_status_disabled_by_alias(void *fdt, const char* alias)
 	return fdt_set_status_by_alias(fdt, alias, FDT_STATUS_DISABLED, 0);
 }
 
+/**
+ * fdt_get_cells_len() - Get the length of a type of cell in top-level nodes
+ *
+ * Returns the length of the cell type in bytes (4 or 8).
+ *
+ * @blob: Pointer to device tree blob
+ * @nr_cells_name: Name to lookup, e.g. "#address-cells"
+ */
+int fdt_get_cells_len(const void *blob, char *nr_cells_name);
+
 #endif /* ifdef CONFIG_OF_LIBFDT */
 #endif /* ifndef __FDT_SUPPORT_H */
