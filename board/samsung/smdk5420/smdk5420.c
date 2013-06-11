@@ -194,24 +194,3 @@ void  set_max_cpu_freq(void)
 	/* now it is safe to switch to APLL */
 	setbits_le32(&clk->clk_src_cpu, APLL_FOUT);
 }
-
-#ifdef CONFIG_RUN_TIME_BANK_NUMBER
-/*
- * This is supported on peach only and presently hardcoded. A more elaborate
- * way of determining the amount of installed memory could be devised later
- * when/if required.
- */
-int board_get_num_dram_banks(void)
-{
-	int subrev;
-
-	board_get_full_revision(NULL, &subrev);
-
-	/* Bit 1 of the subrev is the SDRAM size.  TODO: cleanup */
-	if (subrev & (1 << 1))
-		return 7;  /* 7 banks of .5 GB, 3.5GB total. */
-
-	/* Default is set to 2 GB. */
-	return 4;
-}
-#endif

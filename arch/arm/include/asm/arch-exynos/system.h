@@ -51,6 +51,9 @@ struct exynos5_sysreg {
 
 #define USB20_PHY_CFG_HOST_LINK_EN	(1 << 0)
 
+/* Get program counter */
+#define get_pc(x) __asm__ __volatile__ ("mov     %0, pc\n\t" : "=r"(x) : )
+
 #ifdef CONFIG_EXYNOS5420
 /*
  * Data Synchronization Barrier acts as a special kind of memory barrier.
@@ -93,9 +96,6 @@ struct exynos5_sysreg {
 
 /* Set program counter with the given value */
 #define set_pc(x) __asm__ __volatile__ ("mov     pc, %0\n\t" : : "r"(x))
-
-/* Get program counter */
-#define get_pc(x) __asm__ __volatile__ ("mov     %0, pc\n\t" : "=r"(x) : )
 
 /* Branch to the given location */
 #define branch_bx(x) __asm__ __volatile__ ("bx	%0\n\t" : : "r"(x))

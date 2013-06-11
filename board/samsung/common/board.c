@@ -45,19 +45,6 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-/*
- * If required - get the run time determined number of DRAM banks available on
- * the device.
- */
-static int get_num_dram_banks(void)
-{
-#ifdef CONFIG_RUN_TIME_BANK_NUMBER
-	return board_get_num_dram_banks();
-#else
-	return CONFIG_NR_DRAM_BANKS;
-#endif
-}
-
 #if defined CONFIG_EXYNOS_TMU
 /*
  * Boot Time Thermal Analysis for SoC temperature threshold breach
@@ -115,38 +102,94 @@ int board_init(void)
 	return exynos_init();
 }
 
+/**
+ * board_get_memory_area() - Get name of memory area where U-Boot is running
+ *
+ * We support running from SDRAM or IRAM. Detect which area we are running in
+ * and return its name.
+ *
+ * @return NULL for normal (SDRAM), or "/iram" for IRAM.
+ */
+static const char *board_get_memory_area(void)
+{
+	return gd->arch.in_iram ? "/iram" : NULL;
+}
+
 int dram_init(void)
 {
+#ifdef CONFIG_OF_CONTROL
+	ulong pc;
+	phys_addr_t base;
+	phys_size_t size;
+	int rev, subrev;
+	int pass;
+
+	board_get_full_revision(&rev, &subrev);
+
+	/*
+	 * Figure out if we are running in IRAM or SDRAM. Within IRAM we
+	 * disable relocation.
+	 */
+	get_pc(pc);
+	for (pass = 0; pass < 2; pass++) {
+		if (fdtdec_decode_ram_size(gd->fdt_blob,
+					   board_get_memory_area(), subrev,
+					   &base, &size, NULL))
+			panic("Cannot obtain RAM size - please add /memory node");
+
+		if (pc >= base && pc - base < size)
+			break;
+
+		gd->arch.in_iram = true;
+		gd->flags |= GD_FLG_NO_RELOC;
+	}
+
+	if (pass == 2)
+		panic("Cannot find PC in IRAM or SDRAM");
+
+	gd->ram_base = base;
+	gd->ram_size = size;
+	debug("Ram from %08lx, size %08lx / %08lx\n", base, size,
+	       gd->ram_size);
+#else
 	int i;
 	u32 addr;
-	int real_nr_dram_banks = get_num_dram_banks();
 
-	for (i = 0; i < real_nr_dram_banks; i++) {
+	for (i = 0; i < CONFIG_NR_DRAM_BANKS; i++) {
 		addr = CONFIG_SYS_SDRAM_BASE + (i * SDRAM_BANK_SIZE);
 		gd->ram_size += get_ram_size((long *)addr, SDRAM_BANK_SIZE);
 	}
+#endif
+
 	return 0;
 }
 
 void dram_init_banksize(void)
 {
+#ifdef CONFIG_OF_CONTROL
+	int rev, subrev;
+
+	board_get_full_revision(&rev, &subrev);
+	if (fdtdec_decode_ram_size(gd->fdt_blob, board_get_memory_area(),
+				   subrev, NULL, NULL, gd->bd))
+		panic("Cannot obtain RAM banks - please add /memory node");
+#else
 	int i;
 	u32 addr, size;
-	int real_nr_dram_banks = get_num_dram_banks();
 
-	for (i = 0; i < real_nr_dram_banks; i++) {
+	for (i = 0; i < CONFIG_NR_DRAM_BANKS; i++) {
 		addr = CONFIG_SYS_SDRAM_BASE + (i * SDRAM_BANK_SIZE);
 		size = get_ram_size((long *)addr, SDRAM_BANK_SIZE);
 
 		gd->bd->bi_dram[i].start = addr;
 		gd->bd->bi_dram[i].size = size;
 	}
-#ifdef CONFIG_RUN_TIME_BANK_NUMBER
-	if (i < CONFIG_NR_DRAM_BANKS)
-		memset(gd->bd->bi_dram + i, 0,
-		       sizeof(gd->bd->bi_dram[0]
-			      ) * (CONFIG_NR_DRAM_BANKS - 1));
 #endif
+}
+
+ulong board_get_usable_ram_top(ulong total_size)
+{
+	return gd->ram_base + gd->ram_size;
 }
 
 static int board_uart_init(void)

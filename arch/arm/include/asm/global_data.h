@@ -51,6 +51,9 @@ struct arch_global_data {
 	unsigned long tlb_addr;
 	unsigned long tlb_size;
 #endif
+#ifdef CONFIG_EXYNOS5
+	int in_iram;		/* non-zero if running from IRAM, not SDRAM */
+#endif
 };
 
 #include <asm-generic/global_data.h>
