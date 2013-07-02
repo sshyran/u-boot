@@ -482,4 +482,12 @@ int cros_ec_get_error(void);
  */
 int cros_ec_decode_ec_flash(const void *blob, struct fdt_cros_ec *config);
 
+/**
+ * Check the current keyboard state, in case recovery mode is requested.
+ * This function is for sandbox only.
+ *
+ * @param ec		CROS-EC device
+ */
+void cros_ec_check_keyboard(struct cros_ec_dev *dev);
+
 #endif

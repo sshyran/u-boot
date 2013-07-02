@@ -117,6 +117,7 @@ enum fdt_compat_id {
 	COMPAT_PARADE_PS8625,		/* Parade PS8622 EDP->LVDS bridge */
 	COMPAT_ANALOGIX_ANX1120,	/* Parade ANX1120 EDP->LVDS bridge */
 	COMPAT_MAXIM_98090_CODEC,	/* MAX98090 Codec */
+	COMPAT_SANDBOX_HOST_EMULATION,	/* Sandbox emulation of a function */
 
 	COMPAT_COUNT,
 };
