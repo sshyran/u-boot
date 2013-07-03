@@ -10,6 +10,7 @@
 
 #include <common.h>
 #include <part.h>
+#include <asm/io.h>
 #include <linux/compiler.h>
 #include <cros/boot_kernel.h>
 #include <cros/common.h>
@@ -41,7 +42,6 @@ int do_bootm(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 /* Extra buffer to string replacement */
 #define EXTRA_BUFFER		4096
 
-#if !defined(CONFIG_SANDBOX)
 /**
  * This loads kernel command line from the buffer that holds the loaded kernel
  * image. This function calculates the address of the command line from the
@@ -202,13 +202,9 @@ static int update_cmdline(char *src, int devnum, int partnum, uint8_t *guid,
 	*dst = '\0';
 	return 0;
 }
-#endif
 
 int boot_kernel(VbSelectAndLoadKernelParams *kparams, crossystem_data_t *cdata)
 {
-#if defined(CONFIG_SANDBOX)
-	return 0;
-#else
 	/* sizeof(CHROMEOS_BOOTARGS) reserves extra 1 byte */
 	char cmdline_buf[sizeof(CHROMEOS_BOOTARGS) + CROS_CONFIG_SIZE];
 	/* Reserve EXTRA_BUFFER bytes for update_cmdline's string replacement */
@@ -222,7 +218,8 @@ int boot_kernel(VbSelectAndLoadKernelParams *kparams, crossystem_data_t *cdata)
 	char address[20];
 	char *argv[] = { "bootm", address };
 
-	sprintf(address, "%p", kparams->kernel_buffer);
+	sprintf(address, "%#08lx",
+		(ulong)map_to_sysmem(kparams->kernel_buffer));
 #endif
 
 	strcpy(cmdline_buf, CHROMEOS_BOOTARGS);
@@ -287,12 +284,14 @@ int boot_kernel(VbSelectAndLoadKernelParams *kparams, crossystem_data_t *cdata)
 	if (!setup_zimage(params, cmdline, 0, 0, 0))
 		boot_zimage(params, kparams->kernel_buffer);
 #else
-	do_bootm(NULL, 0, ARRAY_SIZE(argv), argv);
+	cmd_tbl_t cmdtp;
+
+	cmdtp.name = "bootm";
+	do_bootm(&cmdtp, 0, ARRAY_SIZE(argv), argv);
 #endif
 
 	VBDEBUG("failed to boot; is kernel broken?\n");
 	return 1;
-#endif
 }
 
 #ifdef CONFIG_OF_BOARD_SETUP

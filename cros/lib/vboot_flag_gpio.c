@@ -14,6 +14,7 @@
 #include <fdtdec.h>
 #include <asm-generic/gpio.h>
 #include <asm/global_data.h>
+#include <asm/gpio.h>
 #include <cros/common.h>
 #include <cros/vboot_flag.h>
 
@@ -69,6 +70,15 @@ static int vboot_flag_setup_gpio(enum vboot_flag_id id,
 			"cros-gpio-input-charging-delay", 0);
 	if (delay_time)
 		context->gpio_valid_time = timer_get_us() + delay_time;
+
+#ifdef CONFIG_SANDBOX
+	int value;
+
+	value = fdtdec_get_int(blob, context->node, "sandbox-value", -1);
+	if (value != -1)
+		sandbox_gpio_set_value(context->gpio_state.gpio, value);
+	printf("Sandbox gpio %d = %d\n", context->gpio_state.gpio, value);
+#endif
 
 	context->initialized = 1;
 

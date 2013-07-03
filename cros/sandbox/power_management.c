@@ -11,12 +11,16 @@
 /* Implementation of per-board power management function */
 
 #include <common.h>
+#include <asm/getopt.h>
+#include <asm/state.h>
 #include <cros/common.h>
 #include <cros/power_management.h>
 
 int is_processor_reset(void)
 {
-	return 1;
+	struct sandbox_state *state = state_get_current();
+
+	return !state->jumped;
 }
 
 void cold_reboot(void)

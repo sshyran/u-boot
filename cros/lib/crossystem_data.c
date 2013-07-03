@@ -10,6 +10,7 @@
 
 #include <common.h>
 #include <gbb_header.h> /* for GoogleBinaryBlockHeader */
+#include <asm/io.h>
 #include <cros/common.h>
 #include <cros/crossystem_data.h>
 #include <cros/cros_fdtdec.h>
@@ -61,7 +62,7 @@ int crossystem_data_init(crossystem_data_t *cdata,
 			 uint8_t *hardware_id,
 			 uint8_t *readonly_firmware_id)
 {
-	VBDEBUG("crossystem data at %p\n", cdata);
+	VBDEBUG("crossystem data at %08x\n", map_to_sysmem(cdata));
 
 	memset(cdata, '\0', sizeof(*cdata));
 

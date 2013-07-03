@@ -9,11 +9,14 @@
  */
 
 #include <common.h>
+#include <bootstage.h>
 #include <command.h>
 #include <cros_ec.h>
 #include <fdtdec.h>
 #include <lcd.h>
 #include <malloc.h>
+#include <os.h>
+#include <asm/io.h>
 #include <linux/compiler.h>
 #include <cros/boot_kernel.h>
 #include <cros/common.h>
@@ -54,6 +57,9 @@
 
 #ifdef CONFIG_SYS_COREBOOT
 #include <asm/arch/sysinfo.h>
+#endif
+#ifdef CONFIG_SANDBOX
+#include <asm/state.h>
 #endif
 
 /*
@@ -231,16 +237,14 @@ twostop_init_cparams(struct twostop_fmap *fmap, void *gbb,
 	cparams->shared_data_blob = vb_shared_data;
 	cparams->shared_data_size = VB_SHARED_DATA_REC_SIZE;
 #endif
-#define P(format, field) \
-	VBDEBUG("- %-20s: " format "\n", #field, cparams->field)
-
 	VBDEBUG("cparams:\n");
-	P("%p",   gbb_data);
-	P("%08x", gbb_size);
-	P("%p",   shared_data_blob);
-	P("%08x", shared_data_size);
-
-#undef P
+	VBDEBUG("- %-20s: %08x\n", "gbb_data",
+		map_to_sysmem(cparams->gbb_data));
+	VBDEBUG("- %-20s: %08x\n", "gbb_size", cparams->gbb_size);
+	VBDEBUG("- %-20s: %08x\n", "shared_data_blob",
+		map_to_sysmem(cparams->shared_data_blob));
+	VBDEBUG("- %-20s: %08x\n", "shared_data_size",
+		cparams->shared_data_size);
 
 	return 0;
 }
@@ -533,9 +537,7 @@ twostop_make_selection(struct twostop_fmap *fmap, firmware_storage_t *file,
 		       struct fmap_firmware_entry **entryp)
 {
 	uint32_t selection = TWOSTOP_SELECT_ERROR;
-#if !defined(CONFIG_SANDBOX)
 	VbError_t err;
-#endif
 	uint32_t vlength;
 	VbSelectFirmwareParams fparams;
 	hasher_state_t s;
@@ -582,6 +584,8 @@ twostop_make_selection(struct twostop_fmap *fmap, firmware_storage_t *file,
 	s.fw[0].size = fmap->readwrite_a.boot.length;
 	s.fw[1].size = fmap->readwrite_b.boot.length;
 
+	VBDEBUG("offset=%x, size=%x\n", s.fw[0].offset, s.fw[0].size);
+
 	s.fw[0].cache = cros_memalign_cache(s.fw[0].size);
 	if (!s.fw[0].cache) {
 		VBDEBUG("failed to allocate cache A\n");
@@ -596,13 +600,6 @@ twostop_make_selection(struct twostop_fmap *fmap, firmware_storage_t *file,
 	s.file = file;
 	cparams->caller_context = &s;
 
-#if defined(CONFIG_SANDBOX)
-	fparams.verification_block_A = NULL;
-	fparams.verification_size_A = 0;
-	fparams.verification_block_B = NULL;
-	fparams.verification_size_B = 0;
-	fparams.selected_firmware = VB_SELECT_FIRMWARE_A;
-#else
 	if ((err = VbSelectFirmware(cparams, &fparams))) {
 		VBDEBUG("VbSelectFirmware: %d\n", err);
 
@@ -616,7 +613,6 @@ twostop_make_selection(struct twostop_fmap *fmap, firmware_storage_t *file,
 
 		goto out;
 	}
-#endif
 	VBDEBUG("selected_firmware: %d\n", fparams.selected_firmware);
 	selection = fparams.selected_firmware;
 
@@ -731,15 +727,14 @@ twostop_select_and_set_main_firmware(struct twostop_fmap *fmap,
 	return selection;
 }
 
-#if !defined(CONFIG_SANDBOX)
 static uint32_t
 twostop_jump(crossystem_data_t *cdata, void *fw_blob, uint32_t fw_size,
 	     struct fmap_firmware_entry *entry)
 {
-	void *dest = (void *)CONFIG_SYS_TEXT_BASE;
+	void *dest = map_sysmem(CONFIG_SYS_TEXT_BASE, fw_size);
 
-	VBDEBUG("jump to readwrite main firmware at %#x, pos %p, size %#x\n",
-			dest, fw_blob, fw_size);
+	VBDEBUG("jump to readwrite main firmware at %#08x, pos %#08x, size %#x\n",
+		CONFIG_SYS_TEXT_BASE, map_to_sysmem(fw_blob), fw_size);
 
 	/*
 	 * TODO: This version of U-Boot must be loaded at a fixed location. It
@@ -777,12 +772,16 @@ twostop_jump(crossystem_data_t *cdata, void *fw_blob, uint32_t fw_size,
 	 */
 	cleanup_before_linux();
 
+	VBDEBUG("Jump to firmware\n");
+#ifdef CONFIG_SANDBOX
+	os_jump_to_image(dest, fw_size);
+#else
 	((void(*)(void))CONFIG_SYS_TEXT_BASE)();
+#endif
 
 	/* It is an error if readwrite firmware returns */
 	return TWOSTOP_SELECT_ERROR;
 }
-#endif
 
 static int
 twostop_init(struct twostop_fmap *fmap, firmware_storage_t *file,
@@ -908,7 +907,8 @@ twostop_main_firmware(struct twostop_fmap *fmap, void *gbb,
 	kparams.kernel_buffer_size = size;
 
 	VBDEBUG("kparams:\n");
-	VBDEBUG("- kernel_buffer:      : %p\n", kparams.kernel_buffer);
+	VBDEBUG("- kernel_buffer:      : %08x\n",
+		map_to_sysmem(kparams.kernel_buffer));
 	VBDEBUG("- kernel_buffer_size: : %08x\n",
 			kparams.kernel_buffer_size);
 
@@ -931,7 +931,8 @@ twostop_main_firmware(struct twostop_fmap *fmap, void *gbb,
 	}
 
 	VBDEBUG("kparams:\n");
-	VBDEBUG("- kernel_buffer:      : %p\n", kparams.kernel_buffer);
+	VBDEBUG("- kernel_buffer:      : %08x\n",
+		map_to_sysmem(kparams.kernel_buffer));
 	VBDEBUG("- kernel_buffer_size: : %08x\n",
 			kparams.kernel_buffer_size);
 	VBDEBUG("- disk_handle:        : %p\n", kparams.disk_handle);
@@ -953,14 +954,10 @@ twostop_main_firmware(struct twostop_fmap *fmap, void *gbb,
 	 * update active EC copy in cdata. */
 	set_active_ec_firmware(cdata);
 	crossystem_data_dump(cdata);
-#if defined(CONFIG_SANDBOX)
-	return TWOSTOP_SELECT_COMMAND_LINE;
-#else
 	boot_kernel(&kparams, cdata);
 
 	/* It is an error if boot_kenel returns */
 	return TWOSTOP_SELECT_ERROR;
-#endif
 }
 
 /**
@@ -1048,7 +1045,6 @@ twostop_boot(int stop_at_select)
 		return selection;
 
 	/* Don't we bother to free(fw_blob) if there was an error? */
-#if !defined(CONFIG_SANDBOX)
 	if (selection == TWOSTOP_SELECT_ERROR)
 		return TWOSTOP_SELECT_ERROR;
 
@@ -1058,7 +1054,6 @@ twostop_boot(int stop_at_select)
 
 	assert(selection == VB_SELECT_FIRMWARE_READONLY ||
 	       selection == VB_SELECT_FIRMWARE_RECOVERY);
-#endif
 	/*
 	 * TODO: Now, load drivers for rec/normal/dev main firmware.
 	 */
