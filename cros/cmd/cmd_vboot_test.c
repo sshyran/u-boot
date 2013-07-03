@@ -14,6 +14,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <cros_ec.h>
 #include <cros/common.h>
 #include <cros/cros_fdtdec.h>
 #include <cros/firmware_storage.h>
@@ -259,10 +260,9 @@ static int do_vboot_fmap(cmd_tbl_t *cmdtp, int flag,
 static int do_vboot_chrome_ec(cmd_tbl_t *cmdtp, int flag,
 		int argc, char * const argv[])
 {
-	struct fdt_chrome_ec ec;
+	struct fdt_cros_ec ec;
 
-	/* TODO(sjg@chromium.org): Best to automate this test with sandbox */
-	if (cros_fdtdec_chrome_ec(gd->fdt_blob, &ec)) {
+	if (cros_ec_decode_ec_flash(gd->fdt_blob, &ec)) {
 		VbExDebug("Failed to load EC config from fdt!\n");
 		return 1;
 	}

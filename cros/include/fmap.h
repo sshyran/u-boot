@@ -12,6 +12,7 @@
 #define CHROMEOS_FMAP_H_
 
 #include <compiler.h>
+#include <fdtdec.h>
 
 enum cros_compress_t {
 	CROS_COMPRESS_NONE,

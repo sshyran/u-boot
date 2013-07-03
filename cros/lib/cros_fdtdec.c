@@ -85,30 +85,6 @@ static enum section_t lookup_section(const char *name)
 }
 
 /**
- * Read a flash entry from the fdt
- *
- * @param blob		FDT blob
- * @param node		Offset of node to read
- * @param name		Name of node being read
- * @param entry		Place to put offset and size of this node
- * @return 0 if ok, -ve on error
- */
-static int read_entry(const void *blob, int node, const char *name,
-		      struct fmap_entry *entry)
-{
-	u32 reg[2];
-
-	if (fdtdec_get_int_array(blob, node, "reg", reg, 2)) {
-		VBDEBUG("Node '%s' has bad/missing 'reg' property\n", name);
-		return -FDT_ERR_NOTFOUND;
-	}
-	entry->offset = reg[0];
-	entry->length = reg[1];
-
-	return 0;
-}
-
-/**
  * Process a flashmap node, storing its information in our config.
  *
  * @param blob		FDT blob
@@ -171,7 +147,7 @@ static int process_fmap_node(const void *blob, int node, int depth,
 		} else {
 			return 0;
 		}
-		if (read_entry(blob, node, name, entry))
+		if (fdtdec_read_fmap_entry(blob, node, name, entry))
 			return -FDT_ERR_NOTFOUND;
 
 		/* Add the section offset to get an 'absolute offset' */
@@ -182,7 +158,8 @@ static int process_fmap_node(const void *blob, int node, int depth,
 	*ecp = NULL;
 	if (name && !strcmp("rw-vblock-dev", name)) {
 		/* handle optional dev key */
-		if (read_entry(blob, node, name, &config->readwrite_devkey))
+		if (fdtdec_read_fmap_entry(blob, node, name,
+					   &config->readwrite_devkey))
 			return -FDT_ERR_NOTFOUND;
 		else
 			return 0;
@@ -209,7 +186,7 @@ static int process_fmap_node(const void *blob, int node, int depth,
 	}
 
 	/* Read in the 'reg' property */
-	if (read_entry(blob, node, name, &entry))
+	if (fdtdec_read_fmap_entry(blob, node, name, &entry))
 		return -FDT_ERR_NOTFOUND;
 
 	/* Figure out what section we are dealing with, either ro or rw */
@@ -291,7 +268,8 @@ int cros_fdtdec_flashmap(const void *blob, struct twostop_fmap *config)
 	}
 
 	/* Read in the 'reg' property */
-	if (read_entry(blob, offset, fdt_get_name(blob, offset, NULL), &entry))
+	if (fdtdec_read_fmap_entry(blob, offset,
+				   fdt_get_name(blob, offset, NULL), &entry))
 		return -1;
 	config->flash_base = entry.offset;
 
@@ -362,33 +340,6 @@ int cros_fdtdec_memory(const void *blob, const char *name,
 		config->end = config->start + fdt_addr_to_cpu(cell[1]);
 	} else
 		return -FDT_ERR_BADLAYOUT;
-
-	return 0;
-}
-
-int cros_fdtdec_chrome_ec(const void *blob, struct fdt_chrome_ec *config)
-{
-	int flash_node, node;
-
-	node = fdtdec_next_compatible(blob, 0, COMPAT_GOOGLE_CROS_EC);
-	if (node < 0) {
-		VBDEBUG("Failed to find chrome-ec node'\n");
-		return -1;
-	}
-
-	flash_node = fdt_subnode_offset(blob, node, "flash");
-	if (flash_node < 0) {
-		VBDEBUG("Failed to find flash node\n");
-		return -1;
-	}
-
-	if (read_entry(blob, flash_node, "flash", &config->flash)) {
-		VBDEBUG("Failed to find flash node in chrome-ec'\n");
-		return -1;
-	}
-
-	config->flash_erase_value = fdtdec_get_int(blob, flash_node,
-						    "erase-value", -1);
 
 	return 0;
 }

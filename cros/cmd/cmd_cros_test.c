@@ -230,7 +230,7 @@ struct ssync_info {
 	uint8_t *new_data;		/* Buffer to hold new EC image */
 	int force;			/* Force flashing even if the same */
 	int verify;			/* Verify EC image after writing */
-	struct fdt_chrome_ec ec;	/* EC configuration */
+	struct fdt_cros_ec ec;		/* EC configuration */
 };
 
 static int ensure_region_writable(struct cros_ec_dev *dev,
@@ -458,7 +458,7 @@ int cros_test_swsync(struct cros_ec_dev *dev, int region_mask, int force,
 		return 1;
 	}
 
-	if (cros_fdtdec_chrome_ec(gd->fdt_blob, &ssync.ec)) {
+	if (cros_ec_decode_ec_flash(gd->fdt_blob, &ssync.ec)) {
 		printf("Cannot read Chrome OS EC information\n");
 		return 1;
 	}
