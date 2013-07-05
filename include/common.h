@@ -327,6 +327,7 @@ int print_cpuinfo(void);
 int update_flash_size(int flash_size);
 void board_i2c_release_bus(int node);
 int board_i2c_claim_bus(int node);
+int arch_early_init_r(void);
 
 /**
  * Show the DRAM size in a board-specific way
