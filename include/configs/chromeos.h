@@ -150,6 +150,11 @@
 #undef CONFIG_FIT
 #define CONFIG_CRC32
 #undef CONFIG_LZO
+
+/* Limited memory so use a smaller recorded console */
+#undef CONFIG_RECORDED_CONSOLE_SIZE
+#define CONFIG_RECORDED_CONSOLE_SIZE 3000
+
 #else
 /* USB is used in recovery mode */
 #define CONFIG_CHROMEOS_USB

@@ -29,7 +29,12 @@
 #define CONFIG_VAR_SIZE_SPL
 
 #define CONFIG_SYS_SDRAM_BASE		0x20000000
+#ifdef CONFIG_CROS_RO
+#define CONFIG_SYS_TEXT_BASE		0x0202c000
+#else
 #define CONFIG_SYS_TEXT_BASE		0x23E00000
+#endif
+#define CONFIG_SPL_TEXT_START		0x02024400
 #ifdef CONFIG_VAR_SIZE_SPL
 /* There is a 16-byte header */
 #define CONFIG_SPL_TEXT_BASE		0x02024410
@@ -49,5 +54,7 @@
 
 /* Multiple USB controller support */
 #define CONFIG_USB_MAX_CONTROLLER_COUNT		2
+
+#define CONFIG_LOADADDR			23E00000
 
 #endif

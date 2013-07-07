@@ -39,8 +39,12 @@
 #define CONFIG_DISPLAY_BOARDINFO
 #define CONFIG_BOARD_COMMON
 #define CONFIG_ARCH_EARLY_INIT_R
+#define CONFIG_SYS_ALLOW_NO_RELOC
 
 #define CONFIG_BOOTSTAGE
+#define CONFIG_BOOTSTAGE_REPORT
+#define CONFIG_CMD_BOOTSTAGE
+
 #define CONFIG_PHYSMEM
 
 /* TPM */
@@ -63,6 +67,7 @@
 /* Enable ACE acceleration for SHA1 and SHA256 */
 #define CONFIG_EXYNOS_ACE_SHA
 #define CONFIG_SHA_HW_ACCEL
+#define CONFIG_SPL_CRYPTO_SUPPORT
 
 /* input clock of PLL: SMDK5250 has 24MHz input clock */
 #define CONFIG_SYS_CLK_FREQ		24000000
@@ -166,7 +171,6 @@
 #define CONFIG_USB_STORAGE
 
 /* USB boot mode */
-#define EXYNOS_COPY_USB_FNPTR_ADDR	0x02020070
 #define EXYNOS_USB_SECONDARY_BOOT	0xfeed0002
 #define EXYNOS_IRAM_SECONDARY_BASE	0x02020018
 
@@ -181,8 +185,6 @@
 #define CONFIG_SPL
 #define CONFIG_SPL_GPIO_SUPPORT
 #define CONFIG_SPL_LIBGENERIC_SUPPORT
-
-#define COPY_BL2_FNPTR_ADDR	0x02020030
 
 /* specific .lds file */
 #define CONFIG_SPL_LDSCRIPT	"board/samsung/common/exynos-uboot-spl.lds"
@@ -252,8 +254,6 @@
 #define CONFIG_ENV_OFFSET	(0x00400000 - CONFIG_ENV_SIZE)
 
 #define OM_STAT				(0x1f << 1)
-#define EXYNOS_COPY_SPI_FNPTR_ADDR	0x02020058
-#define SPI_FLASH_UBOOT_POS		(CONFIG_SEC_FW_SIZE + CONFIG_BL2_SIZE)
 
 #define CONFIG_DOS_PARTITION
 #define CONFIG_EFI_PARTITION
@@ -264,7 +264,8 @@
  * Put the initial stack pointer 1KB below this to allow room for the
  * SPL marker. This value is arbitrary, but gd_t is placed starting here.
  */
-#define CONFIG_SYS_INIT_SP_ADDR	(CONFIG_IRAM_TOP - 0x800)
+#define CONFIG_SYS_INIT_SP_ADDR		CONFIG_EXYNOS_RELOCATE_CODE_BASE
+#define CONFIG_SYS_INIT_SP_SIZE		0x400
 
 /* I2C */
 #define CONFIG_SYS_I2C_INIT_BOARD
@@ -409,10 +410,10 @@
 
 /* iRAM */
 #define CONFIG_PHY_IRAM_BASE		0x02020000
-#define CONFIG_SEC_IRAM_SIZE		0x53000	/* 332KB */
 
-#define CONFIG_EXYNOS_RELOCATE_CODE_BASE	(CONFIG_PHY_IRAM_BASE	\
-					+ CONFIG_SEC_IRAM_SIZE)
+#define CONFIG_EXYNOS_RELOCATE_CODE_SIZE	0x1000
+#define CONFIG_EXYNOS_RELOCATE_CODE_BASE	(CONFIG_IRAM_TOP - \
+		CONFIG_EXYNOS_RELOCATE_CODE_SIZE)
 
 /*
  * Low Power settings
