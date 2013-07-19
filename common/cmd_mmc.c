@@ -147,36 +147,6 @@ U_BOOT_CMD(
 	"- display info of the current MMC device"
 );
 
-#ifdef CONFIG_SUPPORT_EMMC_BOOT
-static int boot_part_access(struct mmc *mmc, u8 ack, u8 part_num, u8 access)
-{
-	int err;
-	err = mmc_boot_part_access(mmc, ack, part_num, access);
-
-	if ((err == 0) && (access != 0)) {
-		printf("\t\t\t!!!Notice!!!\n");
-
-		printf("!You must close EMMC boot Partition");
-		printf("after all images are written\n");
-
-		printf("!EMMC boot partition has continuity");
-		printf("at image writing time.\n");
-
-		printf("!So, do not close the boot partition");
-		printf("before all images are written.\n");
-		return 0;
-	} else if ((err == 0) && (access == 0))
-		return 0;
-	else if ((err != 0) && (access != 0)) {
-		printf("EMMC boot partition-%d OPEN Failed.\n", part_num);
-		return 1;
-	} else {
-		printf("EMMC boot partition-%d CLOSE Failed.\n", part_num);
-		return 1;
-	}
-}
-#endif
-
 static int do_mmcops(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	enum mmc_state state;
@@ -291,9 +261,8 @@ static int do_mmcops(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 #ifdef CONFIG_SUPPORT_EMMC_BOOT
 	} else if ((strcmp(argv[1], "open") == 0) ||
 			(strcmp(argv[1], "close") == 0)) {
-		int dev;
+		int dev, ret, part_num;
 		struct mmc *mmc;
-		u8 part_num, access = 0;
 
 		if (argc == 4) {
 			dev = simple_strtoul(argv[2], NULL, 10);
@@ -308,25 +277,33 @@ static int do_mmcops(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			return 1;
 		}
 
+		if (mmc_init(mmc)) {
+			puts("failed to initialize mmc\n");
+			return -1;
+		}
+
 		if (IS_SD(mmc)) {
-			printf("SD device cannot be opened/closed\n");
+			puts("SD device cannot be opened/closed\n");
 			return 1;
 		}
 
 		if ((part_num <= 0) || (part_num > MMC_NUM_BOOT_PARTITION)) {
-			printf("Invalid boot partition number:\n");
-			printf("Boot partition number cannot be <= 0\n");
-			printf("EMMC44 supports only 2 boot partitions\n");
+			puts("Only boot partitions 1 and 2 supported\n");
 			return 1;
 		}
 
-		if (strcmp(argv[1], "open") == 0)
-			access = part_num; /* enable R/W access to boot part*/
-		else
-			access = 0; /* No access to boot partition */
+		if (strcmp(argv[1], "open") == 0) {
+			ret = mmc_part_access(mmc, part_num);
+		} else {
+			/* Switch back to default */
+			ret = mmc_part_access(mmc, 0);
+		}
 
-		/* acknowledge to be sent during boot operation */
-		return boot_part_access(mmc, 1, part_num, access);
+		if (ret)
+			printf("Partition open/close failed with error %d.\n",
+			       ret);
+
+		return ret;
 
 	} else if (strcmp(argv[1], "bootpart") == 0) {
 		int dev;

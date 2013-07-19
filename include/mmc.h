@@ -206,6 +206,8 @@
 
 /* Enable boot power-on write protect */
 #define EXT_CSD_BOOT_WP_PWR_WP_EN	(1 << 0)
+/* Enable boot permanent write protect */
+#define EXT_CSD_BOOT_WP_PERM_WP_EN	(1 << 2)
 /* Disable use of boot power-on write protect */
 #define EXT_CSD_BOOT_WP_PWR_WP_DIS	(1 << 6)
 /* Bit 1 (Power-on) or Bit 3 (Permanent) selects the partition to protect */
@@ -333,8 +335,35 @@ void spl_mmc_load(void) __noreturn;
 /* Function to change the size of boot partition and rpmb partitions */
 int mmc_boot_partition_size_change(struct mmc *mmc, unsigned long bootsize,
 					unsigned long rpmbsize);
-/* Function to send commands to open/close the specified boot partition */
-int mmc_boot_part_access(struct mmc *mmc, u8 ack, u8 part_num, u8 access);
+
+/**
+ * Configuration eMMC boot mode operation
+ *
+ * Set several configuration options that affect eMMC boot operation.
+ *
+ * @param ack	Boot acknowledge sent during boot operation (0/1)
+ * @param part	Boot data that will be sent to master
+ *	0x0 - Device not boot enabled (default)
+ *	0x1 - Boot partition 1 enabled for boot
+ *	0x2 - Boot partition 2 enabled for boot
+ *	0x7 - User area enabled for boot
+ * @param bus_config	Contents of BOOT_BUS_CONDITIONS register
+ * @return 0 on success, -ve on error
+ */
+int mmc_boot_config(struct mmc *mmc, u8 part, u8 ack, u8 bus_config);
+
+/**
+ * Change MMC Partition
+ *
+ * Switch access to partition specified in part.  Unlike mmc_boot_part_access,
+ * this function will not affect the configured boot partition or boot ack
+ * settings.
+ *
+ * @param mmc	MMC to configure
+ * @param part	Partition to access (one of PARTITION_ACCESS from spec)
+ * #return 0 on success, -ve on error
+ */
+int mmc_part_access(struct mmc *mmc, u8 part);
 
 /**
  * Apply power-on write protect to boot partitions of eMMC.
@@ -353,6 +382,14 @@ int mmc_boot_part_access(struct mmc *mmc, u8 ack, u8 part_num, u8 access);
  * @return 0 on success, -ve on error.
  */
 int mmc_boot_power_on_write_protect(struct mmc *mmc, u8 partition);
+
+/**
+ * Get boot partition write protect status
+ *
+ * @param mmc	MMC to get status of
+ * @return	0 if WP is not asserted, non-zero if WP is asserted
+ */
+int mmc_get_boot_wp(struct mmc *mmc);
 
 /**
  * Start device initialization and return immediately; it does not block on

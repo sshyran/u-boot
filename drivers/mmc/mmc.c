@@ -1449,6 +1449,39 @@ int mmc_initialize(bd_t *bis)
 	return 0;
 }
 
+int mmc_part_access(struct mmc *mmc, u8 part)
+{
+	int err;
+	struct mmc_cmd cmd;
+
+	cmd.cmdidx = MMC_CMD_SWITCH;
+	cmd.resp_type = MMC_RSP_R1b;
+
+	/* Clear partition access bits */
+	cmd.cmdarg = (MMC_SWITCH_MODE_CLEAR_BITS << 24) |
+			(EXT_CSD_PART_CONF << 16) |
+			(EXT_CSD_PARTITION_ACCESS(0x7) << 8);
+
+	err = mmc_send_cmd(mmc, &cmd, NULL);
+	if (err) {
+		debug("Failed to clear partition access bits\n");
+		return err;
+	}
+
+	/* Set partition access bits */
+	cmd.cmdarg = (MMC_SWITCH_MODE_SET_BITS << 24) |
+			(EXT_CSD_PART_CONF << 16) |
+			(EXT_CSD_PARTITION_ACCESS(part) << 8);
+
+	err = mmc_send_cmd(mmc, &cmd, NULL);
+	if (err) {
+		debug("Failed to change partition\n");
+		return err;
+	}
+
+	return 0;
+}
+
 #ifdef CONFIG_SUPPORT_EMMC_BOOT
 /*
  * This function changes the size of boot partition and the size of rpmb
@@ -1517,26 +1550,7 @@ int mmc_boot_partition_size_change(struct mmc *mmc, unsigned long bootsize,
 	return 0;
 }
 
-/*
- * This function shall form and send the commands to open / close the
- * boot partition specified by user.
- *
- * Input Parameters:
- * ack: 0x0 - No boot acknowledge sent (default)
- *	0x1 - Boot acknowledge sent during boot operation
- * part_num: User selects boot data that will be sent to master
- *	0x0 - Device not boot enabled (default)
- *	0x1 - Boot partition 1 enabled for boot
- *	0x2 - Boot partition 2 enabled for boot
- * access: User selects partitions to access
- *	0x0 : No access to boot partition (default)
- *	0x1 : R/W boot partition 1
- *	0x2 : R/W boot partition 2
- *	0x3 : R/W Replay Protected Memory Block (RPMB)
- *
- * Returns 0 on success.
- */
-int mmc_boot_part_access(struct mmc *mmc, u8 ack, u8 part_num, u8 access)
+int mmc_boot_config(struct mmc *mmc, u8 part,  u8 ack, u8 bus_config)
 {
 	int err;
 	struct mmc_cmd cmd;
@@ -1545,40 +1559,44 @@ int mmc_boot_part_access(struct mmc *mmc, u8 ack, u8 part_num, u8 access)
 	cmd.cmdidx = MMC_CMD_SWITCH;
 	cmd.resp_type = MMC_RSP_R1b;
 
-	cmd.cmdarg = (MMC_SWITCH_MODE_WRITE_BYTE << 24) |
+	/* Clear boot partition config and ack bits */
+	cmd.cmdarg = (MMC_SWITCH_MODE_CLEAR_BITS << 24) |
 			(EXT_CSD_PART_CONF << 16) |
-			((EXT_CSD_BOOT_ACK(ack) |
-			EXT_CSD_BOOT_PART_NUM(part_num) |
-			EXT_CSD_PARTITION_ACCESS(access)) << 8);
+			((EXT_CSD_BOOT_PART_NUM(0x7) |
+			EXT_CSD_BOOT_ACK(1)) << 8);
 
 	err = mmc_send_cmd(mmc, &cmd, NULL);
 	if (err) {
-		if (access) {
-			debug("mmc boot partition#%d open fail:Error1 = %d\n",
-			      part_num, err);
-		} else {
-			debug("mmc boot partition#%d close fail:Error = %d\n",
-			      part_num, err);
-		}
+		debug("Failed to clear boot config bits\n");
 		return err;
 	}
 
-	if (access) {
-		/* 4bit transfer mode at booting time. */
-		cmd.cmdidx = MMC_CMD_SWITCH;
-		cmd.resp_type = MMC_RSP_R1b;
+	/* Set boot partition config and ack bits */
+	cmd.cmdarg = (MMC_SWITCH_MODE_SET_BITS << 24) |
+			(EXT_CSD_PART_CONF << 16) |
+			((EXT_CSD_BOOT_PART_NUM(part) |
+			EXT_CSD_BOOT_ACK(ack)) << 8);
 
-		cmd.cmdarg = (MMC_SWITCH_MODE_WRITE_BYTE << 24) |
-				(EXT_CSD_BOOT_BUS_WIDTH << 16) |
-				((1 << 0) << 8);
-
-		err = mmc_send_cmd(mmc, &cmd, NULL);
-		if (err) {
-			debug("mmc boot partition#%d open fail:Error2 = %d\n",
-			      part_num, err);
-			return err;
-		}
+	err = mmc_send_cmd(mmc, &cmd, NULL);
+	if (err) {
+		debug("Failed to set boot config bits\n");
+		return err;
 	}
+
+	/* Boot bus config */
+	cmd.cmdidx = MMC_CMD_SWITCH;
+	cmd.resp_type = MMC_RSP_R1b;
+
+	cmd.cmdarg = (MMC_SWITCH_MODE_WRITE_BYTE << 24) |
+			(EXT_CSD_BOOT_BUS_WIDTH << 16) |
+			(bus_config << 8);
+
+	err = mmc_send_cmd(mmc, &cmd, NULL);
+	if (err) {
+		debug("Failed to apply boot bus configuration\n");
+		return err;
+	}
+
 	return 0;
 }
 
@@ -1644,5 +1662,18 @@ int mmc_boot_power_on_write_protect(struct mmc *mmc, u8 partition)
 	}
 
 	return 0;
+}
+
+int mmc_get_boot_wp(struct mmc *mmc)
+{
+	ALLOC_CACHE_ALIGN_BUFFER(u8, ext_csd, MMC_MAX_BLOCK_LEN);
+	int err;
+
+	err = mmc_send_ext_csd(mmc, ext_csd);
+	if (err)
+		return err;
+
+	return ext_csd[EXT_CSD_BOOT_WP] & (EXT_CSD_BOOT_WP_PWR_WP_EN
+			| EXT_CSD_BOOT_WP_PERM_WP_EN);
 }
 #endif
