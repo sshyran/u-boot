@@ -155,6 +155,14 @@ int i2c_probe(uchar chip);
 int i2c_read(uchar chip, uint addr, int alen, uchar *buffer, int len);
 int i2c_write(uchar chip, uint addr, int alen, uchar *buffer, int len);
 
+#ifdef CONFIG_I2C_RDWR_MULT
+int i2c_read_mult(uchar chip, uint addr, int alen, uchar *buffer, int len);
+int i2c_write_mult(uchar chip, uint addr, int alen, uchar *buffer, int len);
+#else
+#define i2c_read_mult		i2c_read
+#define i2c_write_mult		i2c_write
+#endif
+
 /*
  * Utility routines to read/write registers.
  */

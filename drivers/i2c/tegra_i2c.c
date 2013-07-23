@@ -620,6 +620,77 @@ int i2c_write(uchar chip, uint addr, int alen, uchar *buffer, int len)
 	return 0;
 }
 
+#ifdef CONFIG_I2C_RDWR_MULT
+/* Read multiple bytes */
+int i2c_read_mult(uchar chip, uint addr, int alen, uchar *buffer, int len)
+{
+	int i;
+	uchar data[alen];
+
+	debug("i2c_read_mult: chip=0x%x, addr=0x%x, alen=%d, len=0x%x\n",
+	      chip, addr, alen, len);
+
+	if (alen != 0) {
+		if (!i2c_addr_ok(addr, alen)) {
+			debug("i2c_read_mult: Bad addr %x.%d.\n", addr, alen);
+			return 1;
+		}
+
+		for (i = 0; i < alen; i++)
+			data[alen - i - 1] = addr >> (8 * i);
+
+		if (i2c_write_data(chip, data, alen)) {
+			debug("i2c_read_mult: error sending (0x%x)\n", addr);
+			return 1;
+		}
+		/*
+		 * note: i2c_write_data() function above puts the bus in stop
+		 *       state. Some devices expect i2c master to issue restart,
+		 *       instead of stop/start between the address phase and
+		 *       data phase.
+		 *       This code sequence will not work for those devices.
+		 */
+	}
+
+	/* note: alen==0 case comes here directly */
+	if (i2c_read_data(chip, buffer, len)) {
+		debug("i2c_read_mult: error reading (0x%x.%d)\n", addr, alen);
+		return 1;
+	}
+
+	return 0;
+}
+
+/* Write multiple bytes */
+int i2c_write_mult(uchar chip, uint addr, int alen, uchar *buffer, int len)
+{
+	int i;
+	uchar data[alen + len];
+
+	debug("i2c_write_mult: chip=0x%x, addr=0x%x, alen=%d, len=0x%x\n",
+	      chip, addr, alen, len);
+
+	if (alen != 0) {
+		if (!i2c_addr_ok(addr, alen)) {
+			debug("i2c_write_mult: Bad addr %x.%d.\n", addr, alen);
+			return 1;
+		}
+
+		for (i = 0; i < alen; i++)
+			data[alen - i - 1] = addr >> (8 * i);
+	}
+
+	/* note: alen==0 case comes here directly */
+	memcpy(&data[alen], buffer, len);
+	if (i2c_write_data(chip, data, alen + len)) {
+		debug("i2c_write_mult: error sending (0x%x.%d)\n", addr, alen);
+		return 1;
+	}
+
+	return 0;
+}
+#endif /* CONFIG_I2C_RDWR_MULT */
+
 #if defined(CONFIG_I2C_MULTI_BUS)
 /*
  * Functions for multiple I2C bus handling
