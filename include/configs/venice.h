@@ -57,6 +57,7 @@
 #define CONFIG_SYS_MAX_I2C_BUS		TEGRA_I2C_NUM_CONTROLLERS
 #define CONFIG_SYS_I2C_SPEED		100000
 #define CONFIG_CMD_I2C
+#define CONFIG_I2C_RDWR_MULT
 
 /* SD/MMC */
 #define CONFIG_MMC
@@ -104,6 +105,17 @@
 
 /* USB keyboard */
 #define CONFIG_USB_KEYBOARD
+
+/* TPM */
+#define CONFIG_INFINEON_TPM_I2C
+#define CONFIG_CMD_TPM
+#define CONFIG_TPM
+#define CONFIG_TPM_TIS_I2C
+
+#ifndef CONFIG_OF_CONTROL
+#define CONFIG_INFINEON_TPM_I2C_BUS 2
+#define CONFIG_INFINEON_TPM_I2C_ADDR 0x20
+#endif
 
 #include "tegra-common-post.h"
 
