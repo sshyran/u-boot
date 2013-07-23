@@ -546,6 +546,17 @@ int i2c_read(uchar chip, uint addr, int alen, uchar *buffer, int len)
 
 	debug("i2c_read: chip=0x%x, addr=0x%x, len=0x%x\n",
 				chip, addr, len);
+
+	if (alen == 0) {
+		/* no addr field, just read data into buffer */
+		if (i2c_read_data(chip, buffer, len)) {
+			debug("i2c_read(alen==0): error reading (0x%x)\n",
+			      addr);
+			return 1;
+		}
+		return 0;
+	}
+
 	if (!i2c_addr_ok(addr, alen)) {
 		debug("i2c_read: Bad address %x.%d.\n", addr, alen);
 		return 1;
@@ -580,6 +591,17 @@ int i2c_write(uchar chip, uint addr, int alen, uchar *buffer, int len)
 
 	debug("i2c_write: chip=0x%x, addr=0x%x, len=0x%x\n",
 				chip, addr, len);
+
+	if (alen == 0) {
+		/* no addr field, just write data from buffer */
+		if (i2c_write_data(chip, buffer, len)) {
+			debug("i2c_write(alen==0): error reading (0x%x)\n",
+			      addr);
+			return 1;
+		}
+		return 0;
+	}
+
 	if (!i2c_addr_ok(addr, alen)) {
 		debug("i2c_write: Bad address %x.%d.\n", addr, alen);
 		return 1;
