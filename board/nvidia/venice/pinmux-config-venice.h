@@ -216,7 +216,6 @@ static struct pingroup_config tegra114_pinmux_common[] = {
 	DEFAULT_PINMUX(KB_COL1,       KBC,         UP,        NORMAL,   INPUT),
 	DEFAULT_PINMUX(KB_COL2,       KBC,         UP,        NORMAL,   INPUT),
 	DEFAULT_PINMUX(KB_ROW0,       KBC,         UP,        NORMAL,   INPUT),
-	DEFAULT_PINMUX(KB_ROW1,       KBC,         UP,        NORMAL,   INPUT),
 	DEFAULT_PINMUX(KB_ROW2,       KBC,         UP,        NORMAL,   INPUT),
 
 	/* Misc */
@@ -288,6 +287,24 @@ static struct pingroup_config tegra114_pinmux_common[] = {
 
 	/* nct */
 	DEFAULT_PINMUX(GPIO_X6_AUD,   SPI6,        UP,        TRISTATE, INPUT),
+
+	/*
+	 * ChromeOS specific GPIOs.
+	 */
+	/* google write protect mode: input, active low */
+	DEFAULT_PINMUX(KB_ROW1,		KBC,	UP,	TRISTATE,	INPUT),
+
+	/* developer mode: input, active high */
+	DEFAULT_PINMUX(KB_COL6,		KBC,	UP,	TRISTATE,	INPUT),
+
+	/* google recovery mode: input, active low */
+	DEFAULT_PINMUX(KB_COL7,		KBC,	UP,	TRISTATE,	INPUT),
+
+	/* lid open: input, active high */
+	DEFAULT_PINMUX(GPIO_W2_AUD,	SPI6,	UP, 	TRISTATE,	INPUT),
+
+	/* GPIO_X1: not used, virtual power-off signal */
+	DEFAULT_PINMUX(GPIO_X1_AUD,	SPI6,	UP,	TRISTATE,	INPUT),
 };
 
 static struct pingroup_config unused_pins_lowpower[] = {
@@ -348,8 +365,7 @@ static struct pingroup_config tegra114_pinmux_set_nontristate[] = {
 	DEFAULT_PINMUX(KB_COL3,         KBC,    UP,      NORMAL,    OUTPUT),
 	DEFAULT_PINMUX(KB_COL4,		SDMMC3, UP,	 NORMAL,    INPUT),
 	DEFAULT_PINMUX(KB_COL5,         KBC,    UP,      NORMAL,    INPUT),
-	DEFAULT_PINMUX(KB_COL6,         KBC,    UP,      NORMAL,    OUTPUT),
-	DEFAULT_PINMUX(KB_COL7,         KBC,    UP,      NORMAL,    OUTPUT),
+
 	DEFAULT_PINMUX(KB_ROW3,         KBC,    DOWN,    NORMAL,    INPUT),
 	DEFAULT_PINMUX(KB_ROW4,         KBC,    DOWN,    NORMAL,    INPUT),
 	DEFAULT_PINMUX(KB_ROW6,         KBC,    DOWN,    NORMAL,    INPUT),
