@@ -11,6 +11,8 @@
  * NOTE: The addresses below are for T30-and-above SoCs, i.e. NOT T20!
  */
 
+/include/ "factory-friendly.dtsi"
+
 / {
 	chromeos-config {
 		twostop;		/* Two-stop boot */
