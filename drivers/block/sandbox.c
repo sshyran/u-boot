@@ -26,16 +26,15 @@
 #include <os.h>
 #include <malloc.h>
 #include <sandboxblockdev.h>
+#include <asm/errno.h>
 
 static struct host_block_dev host_devices[CONFIG_HOST_MAX_DEVICES];
 
-static struct host_block_dev *
-find_host_device(int dev)
+static struct host_block_dev *find_host_device(int dev)
 {
 	if (dev >= 0 && dev < CONFIG_HOST_MAX_DEVICES)
 		return &host_devices[dev];
 
-	printf("Invalid host device number\n");
 	return NULL;
 }
 
@@ -43,6 +42,9 @@ static unsigned long host_block_read(int dev, unsigned long start,
 				     lbaint_t blkcnt, void *buffer)
 {
 	struct host_block_dev *host_dev = find_host_device(dev);
+
+	if (!host_dev)
+		return -1;
 	if (os_lseek(host_dev->fd,
 		     start * host_dev->blk_dev.blksz,
 		     OS_SEEK_SET) == -1) {
@@ -76,6 +78,9 @@ static unsigned long host_block_write(int dev, unsigned long start,
 int host_dev_bind(int dev, char *filename)
 {
 	struct host_block_dev *host_dev = find_host_device(dev);
+
+	if (!host_dev)
+		return -1;
 	if (host_dev->blk_dev.priv) {
 		os_close(host_dev->fd);
 		host_dev->blk_dev.priv = NULL;
@@ -110,18 +115,26 @@ int host_dev_bind(int dev, char *filename)
 	return 0;
 }
 
-block_dev_desc_t *host_get_dev(int dev)
+int host_get_dev_err(int dev, block_dev_desc_t **blk_devp)
 {
 	struct host_block_dev *host_dev = find_host_device(dev);
 
 	if (!host_dev)
+		return -ENODEV;
+
+	if (!host_dev->blk_dev.priv)
+		return -ENOENT;
+
+	*blk_devp = &host_dev->blk_dev;
+	return 0;
+}
+
+block_dev_desc_t *host_get_dev(int dev)
+{
+	block_dev_desc_t *blk_dev;
+
+	if (host_get_dev_err(dev, &blk_dev))
 		return NULL;
 
-	if (!host_dev->blk_dev.priv) {
-		printf("Not bound to a backing file\n");
-		return NULL;
-	}
-
-	block_dev_desc_t *blk_dev = &host_dev->blk_dev;
 	return blk_dev;
 }

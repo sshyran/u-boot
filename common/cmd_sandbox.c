@@ -21,6 +21,7 @@
 #include <fs.h>
 #include <part.h>
 #include <sandboxblockdev.h>
+#include <asm/errno.h>
 
 static int do_sandbox_load(cmd_tbl_t *cmdtp, int flag, int argc,
 			   char * const argv[])
@@ -77,10 +78,19 @@ static int do_sandbox_info(cmd_tbl_t *cmdtp, int flag, int argc,
 	int dev;
 	printf("%3s %12s %s\n", "dev", "blocks", "path");
 	for (dev = min_dev; dev <= max_dev; dev++) {
+		block_dev_desc_t *blk_dev;
+		int ret;
+
 		printf("%3d ", dev);
-		block_dev_desc_t *blk_dev = host_get_dev(dev);
-		if (!blk_dev)
+		ret = host_get_dev_err(dev, &blk_dev);
+		if (ret) {
+			if (ret == -ENOENT)
+				puts("Not bound to a backing file\n");
+			else if (ret == -ENODEV)
+				puts("Invalid host device number\n");
+
 			continue;
+		}
 		struct host_block_dev *host_dev = blk_dev->priv;
 		printf("%12lu %s\n", (unsigned long)blk_dev->lba,
 		       host_dev->filename);
