@@ -86,11 +86,13 @@
 		cd-gpios = <&gpio 170 0>; /* gpio PV2 */
 		bus-width = <4>;
 		status = "okay";
+		nvidia,removable = <1>;
 	};
 
 	sdhci@78000600 {
 		bus-width = <8>;
 		status = "okay";
+		nvidia,removable = <0>;
 	};
 
 	usb@7d008000 {
