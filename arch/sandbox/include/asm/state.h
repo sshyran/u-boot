@@ -57,6 +57,7 @@ struct sandbox_state {
 	bool read_state;		/* Read sandbox state on startup */
 	bool write_state;		/* Write sandbox state on exit */
 	bool ignore_missing_state_on_read;	/* No error if state missing */
+	bool hide_lcd;			/* Hide LCD on start-up */
 
 	/* Pointer to information for each SPI bus/cs */
 	struct sandbox_spi_info spi[CONFIG_SANDBOX_SPI_MAX_BUS]

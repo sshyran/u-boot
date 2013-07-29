@@ -326,6 +326,9 @@ void lcd_show_board_info(void);
 /* Return the size of the LCD frame buffer, and the line length */
 int lcd_get_size(int *line_length);
 
+/* Update the LCD / flush the cache */
+void lcd_sync(void);
+
 /************************************************************************/
 /* ** BITMAP DISPLAY SUPPORT						*/
 /************************************************************************/

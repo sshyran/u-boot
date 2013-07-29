@@ -71,7 +71,9 @@ static int sandbox_sdl_ensure_init(void)
 
 int sandbox_sdl_init_display(int width, int height, int log2_bpp)
 {
-	if (!width)
+	struct sandbox_state *state = state_get_current();
+
+	if (!width || state->hide_lcd)
 		return 0;
 	if (sandbox_sdl_ensure_init())
 		return -1;
