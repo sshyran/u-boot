@@ -473,8 +473,8 @@ static int reserve_mmu(void)
 	gd->arch.tlb_size = 4096 * 4;
 	gd->dest_addr -= gd->arch.tlb_size;
 
-	/* round down to next 64 kB limit */
-	gd->dest_addr &= ~(0x10000 - 1);
+	/* round down to next 16 kB limit */
+	gd->dest_addr &= ~(0x4000 - 1);
 
 	gd->arch.tlb_addr = gd->dest_addr;
 	debug("TLB table from %08lx to %08lx\n", gd->arch.tlb_addr,
@@ -527,6 +527,8 @@ static int reserve_video(void)
 
 static int reserve_uboot(void)
 {
+	if (gd_no_reloc())
+		return 0;
 	/*
 	 * reserve memory for U-Boot code, data & bss
 	 * round down to next 4 kB limit
@@ -769,14 +771,19 @@ static int reloc_fdt(void)
 
 static int setup_reloc(void)
 {
-	gd->relocaddr = gd->dest_addr;
+	if (gd_no_reloc()) {
+		debug("Relocation is disabled\n");
+		gd->relocaddr = CONFIG_SYS_TEXT_BASE;
+	} else {
+		gd->relocaddr = gd->dest_addr;
+	}
 	gd->start_addr_sp = gd->dest_addr_sp;
-	gd->reloc_off = gd->dest_addr - CONFIG_SYS_TEXT_BASE;
+	gd->reloc_off = gd->relocaddr - CONFIG_SYS_TEXT_BASE;
 	memcpy(gd->new_gd, (char *)gd, sizeof(gd_t));
 
 	debug("Relocation Offset is: %08lx\n", gd->reloc_off);
 	debug("Relocating to %08lx, new gd at %08lx, sp at %08lx\n",
-	      gd->dest_addr, (ulong)map_to_sysmem(gd->new_gd),
+	      gd->relocaddr, (ulong)map_to_sysmem(gd->new_gd),
 	      gd->dest_addr_sp);
 
 	return 0;
