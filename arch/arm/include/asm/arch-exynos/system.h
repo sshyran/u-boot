@@ -94,6 +94,9 @@ struct exynos5_sysreg {
 /* Set program counter with the given value */
 #define set_pc(x) __asm__ __volatile__ ("mov     pc, %0\n\t" : : "r"(x))
 
+/* Get program counter */
+#define get_pc(x) __asm__ __volatile__ ("mov     %0, pc\n\t" : "=r"(x) : )
+
 /* Branch to the given location */
 #define branch_bx(x) __asm__ __volatile__ ("bx	%0\n\t" : : "r"(x))
 
