@@ -203,5 +203,5 @@ static inline u8 dwmci_readb(struct dwmci_host *host, int reg)
 }
 
 int add_dwmci(struct dwmci_host *host, u32 max_clk, u32 min_clk, int removable,
-	      int pre_init);
+	      int pre_init, unsigned node);
 #endif	/* __DWMMC_HW_H */

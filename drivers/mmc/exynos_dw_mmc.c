@@ -58,9 +58,11 @@ unsigned int exynos_dwmci_get_clk(int dev_index)
  *             False if not (like ak eMMC drive)
  * pre_init -	Kick the mmc on startup so that it is ready sooner when we
  *		need it
+ * node -	Optional device tree node
  */
 int exynos_dwmci_add_port(int index, u32 regbase, int bus_width,
-			  u32 clksel, int removable, int pre_init)
+			  u32 clksel, int removable, int pre_init,
+			  unsigned node)
 {
 	struct dwmci_host *host = NULL;
 	unsigned int div;
@@ -95,7 +97,7 @@ int exynos_dwmci_add_port(int index, u32 regbase, int bus_width,
 	host->mmc_clk = exynos_dwmci_get_clk;
 	/* Add the mmc channel to be registered with mmc core */
 	if (add_dwmci(host, DWMMC_MAX_FREQ, DWMMC_MIN_FREQ, removable,
-		      pre_init)) {
+		      pre_init, node)) {
 		debug("dwmmc%d registration failed\n", index);
 		return -1;
 	}
@@ -191,8 +193,8 @@ int exynos_dwmmc_init(const void *blob)
 				DWMCI_SET_DRV_CLK(timing[1]) |
 				DWMCI_SET_DIV_RATIO(timing[2]));
 		/* Initialise each mmc channel */
-		err = exynos_dwmci_add_port(index, base, bus_width,
-					    clksel_val, removable, pre_init);
+		err = exynos_dwmci_add_port(index, base, bus_width, clksel_val,
+					    removable, pre_init, node);
 		if (err)
 			debug("dwmmc Channel-%d init failed\n", index);
 	}

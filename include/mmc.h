@@ -281,6 +281,7 @@ struct mmc_data {
 struct mmc {
 	struct list_head link;
 	char name[32];
+	unsigned node;	/* Device tree node */
 	void *priv;
 	uint voltages;
 	uint version;
@@ -422,5 +423,15 @@ struct mmc *mmc_spi_init(uint bus, uint cs, uint speed, uint mode);
 #else
 int mmc_legacy_init(int verbose);
 #endif
+
+/**
+ * Given the device tree node of an MMC device, return MMC device
+ * associated with this node.
+ *
+ * @param blob          pointer to the device tree containing the node
+ * @param node		device tree node describing this MMC device
+ * @return pointer to MMC device, or NULL on error
+ */
+struct mmc *mmc_get_device_by_node(const void *blob, unsigned node);
 
 #endif /* _MMC_H_ */

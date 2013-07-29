@@ -371,7 +371,7 @@ static int dwmci_init(struct mmc *mmc)
 }
 
 int add_dwmci(struct dwmci_host *host, u32 max_clk, u32 min_clk, int removable,
-	      int pre_init)
+	      int pre_init, unsigned node)
 {
 	struct mmc *mmc;
 	int err = 0;
@@ -386,6 +386,8 @@ int add_dwmci(struct dwmci_host *host, u32 max_clk, u32 min_clk, int removable,
 
 	mmc->priv = host;
 	host->mmc = mmc;
+
+	mmc->node = node;
 
 	sprintf(mmc->name, "%s", host->name);
 	mmc->send_cmd = dwmci_send_cmd;

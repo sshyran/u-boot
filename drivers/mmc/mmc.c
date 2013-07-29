@@ -203,6 +203,25 @@ struct mmc *find_mmc_device(int dev_num)
 	return NULL;
 }
 
+#ifdef CONFIG_OF_CONTROL
+struct mmc *mmc_get_device_by_node(const void *blob, unsigned node)
+{
+	struct mmc *m;
+	struct list_head *entry;
+
+	list_for_each(entry, &mmc_devices) {
+		m = list_entry(entry, struct mmc, link);
+
+		if (m->node == node)
+			return m;
+	}
+
+	printf("MMC device at node %d not found\n", node);
+
+	return NULL;
+}
+#endif
+
 static ulong mmc_erase_t(struct mmc *mmc, ulong start, lbaint_t blkcnt)
 {
 	struct mmc_cmd cmd;

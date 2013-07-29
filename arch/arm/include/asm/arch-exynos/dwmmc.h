@@ -30,5 +30,5 @@
 #ifdef CONFIG_OF_CONTROL
 int exynos_dwmmc_init(const void *blob);
 #endif
-int exynos_dwmci_add_port(int index, u32 regbase, int bus_width,
-			  u32 clksel, int removable, int pre_init);
+int exynos_dwmci_add_port(int index, u32 regbase, int bus_width, u32 clksel,
+			  int removable, int pre_init, unsigned node);
