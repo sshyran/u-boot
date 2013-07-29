@@ -653,6 +653,7 @@ static int process_nodes(const void *blob, int node_list[], int count)
 {
 	struct mmc_host *host;
 	int i, node;
+	struct mmc *mmc;
 
 	debug("%s: count = %d\n", __func__, count);
 
@@ -670,6 +671,17 @@ static int process_nodes(const void *blob, int node_list[], int count)
 			return -1;
 		}
 		do_mmc_init(i);
+
+		/*
+		 * The removable flag is always set to 1 by function
+		 * mmc_register(). Here we reset this flag based on values
+		 * defined in dt.
+		 *
+		 *  eMMC: 0, SD: 1.
+		 */
+		mmc = &mmc_dev[i];
+		mmc->block_dev.removable =
+			fdtdec_get_int(blob, node, "nvidia,removable", 1);
 	}
 	return 0;
 }
