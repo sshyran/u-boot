@@ -35,6 +35,7 @@
 #include <fdtdec.h>
 #include <malloc.h>
 #include <spi.h>
+#include <asm/errno.h>
 #include <asm/io.h>
 #include <asm-generic/gpio.h>
 
@@ -604,7 +605,7 @@ int cros_ec_interrupt_pending(struct cros_ec_dev *dev)
 {
 	/* no interrupt support : always poll */
 	if (!fdt_gpio_isvalid(&dev->ec_int))
-		return 1;
+		return -ENOENT;
 
 	return !gpio_get_value(dev->ec_int.gpio);
 }
