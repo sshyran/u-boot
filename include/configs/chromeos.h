@@ -67,6 +67,9 @@
 #define CONFIG_SPLASH_SCREEN
 #define CONFIG_CHROMEOS_DISPLAY
 
+/* Enable vboot twostop with SPI flash */
+#define CONFIG_CHROMEOS_SPI
+
 /* Enable USB, used for recovery mode */
 #define CONFIG_CHROMEOS_USB
 
