@@ -27,12 +27,12 @@ include $(TOPDIR)/config.mk
 
 LIB	= $(obj)lib$(CPU).o
 
-COBJS	:= cpu.o os.o start.o state.o
+COBJS-y	:= cpu.o os.o start.o state.o
 
-ifdef CONFIG_FTHREAD
-COBJS	+= fthread_mctx.o
-endif
+COBJS-$(CONFIG_FTHREAD)		+= fthread_mctx.o
+COBJS-$(CONFIG_SANDBOX_SDL)	+= sdl.o
 
+COBJS	:= $(sort $(COBJS-y))
 SRCS	:= $(COBJS:.o=.c)
 OBJS	:= $(addprefix $(obj),$(COBJS))
 
@@ -51,6 +51,11 @@ $(obj).depend.os: CPPFLAGS := $(BASE_CPPFLAGS) \
 $(obj)fthread_mctx.o: ALL_CFLAGS := $(BASE_CPPFLAGS) \
 	$(patsubst %, -idirafter %, $(BASE_INCLUDE_DIRS))
 $(obj).depend.fthread_mctx: CPPFLAGS := $(BASE_CPPFLAGS) \
+	$(patsubst %, -idirafter %, $(BASE_INCLUDE_DIRS))
+
+$(obj)sdl.o: ALL_CFLAGS := $(BASE_CPPFLAGS) \
+	$(patsubst %, -idirafter %, $(BASE_INCLUDE_DIRS))
+$(obj).depend.sdl: CPPFLAGS := $(BASE_CPPFLAGS) \
 	$(patsubst %, -idirafter %, $(BASE_INCLUDE_DIRS))
 
 #########################################################################
