@@ -53,3 +53,7 @@ early-firmware-verification
 	Fully verify the U-Boot that SPL will load before returning success
 	to vboot in VbExHashFirmwareBody().
 
+disable-memory-clear
+	Disable memory clear, ie, bypass function wipe_unused_memory(). This
+	flag is useful for boards where memory clear is not absolutely needed
+	because it may save a few seconds of booting time.

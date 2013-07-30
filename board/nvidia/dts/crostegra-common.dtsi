@@ -21,6 +21,9 @@
 	chromeos-config {
 		virtual-dev-switch;
 
+		/* disable memory clear */
+		disable-memory-clear;
+
 		vboot-flag-write-protect {
 			compatible = "google,gpio-flag";
 			gpio = <&gpio 137 1>; /* KB_ROW1/PR1 */

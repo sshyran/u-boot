@@ -513,7 +513,8 @@ twostop_init_vboot_library(firmware_storage_t *file, void *gbb,
 				cdata->boot_developer_switch);
 	}
 
-	if (iparams.out_flags & VB_INIT_OUT_CLEAR_RAM)
+	if ((iparams.out_flags & VB_INIT_OUT_CLEAR_RAM) &&
+	    !cros_fdtdec_config_has_prop(gd->fdt_blob, "disable-memory-clear"))
 		wipe_unused_memory(cdata, cparams);
 
 	/* Load required information of GBB */

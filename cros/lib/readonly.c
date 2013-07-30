@@ -328,7 +328,8 @@ int vboot_ro_flags(struct vboot_info *vboot)
 		VBDEBUG("Developer switch = %d\n", vboot->devsw.value);
 	}
 
-	if (out_flags & VB_INIT_OUT_CLEAR_RAM)
+	if ((out_flags & VB_INIT_OUT_CLEAR_RAM) &&
+	    !cros_fdtdec_config_has_prop(gd->fdt_blob, "disable-memory-clear"))
 		wipe_unused_memory(vboot);
 
 	return 0;
