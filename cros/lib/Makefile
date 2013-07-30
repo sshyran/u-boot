@@ -19,6 +19,7 @@ ifeq ($(CONFIG_CHROMEOS),y)
 COBJS-$(CONFIG_OF_CONTROL) += cros_fdtdec.o
 endif
 COBJS-$(CONFIG_CHROMEOS_SPI) += firmware_storage_spi.o
+COBJS-$(CONFIG_CHROMEOS_MMC) += firmware_storage_mmc.o
 COBJS-$(CONFIG_CHROMEOS) += fmap.o
 COBJS-$(CONFIG_CHROMEOS) += gbb.o
 COBJS-$(CONFIG_CHROMEOS) += memory_wipe.o
