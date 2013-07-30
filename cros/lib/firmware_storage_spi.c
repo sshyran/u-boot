@@ -163,7 +163,22 @@ static int close_spi(firmware_storage_t *file)
 	return 0;
 }
 
-int firmware_storage_open_spi(firmware_storage_t *file)
+static int sw_wp_enabled_spi(firmware_storage_t *file)
+{
+	uint8_t yes_it_is = 0;
+	int r = 0;
+
+	r = spi_flash_read_sw_wp_status(file->context, &yes_it_is);
+	if (r) {
+		VBDEBUG("spi_flash_read_sw_wp_status() failed: %d\n", r);
+		return 0;
+	}
+
+	VBDEBUG("flash SW WP is %d\n", yes_it_is);
+	return yes_it_is;
+}
+
+int firmware_storage_open(firmware_storage_t *file)
 {
 	const void *blob = gd->fdt_blob;
 	struct spi_flash *flash;
@@ -172,11 +187,13 @@ int firmware_storage_open_spi(firmware_storage_t *file)
 	node = cros_fdtdec_config_node(blob);
 	if (node < 0)
 		return -1;
+
 	node = fdtdec_lookup_phandle(blob, node, "firmware-storage");
 	if (node < 0) {
 		VBDEBUG("fail to look up phandle: %d\n", node);
 		return -1;
 	}
+
 	parent = fdt_parent_offset(blob, node);
 	if (parent < 0) {
 		VBDEBUG("fail to look up SPI parent: %d\n", parent);
@@ -193,7 +210,8 @@ int firmware_storage_open_spi(firmware_storage_t *file)
 	file->read = read_spi;
 	file->write = write_spi;
 	file->close = close_spi;
-	file->context = (void *)flash;
+	file->sw_wp_enabled = sw_wp_enabled_spi;
+	file->context = flash;
 
 	return 0;
 }

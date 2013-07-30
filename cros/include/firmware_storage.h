@@ -32,16 +32,26 @@ typedef struct firmware_storage_t {
 			uint32_t offset, uint32_t count, void *buf);
 	int (*close)(struct firmware_storage_t *file);
 
+	/**
+	 * Determine if software write protect is enabled
+	 *
+	 * @param file	device to access
+	 * @return	1 if sw wp is enabled, 0 if disabled.
+	 */
+	int (*sw_wp_enabled)(struct firmware_storage_t *file);
+
 	void *context; /* device driver's private data */
 } firmware_storage_t;
 
 /**
- * This opens SPI flash device
+ * Opens the firmware storage device
  *
- * @param file - the opened SPI flash device
- * @return 0 if it succeeds, non-zero if it fails
+ * Opens the built in firmware storage driver
+ *
+ * @param file - the open firmware storage device
+ * @return 0 if successful, non-zero on error
  */
-int firmware_storage_open_spi(firmware_storage_t *file);
+int firmware_storage_open(firmware_storage_t *file);
 
 int firmware_storage_open_twostop(firmware_storage_t *file,
 		struct twostop_fmap *fmap);

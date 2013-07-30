@@ -225,7 +225,7 @@ VbError_t VbExEcGetExpectedRW(enum VbSelectFirmware_t select,
 		return VBERROR_UNKNOWN;
 	}
 
-	if (firmware_storage_open_spi(&file)) {
+	if (firmware_storage_open(&file)) {
 		VBDEBUG("Failed to open firmware storage.\n");
 		return VBERROR_UNKNOWN;
 	}

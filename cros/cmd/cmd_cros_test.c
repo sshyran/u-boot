@@ -463,7 +463,7 @@ int cros_test_swsync(struct cros_ec_dev *dev, int region_mask, int force,
 		return 1;
 	}
 
-	if (firmware_storage_open_spi(&ssync.file)) {
+	if (firmware_storage_open(&ssync.file)) {
 		debug("%s: Cannot open firmware storage\n", __func__);
 		return 1;
 	}

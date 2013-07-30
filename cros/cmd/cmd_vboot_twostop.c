@@ -136,7 +136,7 @@ int cros_cboot_twostop_read_bmp_block(void)
 		return -1;
 	}
 
-	if (firmware_storage_open_spi(&file)) {
+	if (firmware_storage_open(&file)) {
 		VBDEBUG("failed to open firmware storage\n");
 		return -1;
 	}
@@ -394,25 +394,6 @@ static int request_ec_reboot_to_ro(void)
 #endif
 }
 
-static int flash_sw_wp_is_enabled(firmware_storage_t *file)
-{
-	uint8_t yes_it_is = 0;
-
-#ifdef CONFIG_SPI_FLASH
-	int r = 0;
-	r = spi_flash_read_sw_wp_status(file->context, &yes_it_is);
-	if (r) {
-		VBDEBUG("spi_flash_read_sw_wp_status() failed: %d\n", r);
-		return 0;
-	}
-#endif
-
-	VBDEBUG("flash SW WP is %d\n", yes_it_is);
-	return yes_it_is;
-}
-
-
-
 /* Fill in active EC firmware information. */
 static int set_active_ec_firmware(crossystem_data_t* cdata)
 {
@@ -493,7 +474,7 @@ twostop_init_vboot_library(firmware_storage_t *file, void *gbb,
 		iparams.flags |= VB_INIT_FLAG_EC_SOFTWARE_SYNC;
 	if (cros_fdtdec_config_has_prop(gd->fdt_blob, "ec-slow-update"))
 		iparams.flags |= VB_INIT_FLAG_EC_SLOW_UPDATE;
-	if (flash_sw_wp_is_enabled(file))
+	if (file->sw_wp_enabled(file))
 		iparams.flags |= VB_INIT_FLAG_SW_WP_ENABLED;
 	VBDEBUG("iparams.flags: %08x\n", iparams.flags);
 
@@ -840,7 +821,7 @@ twostop_init(struct twostop_fmap *fmap, firmware_storage_t *file,
 	dump_fmap(fmap);
 
 	/* We revert the decision of using firmware_storage_open_twostop() */
-	if (firmware_storage_open_spi(file)) {
+	if (firmware_storage_open(file)) {
 		VBDEBUG("failed to open firmware storage\n");
 		return -1;
 	}
