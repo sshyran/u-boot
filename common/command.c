@@ -493,6 +493,7 @@ void fixup_cmdtable(cmd_tbl_t *cmdtp, int size)
 }
 #endif
 
+#ifdef CONFIG_CMDLINE
 /**
  * Call a command function. This should be the only route in U-Boot to call
  * a command, so that we can track whether we are waiting for input or
@@ -513,11 +514,14 @@ static int cmd_call(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		debug("Command failed, result=%d", result);
 	return result;
 }
+#endif /* CONFIG_CMDLINE */
 
 enum command_ret_t cmd_process(int flag, int argc, char * const argv[],
 			       int *repeatable, ulong *ticks)
 {
 	enum command_ret_t rc = CMD_RET_SUCCESS;
+
+#ifdef CONFIG_CMDLINE
 	cmd_tbl_t *cmdtp;
 
 	/* Look up command in command table */
@@ -555,5 +559,8 @@ enum command_ret_t cmd_process(int flag, int argc, char * const argv[],
 	}
 	if (rc == CMD_RET_USAGE)
 		rc = cmd_usage(cmdtp);
+#else
+	rc = board_run_command(argv[0]);
+#endif
 	return rc;
 }

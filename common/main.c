@@ -61,7 +61,9 @@ void show_boot_progress (int val) __attribute__((weak, alias("__show_boot_progre
 
 char        console_buffer[CONFIG_SYS_CBSIZE + 1];	/* console I/O buffer	*/
 
+#ifdef CONFIG_CMDLINE
 static char * delete_char (char *buffer, char *p, int *colp, int *np, int plen);
+#endif
 static const char erase_seq[] = "\b \b";		/* erase sequence	*/
 static const char   tab_seq[] = "        ";		/* used to expand TABs	*/
 
@@ -432,7 +434,7 @@ static void process_boot_delay(void)
 
 void main_loop(void)
 {
-#ifndef CONFIG_SYS_HUSH_PARSER
+#if defined(CONFIG_CMDLINE) && !defined(CONFIG_SYS_HUSH_PARSER)
 	static char lastcommand[CONFIG_SYS_CBSIZE] = { 0, };
 	int len;
 	int rc = 1;
@@ -475,8 +477,9 @@ void main_loop(void)
 # ifdef CONFIG_AUTOBOOT_KEYED
 		int prev = disable_ctrlc(1);	/* disable Control C checking */
 # endif
-
+#ifdef CONFIG_CMDLINE
 		run_command_list(p, -1, 0);
+#endif
 
 # ifdef CONFIG_AUTOBOOT_KEYED
 		disable_ctrlc(prev);	/* restore Control C checking */
@@ -494,6 +497,7 @@ void main_loop(void)
 	/*
 	 * Main Loop for Monitor Command Processing
 	 */
+#ifdef CONFIG_CMDLINE
 #ifdef CONFIG_SYS_HUSH_PARSER
 	parse_file_outer();
 	/* This point is never reached */
@@ -539,7 +543,8 @@ void main_loop(void)
 			lastcommand[0] = 0;
 		}
 	}
-#endif /*CONFIG_SYS_HUSH_PARSER*/
+#endif /* CONFIG_SYS_HUSH_PARSER */
+#endif /* CONFIG_CMDLINE */
 }
 
 #ifdef CONFIG_BOOT_RETRY_TIME
@@ -994,6 +999,7 @@ static int cread_line(const char *const prompt, char *buf, unsigned int *len,
 
 /****************************************************************************/
 
+#ifdef CONFIG_CMDLINE
 /*
  * Prompt for input and read a line.
  * If  CONFIG_BOOT_RETRY_TIME is defined and retry_time >= 0,
@@ -1222,10 +1228,10 @@ int parse_line (char *line, char *argv[])
 	debug_parser("parse_line: nargs=%d\n", nargs);
 	return (nargs);
 }
-
+#endif /* CONFIG_CMDLINE */
 /****************************************************************************/
 
-#ifndef CONFIG_SYS_HUSH_PARSER
+#if !defined(CONFIG_SYS_HUSH_PARSER) && defined(CONFIG_CMDLINE)
 static void process_macros (const char *input, char *output)
 {
 	char c, prev;
@@ -1435,6 +1441,7 @@ static int builtin_run_command(const char *cmd, int flag)
 }
 #endif
 
+#ifdef CONFIG_CMDLINE
 /*
  * Run a command using the selected parser.
  *
@@ -1458,8 +1465,9 @@ int run_command(const char *cmd, int flag)
 			FLAG_PARSE_SEMICOLON | FLAG_EXIT_FROM_LOOP);
 #endif
 }
+#endif
 
-#ifndef CONFIG_SYS_HUSH_PARSER
+#if !defined(CONFIG_SYS_HUSH_PARSER) && defined(CONFIG_CMDLINE)
 /**
  * Execute a list of command separated by ; or \n using the built-in parser.
  *
@@ -1502,6 +1510,7 @@ static int builtin_run_command_list(char *cmd, int flag)
 }
 #endif
 
+#ifdef CONFIG_CMDLINE
 int run_command_list(const char *cmd, int len, int flag)
 {
 	int need_buff = 1;
@@ -1542,6 +1551,7 @@ int run_command_list(const char *cmd, int len, int flag)
 
 	return rcode;
 }
+#endif
 
 /****************************************************************************/
 
