@@ -777,7 +777,7 @@ static int setup_dram_config(void)
 static int reloc_fdt(void)
 {
 	if (gd->new_fdt) {
-		memcpy(gd->new_fdt, gd->fdt_blob, gd->fdt_size);
+		memcpy(gd->new_fdt, gd->fdt_blob, fdt_totalsize(gd->fdt_blob));
 		gd->fdt_blob = gd->new_fdt;
 	}
 
