@@ -54,13 +54,10 @@ static int is_printable_string(const void *data, int len);
  */
 struct fdt_header *working_fdt;
 
-void set_working_fdt_addr(void *addr)
+void set_working_fdt_addr(void *buf)
 {
-	void *buf;
-
-	buf = map_sysmem((ulong)addr, 0);
 	working_fdt = buf;
-	setenv_addr("fdtaddr", addr);
+	setenv_hex("fdtaddr", map_to_sysmem(buf));
 }
 
 void fdt_print(void *fdt)
