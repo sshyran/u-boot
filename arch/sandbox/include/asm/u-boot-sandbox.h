@@ -39,4 +39,6 @@ int dram_init(void);
 int sandbox_early_getopt_check(void);
 int sandbox_main_loop_init(void);
 
+int cleanup_before_linux(void);
+
 #endif	/* _U_BOOT_SANDBOX_H_ */
