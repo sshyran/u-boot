@@ -10,15 +10,13 @@
 
 #include <common.h>
 #include <physmem.h>
+#include <asm/io.h>
 
-static phys_addr_t __arch_phys_memset(phys_addr_t s, int c, phys_size_t n)
+__weak phys_addr_t arch_phys_memset(phys_addr_t s, int c, phys_size_t n)
 {
-	void *s_ptr = (void *)(uintptr_t)s;
+	void *s_ptr = map_sysmem(s, n);
 
-	assert(((phys_addr_t)(uintptr_t)s) == s);
-	assert(((phys_addr_t)(uintptr_t)(s + n)) == s + n);
-	return (phys_addr_t)(uintptr_t)memset(s_ptr, c, n);
+	memset(s_ptr, c, n);
+
+	return s;
 }
-
-phys_addr_t arch_phys_memset(phys_addr_t s, int c, phys_size_t n)
-	__attribute__((weak, alias("__arch_phys_memset")));
