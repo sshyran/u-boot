@@ -52,7 +52,7 @@ enum index {
 };
 
 /* IROM Function Pointers Table */
-u32 irom_ptr_table[] = {
+static const u32 irom_ptr_table[] = {
 	[MMC_INDEX] = 0x02020030,	/* iROM Function Pointer-SDMMC boot */
 	[EMMC44_INDEX] = 0x02020044,	/* iROM Function Pointer-EMMC4.4 boot*/
 	[EMMC44_END_INDEX] = 0x02020048,/* iROM Function Pointer
@@ -134,22 +134,19 @@ static void exynos_spi_copy(unsigned int uboot_size, unsigned int uboot_addr,
 	/* set the spi1 GPIO */
 	exynos_pinmux_config(PERIPH_ID_SPI1, PINMUX_FLAG_NONE);
 
-	/* set pktcnt and enable it */
-	writel(4 | SPI_PACKET_CNT_EN, &regs->pkt_cnt);
 	/* set FB_CLK_SEL */
 	writel(SPI_FB_DELAY_180, &regs->fb_clk);
-	/* set CH_WIDTH and BUS_WIDTH as word */
-	setbits_le32(&regs->mode_cfg, SPI_MODE_CH_WIDTH_WORD |
-					SPI_MODE_BUS_WIDTH_WORD);
-	clrbits_le32(&regs->ch_cfg, SPI_CH_CPOL_L); /* CPOL: active high */
+	/* clear CH_WIDTH and BUS_WIDTH as word */
+	clrbits_le32(&regs->mode_cfg,
+		     SPI_MODE_CH_WIDTH_WORD | SPI_MODE_BUS_WIDTH_WORD);
+	writel(0, &regs->swap_cfg);
+	 /* CPOL: active high */
+	clrbits_le32(&regs->ch_cfg, SPI_CH_CPHA_B | SPI_CH_CPOL_L);
 
 	/* clear rx and tx channel if set priveously */
 	clrbits_le32(&regs->ch_cfg, SPI_RX_CH_ON | SPI_TX_CH_ON);
 
 	typedef u32 (*spi_copy_func_t)(u32 offset, u32 nblock, u32 dst);
-	setbits_le32(&regs->swap_cfg, SPI_RX_SWAP_EN |
-		SPI_RX_BYTE_SWAP |
-		SPI_RX_HWORD_SWAP);
 
 	/* do a soft reset */
 	setbits_le32(&regs->ch_cfg, SPI_CH_RST);
@@ -159,12 +156,24 @@ static void exynos_spi_copy(unsigned int uboot_size, unsigned int uboot_addr,
 	setbits_le32(&regs->ch_cfg, SPI_RX_CH_ON | SPI_TX_CH_ON | SPI_CH_HS_EN);
 	clrbits_le32(&regs->cs_reg, SPI_SLAVE_SIG_INACT); /* CS low */
 
+	/* set pktcnt and enable it */
+	writel(4 | SPI_PACKET_CNT_EN, &regs->pkt_cnt);
+
 	/* Send read instruction (0x3h) followed by a 24 bit addr */
-	writel((SF_READ_DATA_CMD << 24) | uboot_offset, &regs->tx_data);
+	writel(SF_READ_DATA_CMD, &regs->tx_data);
+	writel(uboot_offset >> 16, &regs->tx_data);
+	writel(uboot_offset >> 8, &regs->tx_data);
+	writel(uboot_offset >> 0, &regs->tx_data);
 
 	/* waiting for TX done */
 	while (!(readl(&regs->spi_sts) & SPI_ST_TX_DONE))
 		;
+
+	setbits_le32(&regs->mode_cfg, SPI_MODE_CH_WIDTH_WORD |
+					SPI_MODE_BUS_WIDTH_WORD);
+	setbits_le32(&regs->swap_cfg, SPI_RX_SWAP_EN |
+		SPI_RX_BYTE_SWAP |
+		SPI_RX_HWORD_SWAP);
 
 	for (upto = 0, i = 0; upto < uboot_size; upto += todo, i++) {
 		todo = min(uboot_size - upto, (1 << 15));
