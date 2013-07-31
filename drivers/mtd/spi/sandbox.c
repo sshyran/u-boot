@@ -33,6 +33,7 @@ enum sandbox_sf_state {
 	SF_WRITE, /* writing data to the flash, i.e. page programming */
 	SF_ERASE, /* erase the flash */
 	SF_READ_STATUS, /* read the flash's status register */
+	SF_READ_STATUS1, /* read the flash's status register upper 8 bits*/
 };
 
 static const char *sandbox_sf_state_name(enum sandbox_sf_state state)
@@ -114,7 +115,7 @@ struct sandbox_spi_flash {
 	/* How many address bytes we've consumed */
 	uint addr_bytes, pad_addr_bytes;
 	/* The current flash status (see STAT_XXX defines above) */
-	u8 status;
+	u16 status;
 	/* Data describing the flash we're emulating */
 	const struct sandbox_spi_flash_data *data;
 	/* The file on disk to serv up data from */
@@ -154,7 +155,7 @@ static int sandbox_sf_setup(void **priv, const char *spec)
 	if (sandbox_sf_0xff[0] == 0x00)
 		memset(sandbox_sf_0xff, 0xff, sizeof(sandbox_sf_0xff));
 
-	sbsf = malloc(sizeof(*sbsf));
+	sbsf = calloc(sizeof(*sbsf), 1);
 	if (!sbsf) {
 		printf("sandbox_sf: out of memory\n");
 		goto error;
@@ -231,6 +232,9 @@ static int sandbox_sf_process_cmd(struct sandbox_spi_flash *sbsf, const u8 *rx,
 		break;
 	case CMD_READ_STATUS:
 		sbsf->state = SF_READ_STATUS;
+		break;
+	case CMD_READ_STATUS1:
+		sbsf->state = SF_READ_STATUS1;
 		break;
 	case CMD_WRITE_ENABLE:
 		debug(" write enabled\n");
@@ -369,6 +373,12 @@ static int sandbox_sf_xfer(void *priv, const u8 *rx, u8 *tx,
 			debug(" read status: %#x\n", sbsf->status);
 			cnt = bytes - pos;
 			memset(tx + pos, sbsf->status, cnt);
+			pos += cnt;
+			break;
+		case SF_READ_STATUS1:
+			debug(" read status: %#x\n", sbsf->status);
+			cnt = bytes - pos;
+			memset(tx + pos, sbsf->status >> 8, cnt);
 			pos += cnt;
 			break;
 		case SF_WRITE:
