@@ -274,9 +274,9 @@ static int initr_malloc(void)
 	ulong malloc_start;
 
 	/* The malloc area is immediately below the monitor copy in DRAM */
-	malloc_start = gd->dest_addr - TOTAL_MALLOC_LEN;
-	mem_malloc_init((ulong)map_sysmem(malloc_start, TOTAL_MALLOC_LEN),
-			TOTAL_MALLOC_LEN);
+	malloc_start = gd->dest_addr - gd->malloc_len;
+	mem_malloc_init((ulong)map_sysmem(malloc_start, gd->malloc_len),
+			gd->malloc_len);
 	return 0;
 }
 

@@ -549,9 +549,24 @@ static int reserve_uboot(void)
 /* reserve memory for malloc() area */
 static int reserve_malloc(void)
 {
-	gd->dest_addr_sp = gd->dest_addr - TOTAL_MALLOC_LEN;
-	debug("Reserving %dk for malloc() at: %08lx\n",
-			TOTAL_MALLOC_LEN >> 10, gd->dest_addr_sp);
+	gd->malloc_len = TOTAL_MALLOC_LEN;
+#ifdef CONFIG_OF_CONTROL
+	/*
+	 * TODO(sjg@chromium.org): Perhaps cros_bundle_firmware could set this
+	 * up for us? For now, this works.
+	 */
+# ifdef CONFIG_CROS_RO
+	const char *prop = "malloc-len,efs";
+# else
+	const char *prop = "malloc-len";
+#endif
+
+	gd->malloc_len = fdtdec_get_config_int(gd->fdt_blob, prop,
+					       gd->malloc_len);
+#endif
+	gd->dest_addr_sp = gd->dest_addr - gd->malloc_len;
+	debug("Reserving %luk for malloc() at: %08lx\n",
+	      gd->malloc_len >> 10, gd->dest_addr_sp);
 	return 0;
 }
 

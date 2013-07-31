@@ -89,6 +89,7 @@ typedef struct global_data {
 #ifdef CONFIG_TRACE
 	void		*trace_buff;	/* The trace buffer */
 #endif
+	unsigned long malloc_len;	/* Memory allocated to malloc() */
 	struct arch_global_data arch;	/* architecture-specific data */
 } gd_t;
 #endif

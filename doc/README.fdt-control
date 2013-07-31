@@ -223,6 +223,10 @@ kernel-offset
 	payload. U-Boot sets 'kernaddr' to the address of the payload. This
 	is useful for bundling a kernel with U-Boot, e.g. using USB download.
 
+malloc-len
+	If present, this is the size of the malloc() pool to use in U-Boot.
+	If absent, TOTAL_MALLOC_LEN is used.
+
 rootdisk-offset
 	If present, it is the offset from the start of U-Boot to a root
 	filesystem payload. U-Boot sets 'rootaddr' to the address of the
