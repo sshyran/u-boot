@@ -663,6 +663,12 @@ static int reserve_stacks(void)
 static int display_new_sp(void)
 {
 	debug("New Stack Pointer is: %08lx\n", gd->dest_addr_sp);
+#ifndef CONFIG_SANDBOX
+	if (gd_no_reloc()) {
+		debug("Available stack size %08lx\n", gd->dest_addr_sp -
+		      (ulong)&__bss_end);
+	}
+#endif
 
 	return 0;
 }
