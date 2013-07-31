@@ -56,6 +56,8 @@ struct spl_machine_param {
 	 * Code		Name
 	 * v		mem_iv_size
 	 * m		mem_type
+	 * S		uboot_start
+	 * o		uboot_offset
 	 * u		uboot_size
 	 * b		boot_source
 	 * f		frequency_mhz (memory frequency in MHz)
@@ -74,6 +76,8 @@ struct spl_machine_param {
 	char		params[16];	/* Length must be word-aligned */
 	u32		mem_iv_size;	/* Memory channel interleaving size */
 	enum ddr_mode	mem_type;	/* Type of on-board memory */
+	u32		uboot_start;	/* U-Boot start address */
+	u32		uboot_offset;	/* Offset of U-Boot in boot media */
 	/*
 	 * U-boot size - The iROM mmc copy function used by the SPL takes a
 	 * block count paramter to describe the u-boot size unlike the spi

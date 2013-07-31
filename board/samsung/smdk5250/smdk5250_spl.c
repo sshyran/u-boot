@@ -34,12 +34,14 @@ static struct spl_machine_param machine_param
 		__attribute__((section(".machine_param"))) = {
 	.signature	= SIGNATURE,
 	.version	= 1,
-	.params		= "vmubfasirRMwW",
+	.params		= "vmSoubfasirRMwW",
 	.size		= sizeof(machine_param),
 
 	.mem_iv_size	= 0x1f,
 	.mem_type	= DDR_MODE_DDR3,
 
+	.uboot_start	= CONFIG_SYS_TEXT_BASE,
+	.uboot_offset	= 48 << 10,
 	/*
 	 * Set uboot_size to 0x100000 bytes.
 	 *

@@ -123,7 +123,8 @@ static void spi_rx_tx(struct exynos_spi *regs, int todo,
  * @parma uboot_size	size of u-boot to copy
  * @param uboot_addr	address of u-boot to copy
  */
-static void exynos_spi_copy(unsigned int uboot_size, unsigned int uboot_addr)
+static void exynos_spi_copy(unsigned int uboot_size, unsigned int uboot_addr,
+			    unsigned int uboot_offset)
 {
 	int upto, todo;
 	int i;
@@ -159,7 +160,7 @@ static void exynos_spi_copy(unsigned int uboot_size, unsigned int uboot_addr)
 	clrbits_le32(&regs->cs_reg, SPI_SLAVE_SIG_INACT); /* CS low */
 
 	/* Send read instruction (0x3h) followed by a 24 bit addr */
-	writel((SF_READ_DATA_CMD << 24) | SPI_FLASH_UBOOT_POS, &regs->tx_data);
+	writel((SF_READ_DATA_CMD << 24) | uboot_offset, &regs->tx_data);
 
 	/* waiting for TX done */
 	while (!(readl(&regs->spi_sts) & SPI_ST_TX_DONE))
@@ -168,7 +169,7 @@ static void exynos_spi_copy(unsigned int uboot_size, unsigned int uboot_addr)
 	for (upto = 0, i = 0; upto < uboot_size; upto += todo, i++) {
 		todo = min(uboot_size - upto, (1 << 15));
 		spi_rx_tx(regs, todo, (void *)(uboot_addr),
-			  (void *)(SPI_FLASH_UBOOT_POS), i);
+			  (void *)uboot_offset, i);
 	}
 
 	setbits_le32(&regs->cs_reg, SPI_SLAVE_SIG_INACT);/* make the CS high */
@@ -191,64 +192,81 @@ static void exynos_spi_copy(unsigned int uboot_size, unsigned int uboot_addr)
 }
 #endif /* CONFIG_EXYNOS_FAST_SPI_BOOT */
 
-/*
-* Copy U-boot from mmc to RAM:
-* COPY_BL2_FNPTR_ADDR: Address in iRAM, which Contains
-* Pointer to API (Data transfer from mmc to ram)
-*/
-enum boot_mode copy_uboot_to_ram(void)
+enum boot_mode copy_uboot_to_ram(ulong uboot_addr, ulong uboot_size,
+				 enum boot_mode bootmode, ulong uboot_offset)
 {
 	int is_cr_z_set;
 	unsigned int sec_boot_check;
-	enum boot_mode bootmode = BOOT_MODE_OM;
 #ifndef CONFIG_EXYNOS_FAST_SPI_BOOT
 	u32 (*spi_copy)(u32 offset, u32 nblock, u32 dst);
 #endif
-	struct spl_machine_param *param = spl_get_machine_params();
-	unsigned int uboot_size;
 	u32 (*copy_bl2)(u32 offset, u32 nblock, u32 dst);
 	u32 (*copy_bl2_from_emmc)(u32 nblock, u32 dst);
 	void (*end_bootop_from_emmc)(void);
 	u32 (*usb_copy)(void);
 
-	uboot_size = param->uboot_size;
-
 	/* Read iRAM location to check for secondary USB boot mode */
-	sec_boot_check = readl(EXYNOS_IRAM_SECONDARY_BASE);
-	if (sec_boot_check == EXYNOS_USB_SECONDARY_BOOT)
-		bootmode = BOOT_MODE_USB;
+	if (bootmode == BOOT_MODE_OM) {
+		sec_boot_check = readl(EXYNOS_IRAM_SECONDARY_BASE);
+		if (sec_boot_check == EXYNOS_USB_SECONDARY_BOOT)
+			bootmode = BOOT_MODE_USB;
+		else
+			bootmode = readl(EXYNOS5_POWER_BASE) & OM_STAT;
+	}
 
-	if (bootmode == BOOT_MODE_OM)
-		bootmode = readl(EXYNOS5_POWER_BASE) & OM_STAT;
-
+	debug("\n");
 	switch (bootmode) {
 	case BOOT_MODE_SERIAL:
 #ifdef CONFIG_EXYNOS_FAST_SPI_BOOT
+		debug("SPI fast...");
 		/* let us our own function to copy u-boot from SF */
-		exynos_spi_copy(param->uboot_size, CONFIG_SYS_TEXT_BASE);
+		exynos_spi_copy(uboot_size, uboot_addr, uboot_offset);
 #else
+		debug("SPI iROM...");
 		spi_copy = get_irom_func(SPI_INDEX);
-		spi_copy(SPI_FLASH_UBOOT_POS, param->uboot_size,
-			 CONFIG_SYS_TEXT_BASE);
+		spi_copy(uboot_offset, uboot_size, uboot_addr);
 #endif
 		break;
 	case BOOT_MODE_MMC:
+		debug("MMC...");
 		copy_bl2 = get_irom_func(MMC_INDEX);
 		copy_bl2(CONFIG_UBOOT_OFFSET / MMC_MAX_BLOCK_LEN,
-			 uboot_size / MMC_MAX_BLOCK_LEN, CONFIG_SYS_TEXT_BASE);
+			 uboot_size / MMC_MAX_BLOCK_LEN, uboot_addr);
 		break;
 	case BOOT_MODE_EMMC:
+		debug("eMMC...");
+#ifdef CONFIG_SPL_MMC_BOOT_WP
+		/*
+		 * GPIOs on the Exynos 5250 default to pulled down.  It will
+		 * take a while for the GPIO to settle after being changed, so
+		 * initialize it before copying U-Boot, giving it that time to
+		 * settle.
+		 */
+		spl_boot_wp_init();
+#endif
 		/* Set the FSYS1 clock divisor value for EMMC boot */
 		emmc_boot_clk_div_set();
 
 		copy_bl2_from_emmc = get_irom_func(EMMC44_INDEX);
 		end_bootop_from_emmc = get_irom_func(EMMC44_END_INDEX);
 
-		copy_bl2_from_emmc(uboot_size / MMC_MAX_BLOCK_LEN,
-				   CONFIG_SYS_TEXT_BASE);
+		copy_bl2_from_emmc(uboot_size / MMC_MAX_BLOCK_LEN, uboot_addr);
 		end_bootop_from_emmc();
+
+#ifdef CONFIG_SPL_MMC_BOOT_WP
+		/* Only set eMMC write protection if booting from eMMC */
+		if (check_and_set_wp()) {
+			/*
+			* TODO(mpratt@chromium.org):
+			* Reboot or retry if write protection fails to apply.
+			*/
+			printf("eMMC write-protect failed");
+			hang();
+		}
+#endif
 		break;
 	case BOOT_MODE_USB:
+		debug("USB...");
 		/*
 		 * iROM needs program flow prediction to be disabled
 		 * before copy from USB device to RAM
@@ -259,8 +277,11 @@ enum boot_mode copy_uboot_to_ram(void)
 		config_branch_prediction(is_cr_z_set);
 		break;
 	default:
+		puts("Invalid boot mode");
+		hang();
 		break;
 	}
+	debug("done.\n");
 
 	return bootmode;
 }
@@ -433,13 +454,14 @@ static int check_and_set_wp(void)
 
 void board_init_f(unsigned long bootflag)
 {
+	struct spl_machine_param *param;
 	__attribute__((aligned(8))) gd_t local_gd;
 	__attribute__((noreturn)) void (*uboot)(void);
-#ifdef CONFIG_SPL_MMC_BOOT_WP
-	enum boot_mode bootmode;
-#endif
+	enum boot_mode boot_mode;
 
 	exynos5_set_spl_marker();
+	param = spl_get_machine_params();
+	boot_mode = param->boot_source;
 	setup_global_data(&local_gd);
 
 	if (do_lowlevel_init()) {
@@ -447,30 +469,13 @@ void board_init_f(unsigned long bootflag)
 		power_exit_wakeup();
 	}
 
-#ifdef CONFIG_SPL_MMC_BOOT_WP
-	/*
-	 * GPIOs on the Exynos 5250 default to pulled down.  It will take a
-	 * while for the GPIO to settle after being changed, so initialize it
-	 * before copying U-Boot, giving it that time to settle.
-	 */
-	spl_boot_wp_init();
-
-	bootmode = copy_uboot_to_ram();
-
-	/* Only set eMMC write protection if booting from eMMC */
-	if (bootmode == BOOT_MODE_EMMC && check_and_set_wp()) {
-		/*
-		 * TODO(mpratt@chromium.org):
-		 * Reboot or retry if write protection fails to apply.
-		 */
-		hang();
-	}
-#else
-	copy_uboot_to_ram();
-#endif
+	copy_uboot_to_ram(param->uboot_start, param->uboot_size, boot_mode,
+			  param->uboot_offset);
 
 	/* Jump to U-Boot image */
-	uboot = (void *)CONFIG_SYS_TEXT_BASE;
+	debug("Jumping to %x, size %x\n", param->uboot_start,
+	      param->uboot_size);
+	uboot = map_sysmem(param->uboot_start, param->uboot_size);
 	(*uboot)();
 	/* Never returns Here */
 }
