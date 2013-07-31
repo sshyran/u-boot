@@ -26,11 +26,11 @@
  * starting a wipe region and starting a not wiped region.
  */
 
-static void memory_wipe_insert_between(memory_wipe_edge_t *before,
-	memory_wipe_edge_t *after, phys_addr_t pos)
+static void memory_wipe_insert_between(struct memory_wipe_edge *before,
+	struct memory_wipe_edge *after, phys_addr_t pos)
 {
-	memory_wipe_edge_t *new_edge =
-		(memory_wipe_edge_t *)malloc(sizeof(*new_edge));
+	struct memory_wipe_edge *new_edge =
+		(struct memory_wipe_edge *)malloc(sizeof(*new_edge));
 
 	assert(new_edge);
 	assert(before != after);
@@ -40,13 +40,13 @@ static void memory_wipe_insert_between(memory_wipe_edge_t *before,
 	before->next = new_edge;
 }
 
-void memory_wipe_init(memory_wipe_t *wipe)
+void memory_wipe_init(struct memory_wipe *wipe)
 {
 	wipe->head.next = NULL;
 	wipe->head.pos = 0;
 }
 
-static void memory_wipe_set_region_to(memory_wipe_t *wipe_info,
+static void memory_wipe_set_region_to(struct memory_wipe *wipe_info,
 	phys_addr_t start, phys_addr_t end, int new_wiped)
 {
 	/* whether the current region was originally going to be wiped. */
@@ -55,8 +55,8 @@ static void memory_wipe_set_region_to(memory_wipe_t *wipe_info,
 	assert(start != end);
 
 	/* prev is never NULL, but cur might be. */
-	memory_wipe_edge_t *prev = &wipe_info->head;
-	memory_wipe_edge_t *cur = prev->next;
+	struct memory_wipe_edge *prev = &wipe_info->head;
+	struct memory_wipe_edge *cur = prev->next;
 
 	/*
 	 * Find the start of the new region. After this loop, prev will be
@@ -96,21 +96,25 @@ static void memory_wipe_set_region_to(memory_wipe_t *wipe_info,
 }
 
 /* Set a region to "wiped". */
-void memory_wipe_add(memory_wipe_t *wipe, phys_addr_t start, phys_addr_t end)
+void memory_wipe_add(struct memory_wipe *wipe, phys_addr_t start,
+		     phys_addr_t end)
 {
+	debug("%s: start=%llx, end=%llx\n", __func__, (u64)start, (u64)end);
 	memory_wipe_set_region_to(wipe, start, end, 1);
 }
 
 /* Set a region to "not wiped". */
-void memory_wipe_sub(memory_wipe_t *wipe, phys_addr_t start, phys_addr_t end)
+void memory_wipe_sub(struct memory_wipe *wipe, phys_addr_t start,
+		     phys_addr_t end)
 {
+	debug("%s: start=%llx, end=%llx\n", __func__, (u64)start, (u64)end);
 	memory_wipe_set_region_to(wipe, start, end, 0);
 }
 
 /* Actually wipe memory. */
-void memory_wipe_execute(memory_wipe_t *wipe)
+void memory_wipe_execute(struct memory_wipe *wipe)
 {
-	memory_wipe_edge_t *cur;
+	struct memory_wipe_edge *cur;
 
 	VBDEBUG("Wipe memory regions:\n");
 	for (cur = wipe->head.next; cur; cur = cur->next->next) {

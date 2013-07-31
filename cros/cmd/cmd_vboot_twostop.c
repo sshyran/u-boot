@@ -262,7 +262,7 @@ static int lcd_fb_size(void)
 extern uint8_t _start;
 extern uint8_t __bss_end;
 
-static void setup_arch_unused_memory(memory_wipe_t *wipe,
+static void setup_arch_unused_memory(struct memory_wipe *wipe,
 	crossystem_data_t *cdata, VbCommonParams *cparams)
 {
 	struct fdt_memory config, ramoops, lp0;
@@ -307,7 +307,7 @@ static void setup_arch_unused_memory(memory_wipe_t *wipe,
 extern uint8_t __text_start;
 extern uint8_t __bss_end;
 
-static void setup_arch_unused_memory(memory_wipe_t *wipe,
+static void setup_arch_unused_memory(struct memory_wipe *wipe,
 	crossystem_data_t *cdata, VbCommonParams *cparams)
 {
 	int i;
@@ -336,7 +336,7 @@ static void setup_arch_unused_memory(memory_wipe_t *wipe,
 #else
 
 #if !defined(CONFIG_SANDBOX)
-static void setup_arch_unused_memory(memory_wipe_t *wipe,
+static void setup_arch_unused_memory(struct memory_wipe *wipe,
 	crossystem_data_t *cdata, VbCommonParams *cparams)
 {
 	/* TODO(thutt@chromium.org): add memory wipe capability */
@@ -359,7 +359,7 @@ static void wipe_unused_memory(crossystem_data_t *cdata,
 	VbCommonParams *cparams)
 {
 #if !defined(CONFIG_SANDBOX)
-	memory_wipe_t wipe;
+	struct memory_wipe wipe;
 	int fdt_size __maybe_unused;
 
 	fdt_size = fdt_totalsize(gd->fdt_blob);

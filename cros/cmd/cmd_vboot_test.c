@@ -122,7 +122,7 @@ out:
 static int do_vboot_test_memwipe(cmd_tbl_t *cmdtp,
 		int flag, int argc, char * const argv[])
 {
-	memory_wipe_t wipe;
+	struct memory_wipe wipe;
 	char s[] = "ABCDEFGHIJ";
 	const char r[] = "\0BCDE\0GHIJ";
 	const size_t size = strlen(s);
