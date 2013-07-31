@@ -108,6 +108,11 @@ int os_close(int fd)
 	return close(fd);
 }
 
+int os_unlink(const char *fname)
+{
+	return unlink(fname);
+}
+
 void os_exit(int exit_code)
 {
 	exit(exit_code);
@@ -499,7 +504,7 @@ int os_jump_to_image(const void *dest, int size)
 	struct sandbox_state *state = state_get_current();
 	char fname[30], mem_fname[30];
 	int fd, err;
-	const char *extra_args[4];
+	const char *extra_args[5];
 	char **argv = state->argv;
 #ifdef DEBUG
 	int argc, i;
@@ -524,6 +529,7 @@ int os_jump_to_image(const void *dest, int size)
 	extra_args[1] = fname;
 	extra_args[2] = "-m";
 	extra_args[3] = mem_fname;
+	extra_args[4] = "--rm_memory";
 	err = add_args(&argv, extra_args,
 		       sizeof(extra_args) / sizeof(extra_args[0]));
 	if (err)

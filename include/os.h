@@ -284,4 +284,6 @@ int os_read_ram_buf(const char *fname);
  */
 int os_jump_to_image(const void *dest, int size);
 
+int os_unlink(const char *fname);
+
 #endif

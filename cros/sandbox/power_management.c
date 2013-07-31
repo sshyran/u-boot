@@ -20,7 +20,7 @@ int is_processor_reset(void)
 {
 	struct sandbox_state *state = state_get_current();
 
-	return !state->jumped;
+	return !state->jumped_fname;
 }
 
 void cold_reboot(void)
