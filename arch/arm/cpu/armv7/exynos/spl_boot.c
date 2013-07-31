@@ -61,6 +61,8 @@ static const u32 irom_ptr_table[] = {
 	[USB_INDEX] = 0x02020070,	/* iROM Function Pointer-USB boot*/
 	};
 
+static bool running_from_uboot __attribute__ ((section(".data")));
+
 void *get_irom_func(int index)
 {
 	return (void *)*(u32 *)irom_ptr_table[index];
@@ -468,14 +470,19 @@ void board_init_f(unsigned long bootflag)
 	__attribute__((noreturn)) void (*uboot)(void);
 	enum boot_mode boot_mode;
 
-	exynos5_set_spl_marker();
 	param = spl_get_machine_params();
 	boot_mode = param->boot_source;
 	setup_global_data(&local_gd);
 
-	if (do_lowlevel_init()) {
-		reset_if_invalid_wakeup();
-		power_exit_wakeup();
+	if (running_from_uboot) {
+		arch_cpu_init();
+		serial_init();
+	} else {
+		exynos5_set_spl_marker();
+		if (do_lowlevel_init()) {
+			reset_if_invalid_wakeup();
+			power_exit_wakeup();
+		}
 	}
 
 	copy_uboot_to_ram(param->uboot_start, param->uboot_size, boot_mode,
@@ -497,7 +504,11 @@ void board_init_r(gd_t *id, ulong dest_addr)
 	while (1)
 		;
 }
-void save_boot_params(u32 r0, u32 r1, u32 r2, u32 r3) {}
+
+void save_boot_params(u32 r0, u32 r1, u32 r2, u32 r3)
+{
+	running_from_uboot = (r0 == SPL_RUNNING_FROM_UBOOT);
+}
 
 #ifdef CONFIG_SPL_SERIAL_SUPPORT
 void puts(const char *s)

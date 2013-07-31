@@ -30,6 +30,8 @@
 #ifndef __ASM_GENERIC_U_BOOT_H__
 #define __ASM_GENERIC_U_BOOT_H__
 
+#define SPL_RUNNING_FROM_UBOOT	0x3afcb001UL
+
 /*
  * Board information passed to Linux kernel from U-Boot
  *
