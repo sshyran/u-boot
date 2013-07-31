@@ -145,9 +145,7 @@ __weak int fixup_cpu(void)
 
 static int initr_reloc_global_data(void)
 {
-#ifdef CONFIG_SYS_SYM_OFFSETS
-	monitor_flash_len = _end_ofs;
-#elif !defined(CONFIG_SANDBOX)
+#ifndef CONFIG_SANDBOX
 	monitor_flash_len = (ulong)&__init_end - gd->dest_addr;
 #endif
 #if defined(CONFIG_MPC85xx) || defined(CONFIG_MPC86xx)
