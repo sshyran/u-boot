@@ -84,6 +84,7 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(COMPAT_GOOGLE_GPIO_FLAG, "google,gpio-flag"),
 	COMPAT(COMPAT_GOOGLE_CROS_EC_FLAG, "google,cros-ec-flag"),
 	COMPAT(COMPAT_GOOGLE_SYSINFO_FLAG, "google,sysinfo-flag"),
+	COMPAT(COMPAT_GOOGLE_KEY_FLAG, "google,key-flag"),
 	COMPAT(COMPAT_INTEL_LPC, "intel,lpc"),
 	COMPAT(COMPAT_SAMSUNG_S2MPS11_PMIC, "samsung,s2mps11-pmic"),
 	COMPAT(COMPAT_SAMSUNG_EXYNOS5_I2C, "samsung,exynos5-hsi2c"),

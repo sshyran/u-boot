@@ -40,6 +40,7 @@ struct vboot_flag_context {
 	int gpio_valid_time;	/* time of delay when gpio value is valid */
 	/* previous value of the flag (1 or 0), or -1 if not known */
 	int prev_value;
+	int key;		/* Keycode associated with this flag */
 };
 
 /* GPIO details required in the crossystem data structure */

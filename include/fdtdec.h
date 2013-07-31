@@ -109,6 +109,7 @@ enum fdt_compat_id {
 	COMPAT_GOOGLE_GPIO_FLAG,	/* Google GPIO Flag-Input */
 	COMPAT_GOOGLE_CROS_EC_FLAG,	/* Google EC Flag-Input */
 	COMPAT_GOOGLE_SYSINFO_FLAG,	/* Google Sysinfo Flag-Input */
+	COMPAT_GOOGLE_KEY_FLAG,		/* Google Key Flag-Input */
 	COMPAT_INTEL_LPC,		/* Intel Low Pin Count I/F */
 	COMPAT_SAMSUNG_S2MPS11_PMIC,	/* S2MPS11 PMIC */
 	COMPAT_SAMSUNG_EXYNOS5_I2C,	/* Exynos5 High Speed I2C Controller */

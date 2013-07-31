@@ -26,6 +26,7 @@ COBJS-$(CONFIG_CHROMEOS) += memory_wipe.o
 COBJS-$(CONFIG_CHROMEOS) += vboot_flag.o
 COBJS-$(CONFIG_CHROMEOS_CONST_FLAG) += vboot_flag_const.o
 COBJS-$(CONFIG_CHROMEOS_GPIO_FLAG) += vboot_flag_gpio.o
+COBJS-$(CONFIG_CHROMEOS_KEY_FLAG) += vboot_flag_key.o
 COBJS-$(CONFIG_CHROMEOS_CROS_EC_FLAG) += vboot_flag_cros_ec.o
 COBJS-$(CONFIG_CHROMEOS) += vboot_flag_debug.o
 
