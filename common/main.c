@@ -285,7 +285,7 @@ static int abortboot(int bootdelay)
  * printing the error message to console.
  */
 
-#if defined(CONFIG_BOOTDELAY) && defined(CONFIG_OF_CONTROL)
+#if defined(CONFIG_OF_CONTROL)
 static void secure_boot_cmd(char *cmd)
 {
 #ifdef CONFIG_CMDLINE
@@ -325,29 +325,54 @@ err:
 	 */
 	hang();
 }
+#endif /* CONFIG_OF_CONTROL */
 
-static void process_fdt_options(const void *blob)
+/**
+ * Process options contained in the device tree
+ *
+ * This handles various features provided by the device tree, which can
+ * affect environment variables or operation on start-up.
+ *
+ * @param blob	Device tree to process
+ * @param cmdp	Returns the boot command obtained from the FDT
+ */
+static void process_fdt_options(const void *blob, char **cmdp)
 {
+#ifdef CONFIG_OF_CONTROL
 	ulong addr;
+	char *s = *cmdp, *env;
+
+	/* Allow the fdt to override the boot command */
+	env = fdtdec_get_config_string(blob, "bootcmd");
+	if (env)
+		s = env;
 
 	/* Add an env variable to point to a kernel payload, if available */
-	addr = fdtdec_get_config_int(gd->fdt_blob, "kernel-offset", 0);
+	addr = fdtdec_get_config_int(blob, "kernel-offset", 0);
 	if (addr)
 		setenv_addr("kernaddr", (void *)(CONFIG_SYS_TEXT_BASE + addr));
 
 	/* Add an env variable to point to a root disk, if available */
-	addr = fdtdec_get_config_int(gd->fdt_blob, "rootdisk-offset", 0);
+	addr = fdtdec_get_config_int(blob, "rootdisk-offset", 0);
 	if (addr)
 		setenv_addr("rootaddr", (void *)(CONFIG_SYS_TEXT_BASE + addr));
-}
+
+	/*
+	 * If the bootsecure option was chosen, use secure_boot_cmd().
+	 * Always use 'env' in this case, since bootsecure requres that the
+	 * bootcmd was specified in the FDT too.
+	 */
+	if (fdtdec_get_config_int(blob, "bootsecure", 0)) {
+		secure_boot_cmd(s);
+		panic("Secure boot command returned");
+	}
+	*cmdp = s;
 #endif /* CONFIG_OF_CONTROL */
+}
 
 #ifdef CONFIG_BOOTDELAY
 static void process_boot_delay(void)
 {
-#ifdef CONFIG_OF_CONTROL
-	char *env;
-#endif
 	char *s;
 	int bootdelay;
 #ifdef CONFIG_BOOTCOUNT_LIMIT
@@ -390,23 +415,8 @@ static void process_boot_delay(void)
 	else
 #endif /* CONFIG_BOOTCOUNT_LIMIT */
 		s = getenv ("bootcmd");
-#ifdef CONFIG_OF_CONTROL
-	/* Allow the fdt to override the boot command */
-	env = fdtdec_get_config_string(gd->fdt_blob, "bootcmd");
-	if (env)
-		s = env;
 
-	process_fdt_options(gd->fdt_blob);
-
-	/*
-	 * If the bootsecure option was chosen, use secure_boot_cmd().
-	 * Always use 'env' in this case, since bootsecure requres that the
-	 * bootcmd was specified in the FDT too.
-	 */
-	if (fdtdec_get_config_int(gd->fdt_blob, "bootsecure", 0))
-		secure_boot_cmd(env);
-
-#endif /* CONFIG_OF_CONTROL */
+	process_fdt_options(gd->fdt_blob, &s);
 
 	debug ("### main_loop: bootcmd=\"%s\"\n", s ? s : "<UNDEFINED>");
 
@@ -493,6 +503,17 @@ void main_loop(void)
 
 #ifdef CONFIG_BOOTDELAY
 	process_boot_delay();
+#else
+	char *s = NULL;
+
+	process_fdt_options(gd->fdt_blob, &s);
+	if (s) {
+# ifdef CONFIG_CMDLINE
+		run_command_list(s, -1, 0);
+# else
+		board_run_command(s);
+# endif
+	}
 #endif
 	/*
 	 * Main Loop for Monitor Command Processing
