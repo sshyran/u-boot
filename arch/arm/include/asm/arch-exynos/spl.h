@@ -23,6 +23,7 @@
 #ifndef __ASM_ARCH_EXYNOS_SPL_H__
 #define __ASM_ARCH_EXYNOS_SPL_H__
 
+#include <hash.h>
 #include <asm/arch-exynos/dmc.h>
 
 enum boot_mode {
@@ -118,6 +119,29 @@ struct spl_machine_param {
 } __attribute__((__packed__));
 #endif
 
+#define SPL_HASH_VERSION	1
+#define SPL_HASH_SIGNATURE	0xdead4eef
+
+struct spl_var_size_header {
+	uint32_t size;
+	uint32_t checksum;
+	uint32_t hash_offset;
+	uint32_t spare;
+};
+
+/*
+ * Structure for a hash attached to SPL. We expect only a single one and it
+ * is sha256 for now. But make some effort to make this more general.
+ */
+struct spl_hash {
+	uint32_t signature;	/* SPL_HASH_SIGNATURE */
+	uint32_t version;	/* Header version (SPL_HASH_VERSION) */
+	uint32_t size;		/* Size of this hash block struct spl_hash */
+	uint32_t flags;		/* Flags for expansion (currently 0) */
+	char algo[32];		/* algorithm name - only "sha256" supported */
+	uint8_t digest[HASH_MAX_DIGEST_SIZE];
+};
+
 /**
  * Validate signature and return a pointer to the parameter table.  If the
  * signature is invalid, call panic() and never return.
@@ -125,5 +149,14 @@ struct spl_machine_param {
  * @return pointer to the parameter table if signature matched or never return.
  */
 struct spl_machine_param *spl_get_machine_params(void);
+
+/**
+ * Extract the image hash from the SPL if available.
+ *
+ * This can be used to validate U-Boot after it is loaded.
+ *
+ * @return pointer to hash information, or NULL if none
+ */
+struct spl_hash *spl_get_hash(void);
 
 #endif /* __ASM_ARCH_EXYNOS_SPL_H__ */
