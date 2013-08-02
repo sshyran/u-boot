@@ -331,11 +331,14 @@ static void reset_if_invalid_wakeup(void)
  * Assert eMMC boot partition write protection
  *
  * Initialize the eMMC and send a command to assert power-on write
- * protection of the eMMC boot partitions.
+ * protection of eMMC boot partition 1.
  *
  * Additionally, apply power-on protection of the boot configuration,
  * to prevent the boot partition from being switched to one that is
  * not write protected.
+ *
+ * NOTE: This function uses features specific to eMMC 4.5.  Behavior on
+ * other versions is undefined.
  *
  * @return 0 on success, -ve on error
  */
@@ -343,6 +346,7 @@ static int spl_set_boot_wp(void)
 {
 	struct dwmci_host host;
 	struct mmc_cmd cmd;
+	u8 reg;
 	int ret;
 
 	/* Configure mmc pins */
@@ -361,12 +365,19 @@ static int spl_set_boot_wp(void)
 	if (ret)
 		return ret;
 
+	/*
+	 * Write protect boot partition 1 only,
+	 * Only supported on eMMC 4.5, eMMC 4.41 behavior is undefined.
+	 */
+	reg = EXT_CSD_BOOT_WP_PWR_WP_EN | EXT_CSD_BOOT_WP_PART_SELECT |
+		EXT_CSD_BOOT_WP_PWR_SEL_PART1;
+
 	/* Set power-on write protect on boot partitions */
 	cmd.cmdidx = MMC_CMD_SWITCH;
 	cmd.resp_type = MMC_RSP_R1b;
 	cmd.cmdarg = (MMC_SWITCH_MODE_WRITE_BYTE << 24) |
 				 (EXT_CSD_BOOT_WP << 16) |
-				 (EXT_CSD_BOOT_WP_PWR_WP_EN << 8);
+				 (reg << 8);
 	ret = dwmci_simple_send_cmd(&host, &cmd);
 	if (ret)
 		return ret;
