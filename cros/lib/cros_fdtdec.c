@@ -335,7 +335,7 @@ int cros_fdtdec_memory(const void *blob, const char *name,
 		return node;
 
 	cell = fdt_getprop(blob, node, "reg", &len);
-	if (cell && len == sizeof(fdt_addr_t) * 2) {
+	if (cell && len >= sizeof(fdt_addr_t) * 2) {
 		config->start = fdt_addr_to_cpu(cell[0]);
 		config->end = config->start + fdt_addr_to_cpu(cell[1]);
 	} else
