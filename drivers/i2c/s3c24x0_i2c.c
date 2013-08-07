@@ -138,10 +138,8 @@
  * variables to live in SRAM
  */
 static unsigned int g_current_bus __attribute__((section(".data")));
-#ifdef CONFIG_OF_CONTROL
 static struct s3c24x0_i2c_bus i2c_bus[CONFIG_MAX_I2C_NUM]
 			__attribute__((section(".data")));
-#endif
 
 /**
  * Get a pointer to the given bus index
@@ -994,6 +992,7 @@ int i2c_write(uchar chip, uint addr, int alen, uchar *buffer, int len)
 	}
 }
 
+#ifdef CONFIG_OF_CONTROL
 static void process_nodes(const void *blob, int node_list[], int count,
 			 int is_highspeed)
 {
@@ -1030,7 +1029,6 @@ static void process_nodes(const void *blob, int node_list[], int count,
 	}
 }
 
-#ifdef CONFIG_OF_CONTROL
 void board_i2c_init(const void *blob)
 {
 	int node_list[CONFIG_MAX_I2C_NUM];
