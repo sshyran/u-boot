@@ -72,7 +72,8 @@
 		spi-deactivate-delay = <100>;
 		cros-ec {
 			compatible = "google,cros-ec";
-			spi-max-frequency = <500000>;
+			spi-max-frequency = <4000000>;
+			ec-interrupt = <&gpio 23 1>; /* GMI_WP_N/PC7 -> KBC_IRQ_L */
 		        reg = <1>;
 		};
 	};
