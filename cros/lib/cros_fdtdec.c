@@ -47,6 +47,9 @@ enum section_t {
 	SECTION_FMAP,
 	SECTION_ECRW,
 	SECTION_ECRO,
+	SECTION_SPL,
+	SECTION_BOOT_REC,
+	SECTION_SPL_REC,
 
 	SECTION_COUNT,
 	SECTION_NONE = -1,
@@ -62,6 +65,9 @@ static const char *section_name[SECTION_COUNT] = {
 	"fmap",
 	"ecrw",
 	"ecro",
+	"spl",
+	"boot-rec",
+	"spl-rec",
 };
 
 /**
@@ -180,6 +186,15 @@ static int process_fmap_node(const void *blob, int node, int depth,
 		break;
 	case SECTION_ECRO:
 		entry = &fw->ec_ro;
+		break;
+	case SECTION_SPL:
+		entry = &fw->spl;
+		break;
+	case SECTION_BOOT_REC:
+		entry = &fw->boot_rec;
+		break;
+	case SECTION_SPL_REC:
+		entry = &fw->spl_rec;
 		break;
 	case SECTION_COUNT:
 	case SECTION_NONE:

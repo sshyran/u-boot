@@ -228,6 +228,7 @@ static void show_firmware_entry(const char *name,
 	show_entry("boot", &fw_entry->boot);
 	show_entry("vblock", &fw_entry->vblock);
 	show_entry("firmware_id", &fw_entry->firmware_id);
+	show_entry("spl", &fw_entry->spl);
 	printf("block_offset: %llx\n", (long long)fw_entry->block_offset);
 	show_ec_bin(name, "RW", &fw_entry->ec_rw);
 	puts("\n");
@@ -250,6 +251,8 @@ static int do_vboot_fmap(cmd_tbl_t *cmdtp, int flag,
 	show_entry("firmware_id", &fmap.readonly.firmware_id);
 	show_ec_bin("ro", "RO", &fmap.readonly.ec_ro);
 	show_ec_bin("ro", "RW", &fmap.readonly.ec_rw);
+	show_entry("boot-rec", &fmap.readonly.boot_rec);
+	show_entry("spl-rec", &fmap.readonly.spl_rec);
 	printf("flash_base: %u\n", fmap.flash_base);
 
 	show_firmware_entry("rw-a", &fmap.readwrite_a);

@@ -35,6 +35,8 @@ dump_fmap(struct twostop_fmap *config)
 	dump_fmap_entry("fmap", &config->readonly.fmap);
 	dump_fmap_entry("gbb", &config->readonly.gbb);
 	dump_fmap_entry("firmware_id", &config->readonly.firmware_id);
+	dump_fmap_entry("boot-rec", &config->readonly.boot_rec);
+	dump_fmap_entry("spl-rec", &config->readonly.spl_rec);
 	dump_fmap_firmware_entry("rw-a", &config->readwrite_a);
 	dump_fmap_firmware_entry("rw-b", &config->readwrite_b);
 }
