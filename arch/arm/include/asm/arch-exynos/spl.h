@@ -39,11 +39,13 @@ enum boot_mode {
 	BOOT_MODE_USB,	/* Boot using USB download */
 };
 
+#define SPL_SIGNATURE	0xdeadbeef
+
 #ifndef __ASSEMBLY__
 /* Parameters of early board initialization in SPL */
 struct spl_machine_param {
 	/* Add fields as and when required */
-	u32		signature;
+	u32		signature;	/* SPL_SIGNATURE */
 	u32		version;	/* Version number */
 	u32		size;		/* Size of block */
 	/**
@@ -71,9 +73,13 @@ struct spl_machine_param {
 	 * M		Memory Manufacturer name
 	 * w		Bad Wake GPIO number
 	 * W		Write protect firmware GPIO
+	 * j		Jump to RW SPL
+	 * A		RW SPL IRAM start
+	 * U		RW SPL size
+	 * d		Skip SDRAM init
 	 * \0		termination
 	 */
-	char		params[16];	/* Length must be word-aligned */
+	char		params[20];	/* Length must be word-aligned */
 	u32		mem_iv_size;	/* Memory channel interleaving size */
 	enum ddr_mode	mem_type;	/* Type of on-board memory */
 	u32		uboot_start;	/* U-Boot start address */
@@ -95,6 +101,20 @@ struct spl_machine_param {
 	enum mem_manuf	mem_manuf;	/* Memory Manufacturer */
 	u32		bad_wake_gpio;	/* If high at wake time disallow wake */
 	u32		write_protect_gpio;	/* Firmware write protect */
+
+	/*
+	 * 1=jump to RW SPL on resume, 0=don't.
+	 * This will only be set for the RO SPL and only if
+	 * early-firmware-selection is in use. In the case of a resume/wakeup,
+	 * RO SPL will see this flag and know that it should not do any init
+	 * itself, but should just jump to RW SPL. This is to provide a
+	 * fully-updatable resume path on Exynos. The RW SPL is already ready
+	 * and waiting in IRAM, we just need to jump to it.
+	 */
+	u32		jump_to_rw_spl;
+	u32		rw_spl_start;	/* RW SPL start address */
+	u32		rw_spl_size;	/* RW SPL size */
+	u32		skip_sdram_init;	/* Don't init SDRAM */
 } __attribute__((__packed__));
 #endif
 

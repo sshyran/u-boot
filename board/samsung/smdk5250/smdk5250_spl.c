@@ -27,14 +27,12 @@
 #include <asm/arch/spl.h>
 #include <asm/arch/clk.h>
 
-#define SIGNATURE	0xdeadbeef
-
 /* Parameters of early board initialization in SPL */
 static struct spl_machine_param machine_param
 		__attribute__((section(".machine_param"))) = {
-	.signature	= SIGNATURE,
+	.signature	= SPL_SIGNATURE,
 	.version	= 1,
-	.params		= "vmSoubfasirRMwW",
+	.params		= "vmSoubfasirRMwWjAUd",
 	.size		= sizeof(machine_param),
 
 	.mem_iv_size	= 0x1f,
@@ -64,7 +62,7 @@ static struct spl_machine_param machine_param
 
 struct spl_machine_param *spl_get_machine_params(void)
 {
-	if (machine_param.signature != SIGNATURE) {
+	if (machine_param.signature != SPL_SIGNATURE) {
 		/* Will hang if SIGNATURE dont match */
 		while (1)
 			;
