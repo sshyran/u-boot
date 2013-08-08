@@ -458,33 +458,56 @@ static void reset_if_invalid_wakeup(void)
 	}
 }
 
+__weak void board_process_wakeup(void)
+{
+}
+
 void board_init_f(unsigned long bootflag)
 {
 	struct spl_machine_param *param;
 	__attribute__((aligned(8))) gd_t local_gd;
 	__attribute__((noreturn)) void (*uboot)(uint32_t marker);
 	enum boot_mode boot_mode;
+	int actions;
 
 	param = spl_get_machine_params();
 	boot_mode = param->boot_source;
 	setup_global_data(&local_gd);
+	arch_cpu_init();
 
-	if (running_from_uboot) {
-		arch_cpu_init();
-		serial_init();
-	} else {
-		if (do_lowlevel_init()) {
-			reset_if_invalid_wakeup();
-			power_exit_wakeup();
-		}
+	actions = lowlevel_select_actions();
+
+	/*
+	 * TODO(sjg@chromium.org): Support skipping the SDRAM init in RO SPL
+	 * if (param->skip_sdram_init)
+	 *	actions &= ~DO_MEM_INIT;
+	 */
+
+	/*
+	 * We allow only serial init in RW SPL since all the clocks, etc.
+	 * should be done by RO SPL.
+	 * TODO(sjg@chromium.org): We could init SDRAM only in RW SPL
+	 * but this may involve some work on the memory init code.
+	 * Need to review this before release.
+	 */
+	if (running_from_uboot)
+		actions &= DO_UART;
+
+	/* Allow board-dependent wakeup processing */
+	if (actions & DO_WAKEUP)
+		board_process_wakeup();
+
+	lowlevel_do_init(actions);
+	if (actions & DO_WAKEUP) {
+		reset_if_invalid_wakeup();
+		power_exit_wakeup();
 	}
 
 	copy_uboot_to_ram(param->uboot_start, param->uboot_size, boot_mode,
 			  param->uboot_offset);
 
 	/* Jump to U-Boot image */
-	debug("Jumping to %x, size %x\n", param->uboot_start,
-	      param->uboot_size);
+	debug(", jump\n");
 	uboot = map_sysmem(param->uboot_start, param->uboot_size);
 	(*uboot)(running_from_uboot ? SPL_RUNNING_FROM_UBOOT : 0);
 	/* Never returns Here */

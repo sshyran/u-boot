@@ -932,6 +932,17 @@ enum {
 	SETUP_ERR_ZQ_CALIBRATION_FAILURE = -2,
 };
 
+/* These are the things we can do during low-level init */
+enum boot_action_t {
+	DO_WAKEUP	= 1 << 0,
+	DO_CLOCKS	= 1 << 1,
+	DO_MEM_INIT	= 1 << 2,
+	DO_MEM_RESET	= 1 << 3,
+	DO_UART		= 1 << 4,
+	DO_POWER	= 1 << 5,
+	DO_TIMER	= 1 << 6,
+};
+
 /*
  * Memory variant specific initialization code for DDR3
  *
@@ -1003,7 +1014,15 @@ void tzpc_init(void);
 /**
  * Init subsystems according to the reset status
  *
- * @return 0 for a normal boot, non-zero for a resume
+ * @param actions	Actions to perform (bitmask, see enum boot_action_t)
  */
-int do_lowlevel_init(void);
+void lowlevel_do_init(int actions);
+
+/**
+ * Work out which low-level actions to take on this boot
+ *
+ * @return actions to perform (bitmask, see enum boot_action_t)
+ */
+int lowlevel_select_actions(void);
+
 #endif

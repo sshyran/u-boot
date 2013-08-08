@@ -34,16 +34,6 @@
 #include <asm/arch/setup.h>
 #include <asm/arch/system.h>
 
-/* These are the things we can do during low-level init */
-enum {
-	DO_WAKEUP	= 1 << 0,
-	DO_CLOCKS	= 1 << 1,
-	DO_MEM_RESET	= 1 << 2,
-	DO_UART		= 1 << 3,
-	DO_POWER	= 1 << 4,
-	DO_TIMER	= 1 << 5,
-};
-
 #ifdef CONFIG_EXYNOS5420
 /*
  * Ensure that the L2 logic has been used within the previous 256 cycles
@@ -217,23 +207,16 @@ static void secondary_cores_configure(void)
 }
 #endif
 
-int do_lowlevel_init(void)
+int lowlevel_select_actions(void)
 {
 	uint32_t reset_status;
-	int actions = 0;
-
-	arch_cpu_init();
-
-#ifdef CONFIG_EXYNOS5420
-	/* Reconfigure secondary cores */
-	secondary_cores_configure();
-#endif
+	int actions;
 
 	reset_status = get_reset_status();
 
 	switch (reset_status) {
 	case S5P_CHECK_SLEEP:
-		actions = DO_CLOCKS | DO_WAKEUP;
+		actions = DO_CLOCKS | DO_MEM_INIT | DO_WAKEUP;
 		break;
 	case S5P_CHECK_DIDLE:
 	case S5P_CHECK_LPA:
@@ -241,16 +224,27 @@ int do_lowlevel_init(void)
 		break;
 	default:
 		/* This is a normal boot (not a wake from sleep) */
-		actions = DO_CLOCKS | DO_MEM_RESET | DO_POWER |
+		actions = DO_CLOCKS | DO_MEM_INIT | DO_MEM_RESET | DO_POWER |
 			DO_TIMER | DO_UART;
 	}
 
+	return actions;
+}
+
+void lowlevel_do_init(int actions)
+{
+	/* Do this since it ensures that power remains up */
 	if (actions & DO_POWER)
 		power_init();
 		/* TODO: Also call board_power_init()? */
 
-	if (actions & DO_CLOCKS)
+	if (actions & DO_CLOCKS) {
+#ifdef CONFIG_EXYNOS5420
+		/* Reconfigure secondary cores */
+		secondary_cores_configure();
+#endif
 		system_clock_init();
+	}
 
 #ifdef CONFIG_SPL_SERIAL_SUPPORT
 	if (actions & DO_UART) {
@@ -261,10 +255,8 @@ int do_lowlevel_init(void)
 #endif
 	if (actions & DO_TIMER)
 		timer_init();
-	if (actions & DO_CLOCKS) {
+	if (actions & DO_MEM_INIT)
 		mem_ctrl_init(actions & DO_MEM_RESET);
+	if (actions & DO_CLOCKS)
 		tzpc_init();
-	}
-
-	return actions & DO_WAKEUP;
 }
