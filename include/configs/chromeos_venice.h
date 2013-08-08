@@ -39,6 +39,12 @@
 /* Add chromeos specific only for non spl build */
 #ifndef CONFIG_SPL_BUILD
 
+/* Support vboot flag reading from GPIO hardware */
+#define CONFIG_CHROMEOS_GPIO_FLAG
+
+/* Support vboot flag reading from EC */
+#define CONFIG_CHROMEOS_CROS_EC_FLAG
+
 #define CONFIG_DIRECT_BOOTARGS ""
 #define CONFIG_STD_DEVICES_SETTINGS ""
 #include <configs/chromeos.h>
