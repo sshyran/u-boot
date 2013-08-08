@@ -305,21 +305,4 @@ struct exynos_ace_sfr {
 #define ACE_HASH_PRNGERROR_OFF		(0 << 7)
 #define ACE_HASH_PRNGERROR_ON		(1 << 7)
 
-#define ACE_SHA_TYPE_SHA1		1
-#define ACE_SHA_TYPE_SHA256		2
-
-/**
- * Computes hash value of input pbuf using ACE
- *
- * @param in_addr	A pointer to the input buffer
- * @param bufleni	Byte length of input buffer
- * @param out_addr	A pointer to the output buffer. When complete
- *			32 bytes are copied to pout[0]...pout[31]. Thus, a user
- *			should allocate at least 32 bytes at pOut in advance.
- * @param hash_type SHA1 or SHA256
- *
- * @return		0 on Success, -1 on Failure (Timeout)
- */
-int ace_sha_hash_digest(const uchar * in_addr, uint buflen,
-			uchar * out_addr, uint hash_type);
 #endif
