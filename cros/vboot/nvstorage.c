@@ -35,7 +35,7 @@ struct nvstorage_method *nvstorage_find_name(const char *name)
 
 	/* Work-around for old 'mkbp' name */
 	if (!strcmp(name, "mkbp"))
-		return nvstorage_find_name("cros_ec");
+		return nvstorage_find_name("cros-ec");
 
 	VBDEBUG("Unknown/unsupport storage name: '%s', count=%d\n", name,
 		count);
