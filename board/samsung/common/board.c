@@ -267,27 +267,53 @@ int board_init_max77686(void)
 #endif
 
 #ifdef CONFIG_POWER_MAX77802
+#define MAX_DVS_GPIO_COUNT 3
+
+static void max77xxx_setup_gpios(struct fdt_gpio_state *gpios, int dvs_idx)
+{
+	int i;
+
+	for (i = 0; i < MAX_DVS_GPIO_COUNT; i++) {
+		fdtdec_setup_gpio(&gpios[i]);
+		gpio_direction_output(gpios[i].gpio, (dvs_idx >> i) & 1);
+	}
+}
+
 int board_init_max77802(void)
 {
+	int node, count = 0, dvs_index = 0;
+	struct fdt_gpio_state gpios[MAX_DVS_GPIO_COUNT];
+
+	node = fdtdec_next_compatible(gd->fdt_blob, 0,
+					COMPAT_MAXIM_MAX77802_PMIC);
+	if (node >= 0) {
+		dvs_index = fdtdec_get_int(gd->fdt_blob, node,
+					"max77xxx,pmic-buck-default-dvs-idx",
+					0);
+		count = fdtdec_decode_gpios(gd->fdt_blob, node,
+					    "max77xxx,pmic-buck-dvs-gpios",
+						gpios, MAX_DVS_GPIO_COUNT);
+	}
+
 	const struct pmic_init_ops pmic_ops[] = {
 		{PMIC_REG_UPDATE, MAX77802_REG_PMIC_32KHZ, MAX77802_32KHCP_EN},
-		{PMIC_REG_WRITE, MAX77802_REG_PMIC_BUCK1DVS1,
+		{PMIC_REG_WRITE, MAX77802_REG_PMIC_BUCK1DVS1 + dvs_index,
 		 MAX77802_BUCK1DVS1_1V},
 		{PMIC_REG_UPDATE, MAX77802_REG_PMIC_BUCK1CRTL,
 		 MAX77802_BUCK_TYPE1_ON | MAX77802_BUCK_TYPE1_IGNORE_PWRREQ},
-		{PMIC_REG_WRITE, MAX77802_REG_PMIC_BUCK2DVS1,
+		{PMIC_REG_WRITE, MAX77802_REG_PMIC_BUCK2DVS1 + dvs_index,
 		 MAX77802_BUCK2DVS1_1_2625V},
 		{PMIC_REG_UPDATE, MAX77802_REG_PMIC_BUCK2CTRL1,
 		 MAX77802_BUCK_TYPE2_ON | MAX77802_BUCK_TYPE2_IGNORE_PWRREQ},
-		{PMIC_REG_WRITE, MAX77802_REG_PMIC_BUCK3DVS1,
+		{PMIC_REG_WRITE, MAX77802_REG_PMIC_BUCK3DVS1 + dvs_index,
 		 MAX77802_BUCK3DVS1_1V},
 		{PMIC_REG_UPDATE, MAX77802_REG_PMIC_BUCK3CTRL1,
 		 MAX77802_BUCK_TYPE2_ON | MAX77802_BUCK_TYPE2_IGNORE_PWRREQ},
-		{PMIC_REG_WRITE, MAX77802_REG_PMIC_BUCK4DVS1,
+		{PMIC_REG_WRITE, MAX77802_REG_PMIC_BUCK4DVS1 + dvs_index,
 		 MAX77802_BUCK4DVS1_1V},
 		{PMIC_REG_UPDATE, MAX77802_REG_PMIC_BUCK4CTRL1,
 		 MAX77802_BUCK_TYPE2_ON | MAX77802_BUCK_TYPE2_IGNORE_PWRREQ},
-		{PMIC_REG_WRITE, MAX77802_REG_PMIC_BUCK6DVS1,
+		{PMIC_REG_WRITE, MAX77802_REG_PMIC_BUCK6DVS1 + dvs_index,
 		 MAX77802_BUCK6DVS1_1V},
 		{PMIC_REG_UPDATE, MAX77802_REG_PMIC_BUCK6CTRL,
 		 MAX77802_BUCK_TYPE1_ON | MAX77802_BUCK_TYPE1_IGNORE_PWRREQ},
@@ -297,6 +323,9 @@ int board_init_max77802(void)
 
 		{PMIC_REG_BAIL}
 	};
+
+	if (count > 0)
+		max77xxx_setup_gpios(gpios, dvs_index);
 
 	return pmic_common_init(COMPAT_MAXIM_MAX77802_PMIC, pmic_ops);
 }
