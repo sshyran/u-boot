@@ -201,6 +201,111 @@ static void exynos_spi_copy(unsigned int uboot_size, unsigned int uboot_addr,
 }
 #endif /* CONFIG_EXYNOS_FAST_SPI_BOOT */
 
+#ifdef CONFIG_SPL_MMC_BOOT_WP
+/**
+ * Assert eMMC boot partition write protection
+ *
+ * Initialize the eMMC and send a command to assert power-on write
+ * protection of eMMC boot partition 1.
+ *
+ * Additionally, apply power-on protection of the boot configuration,
+ * to prevent the boot partition from being switched to one that is
+ * not write protected.
+ *
+ * NOTE: This function uses features specific to eMMC 4.5.  Behavior on
+ * other versions is undefined.
+ *
+ * @return 0 on success, -ve on error
+ */
+static int spl_set_boot_wp(void)
+{
+	struct dwmci_host host;
+	struct mmc_cmd cmd;
+	u8 reg;
+	int ret;
+
+	/* Configure mmc pins */
+	ret = exynos_pinmux_config(DWMMC_SIMPLE_PERIPH_ID,
+				   DWMMC_SIMPLE_PINMUX_FLAGS);
+	if (ret)
+		return ret;
+
+	/* Initialize dwmci peripheral */
+	ret = dwmci_simple_init(&host);
+	if (ret)
+		return ret;
+
+	/* Startup mmc */
+	ret = dwmci_simple_startup(&host);
+	if (ret)
+		return ret;
+
+	/*
+	 * Write protect boot partition 1 only,
+	 * Only supported on eMMC 4.5, eMMC 4.41 behavior is undefined.
+	 */
+	reg = EXT_CSD_BOOT_WP_PWR_WP_EN | EXT_CSD_BOOT_WP_PART_SELECT |
+		EXT_CSD_BOOT_WP_PWR_SEL_PART1;
+
+	/* Set power-on write protect on boot partitions */
+	cmd.cmdidx = MMC_CMD_SWITCH;
+	cmd.resp_type = MMC_RSP_R1b;
+	cmd.cmdarg = (MMC_SWITCH_MODE_WRITE_BYTE << 24) |
+				 (EXT_CSD_BOOT_WP << 16) |
+				 (reg << 8);
+	ret = dwmci_simple_send_cmd(&host, &cmd);
+	if (ret)
+		return ret;
+
+	/* Set power-on protection of boot configuration */
+	cmd.cmdidx = MMC_CMD_SWITCH;
+	cmd.resp_type = MMC_RSP_R1b;
+	cmd.cmdarg = (MMC_SWITCH_MODE_WRITE_BYTE << 24) |
+				 (EXT_CSD_BOOT_CONFIG_PROT << 16) |
+				 (EXT_CSD_BOOT_CONFIG_PROT_PWR << 8);
+
+	return dwmci_simple_send_cmd(&host, &cmd);
+}
+
+/**
+ * Initialize the write protect GPIO to an input and floating.
+ *
+ * It will take a while for the input value to settle after this
+ * initialization.
+ */
+static void spl_boot_wp_init(void)
+{
+	struct spl_machine_param *param = spl_get_machine_params();
+
+	/* Invalid value */
+	if (param->write_protect_gpio == 0xffffffff)
+		return;
+
+	gpio_direction_input(param->write_protect_gpio);
+	gpio_set_pull(param->write_protect_gpio, 0);
+}
+
+/**
+ * Check if write protection should be asserted, if so, assert it.
+ *
+ * @return 0 on success, -ve on error
+ */
+static int check_and_set_wp(void)
+{
+	struct spl_machine_param *param = spl_get_machine_params();
+
+	/* Invalid value */
+	if (param->write_protect_gpio == 0xffffffff)
+		return 0;
+
+	/* Active low WP input */
+	if (!gpio_get_value(param->write_protect_gpio))
+		return spl_set_boot_wp();
+
+	return 0;
+}
+#endif
+
 enum boot_mode copy_uboot_to_ram(ulong uboot_addr, ulong uboot_size,
 				 enum boot_mode bootmode, ulong uboot_offset)
 {
@@ -355,111 +460,6 @@ static void reset_if_invalid_wakeup(void)
 			;
 	}
 }
-
-#ifdef CONFIG_SPL_MMC_BOOT_WP
-/**
- * Assert eMMC boot partition write protection
- *
- * Initialize the eMMC and send a command to assert power-on write
- * protection of eMMC boot partition 1.
- *
- * Additionally, apply power-on protection of the boot configuration,
- * to prevent the boot partition from being switched to one that is
- * not write protected.
- *
- * NOTE: This function uses features specific to eMMC 4.5.  Behavior on
- * other versions is undefined.
- *
- * @return 0 on success, -ve on error
- */
-static int spl_set_boot_wp(void)
-{
-	struct dwmci_host host;
-	struct mmc_cmd cmd;
-	u8 reg;
-	int ret;
-
-	/* Configure mmc pins */
-	ret = exynos_pinmux_config(DWMMC_SIMPLE_PERIPH_ID,
-				   DWMMC_SIMPLE_PINMUX_FLAGS);
-	if (ret)
-		return ret;
-
-	/* Initialize dwmci peripheral */
-	ret = dwmci_simple_init(&host);
-	if (ret)
-		return ret;
-
-	/* Startup mmc */
-	ret = dwmci_simple_startup(&host);
-	if (ret)
-		return ret;
-
-	/*
-	 * Write protect boot partition 1 only,
-	 * Only supported on eMMC 4.5, eMMC 4.41 behavior is undefined.
-	 */
-	reg = EXT_CSD_BOOT_WP_PWR_WP_EN | EXT_CSD_BOOT_WP_PART_SELECT |
-		EXT_CSD_BOOT_WP_PWR_SEL_PART1;
-
-	/* Set power-on write protect on boot partitions */
-	cmd.cmdidx = MMC_CMD_SWITCH;
-	cmd.resp_type = MMC_RSP_R1b;
-	cmd.cmdarg = (MMC_SWITCH_MODE_WRITE_BYTE << 24) |
-				 (EXT_CSD_BOOT_WP << 16) |
-				 (reg << 8);
-	ret = dwmci_simple_send_cmd(&host, &cmd);
-	if (ret)
-		return ret;
-
-	/* Set power-on protection of boot configuration */
-	cmd.cmdidx = MMC_CMD_SWITCH;
-	cmd.resp_type = MMC_RSP_R1b;
-	cmd.cmdarg = (MMC_SWITCH_MODE_WRITE_BYTE << 24) |
-				 (EXT_CSD_BOOT_CONFIG_PROT << 16) |
-				 (EXT_CSD_BOOT_CONFIG_PROT_PWR << 8);
-
-	return dwmci_simple_send_cmd(&host, &cmd);
-}
-
-/**
- * Initialize the write protect GPIO to an input and floating.
- *
- * It will take a while for the input value to settle after this
- * initialization.
- */
-static void spl_boot_wp_init(void)
-{
-	struct spl_machine_param *param = spl_get_machine_params();
-
-	/* Invalid value */
-	if (param->write_protect_gpio == 0xffffffff)
-		return;
-
-	gpio_direction_input(param->write_protect_gpio);
-	gpio_set_pull(param->write_protect_gpio, 0);
-}
-
-/**
- * Check if write protection should be asserted, if so, assert it.
- *
- * @return 0 on success, -ve on error
- */
-static int check_and_set_wp(void)
-{
-	struct spl_machine_param *param = spl_get_machine_params();
-
-	/* Invalid value */
-	if (param->write_protect_gpio == 0xffffffff)
-		return 0;
-
-	/* Active low WP input */
-	if (!gpio_get_value(param->write_protect_gpio))
-		return spl_set_boot_wp();
-
-	return 0;
-}
-#endif
 
 void board_init_f(unsigned long bootflag)
 {
