@@ -126,6 +126,27 @@ static int initr_reloc(void)
 }
 
 #ifdef CONFIG_ARM
+static int initr_check_stack(void)
+{
+#ifdef CONFIG_SYS_INIT_SP_SIZE
+	uint32_t *top = (uint32_t *)CONFIG_SYS_INIT_SP_ADDR;
+	uint32_t *base = (uint32_t *)(CONFIG_SYS_INIT_SP_ADDR -
+					CONFIG_SYS_INIT_SP_SIZE);
+	uint32_t *ptr;
+	int bytes_used;
+
+	for (ptr = base; ptr < top && *ptr == -1U; ptr++);
+
+	bytes_used = (uint32_t)top - (uint32_t)ptr;
+	if (bytes_used == CONFIG_SYS_INIT_SP_SIZE)
+		panic("Init stack overflow");
+	printf("SPL stack at %x, used %x, free %x\n", (uint32_t)base,
+	       bytes_used, CONFIG_SYS_INIT_SP_SIZE - bytes_used);
+#endif
+
+	return 0;
+}
+
 /*
  * Some of these functions are needed purely because the functions they
  * call return void. If we change them to return 0, these stubs can go away.
@@ -724,6 +745,7 @@ static const init_fnc_t init_sequence_r[] = {
 	initr_reloc,
 	/* TODO: could x86/PPC have this also perhaps? */
 #ifdef CONFIG_ARM
+	initr_check_stack,
 	initr_caches,
 	board_init,	/* Setup chipselects */
 #endif

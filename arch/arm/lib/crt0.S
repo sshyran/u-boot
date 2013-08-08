@@ -82,6 +82,24 @@ ENTRY(_main)
 #else
 	ldr	sp, =(CONFIG_SYS_INIT_SP_ADDR)
 #endif
+#ifdef CONFIG_SYS_INIT_SP_SIZE
+#if (CONFIG_SYS_INIT_SP_SIZE & 0xf) != 0
+# error "CONFIG_SYS_INIT_SP_SIZE must be 16-byte aligned"
+#endif
+	@ Set the stack to a known value
+#ifdef CONFIG_SPL_BUILD
+	ldr	r0, =CONFIG_SYS_INIT_SP_SIZE
+	ldr	r1, =CONFIG_SYS_INIT_SP_ADDR
+	mov	r4, #-1
+	mov	r5, r4
+	mov	r6, r4
+	mov	r7, r4
+clstk_l:
+	stmdb	r1!, {r4-r7}
+	subs	r0, r0, #16
+	bne	clstk_l
+#endif
+#endif
 	bic	sp, sp, #7	/* 8-byte alignment for ABI compliance */
 	sub	sp, #GD_SIZE	/* allocate one GD above SP */
 	bic	sp, sp, #7	/* 8-byte alignment for ABI compliance */
