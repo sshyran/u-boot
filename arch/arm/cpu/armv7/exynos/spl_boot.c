@@ -348,7 +348,8 @@ enum boot_mode copy_uboot_to_ram(ulong uboot_addr, ulong uboot_size,
 		debug("MMC...");
 		copy_bl2 = get_irom_func(MMC_INDEX);
 		copy_bl2(CONFIG_UBOOT_OFFSET / MMC_MAX_BLOCK_LEN,
-			 uboot_size / MMC_MAX_BLOCK_LEN, uboot_addr);
+			 DIV_ROUND_UP(uboot_size, MMC_MAX_BLOCK_LEN),
+			 uboot_addr);
 		break;
 	case BOOT_MODE_EMMC:
 		debug("eMMC...");
@@ -367,7 +368,8 @@ enum boot_mode copy_uboot_to_ram(ulong uboot_addr, ulong uboot_size,
 		copy_bl2_from_emmc = get_irom_func(EMMC44_INDEX);
 		end_bootop_from_emmc = get_irom_func(EMMC44_END_INDEX);
 
-		copy_bl2_from_emmc(uboot_size / MMC_MAX_BLOCK_LEN, uboot_addr);
+		copy_bl2_from_emmc(DIV_ROUND_UP(uboot_size, MMC_MAX_BLOCK_LEN),
+				   uboot_addr);
 		end_bootop_from_emmc();
 
 #ifdef CONFIG_SPL_MMC_BOOT_WP
