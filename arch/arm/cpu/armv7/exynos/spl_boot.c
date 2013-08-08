@@ -405,14 +405,6 @@ enum boot_mode copy_uboot_to_ram(ulong uboot_addr, ulong uboot_size,
 	return bootmode;
 }
 
-/* Tell the loaded U-Boot that it was loaded from SPL */
-static void exynos5_set_spl_marker(void)
-{
-	uint32_t *marker = (uint32_t *)CONFIG_SPL_MARKER;
-
-	*marker = EXYNOS5_SPL_MARKER;
-}
-
 void memzero(void *s, size_t n)
 {
 	char *ptr = s;
@@ -470,7 +462,7 @@ void board_init_f(unsigned long bootflag)
 {
 	struct spl_machine_param *param;
 	__attribute__((aligned(8))) gd_t local_gd;
-	__attribute__((noreturn)) void (*uboot)(void);
+	__attribute__((noreturn)) void (*uboot)(uint32_t marker);
 	enum boot_mode boot_mode;
 
 	param = spl_get_machine_params();
@@ -481,7 +473,6 @@ void board_init_f(unsigned long bootflag)
 		arch_cpu_init();
 		serial_init();
 	} else {
-		exynos5_set_spl_marker();
 		if (do_lowlevel_init()) {
 			reset_if_invalid_wakeup();
 			power_exit_wakeup();
@@ -495,7 +486,7 @@ void board_init_f(unsigned long bootflag)
 	debug("Jumping to %x, size %x\n", param->uboot_start,
 	      param->uboot_size);
 	uboot = map_sysmem(param->uboot_start, param->uboot_size);
-	(*uboot)();
+	(*uboot)(running_from_uboot ? SPL_RUNNING_FROM_UBOOT : 0);
 	/* Never returns Here */
 }
 

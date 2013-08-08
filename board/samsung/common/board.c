@@ -43,6 +43,8 @@
 #include <power/s2mps11_pmic.h>
 #include <power/tps65090_pmic.h>
 
+static bool running_from_uboot __attribute__ ((section(".data")));
+
 DECLARE_GLOBAL_DATA_PTR;
 
 #if defined CONFIG_EXYNOS_TMU
@@ -362,37 +364,14 @@ int board_late_init(void)
 }
 #endif
 
-/**
- * Read and clear the marker value; then return the read value.
- *
- * This marker is set to EXYNOS5_SPL_MARKER when SPL runs. Then in U-Boot
- * we can check (and clear) this marker to see if we were run from SPL.
- * If we were called from another U-Boot, the marker will be clear.
- *
- * @return marker value (EXYNOS5_SPL_MARKER if we were run from SPL, else 0)
- */
-static uint32_t exynos5_read_and_clear_spl_marker(void)
+void save_boot_params(u32 r0, u32 r1, u32 r2, u32 r3)
 {
-	uint32_t value, *marker = (uint32_t *)CONFIG_SPL_MARKER;
-
-	value = *marker;
-	*marker = 0;
-
-	return value;
+	running_from_uboot = (r0 == SPL_RUNNING_FROM_UBOOT);
 }
 
 int board_is_processor_reset(void)
 {
-	static uint8_t inited, is_reset;
-	uint32_t marker_value;
-
-	if (!inited) {
-		marker_value = exynos5_read_and_clear_spl_marker();
-		is_reset = marker_value == EXYNOS5_SPL_MARKER;
-		inited = 1;
-	}
-
-	return is_reset;
+	return !running_from_uboot;
 }
 
 #ifdef CONFIG_OF_CONTROL

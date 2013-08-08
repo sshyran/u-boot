@@ -772,7 +772,7 @@ twostop_jump(crossystem_data_t *cdata, void *fw_blob, uint32_t fw_size,
 #ifdef CONFIG_SANDBOX
 	os_jump_to_image(dest, fw_size);
 #else
-	((void(*)(void))CONFIG_SYS_TEXT_BASE)();
+	((void(*)(uint32_t))CONFIG_SYS_TEXT_BASE)(SPL_RUNNING_FROM_UBOOT);
 #endif
 
 	/* It is an error if readwrite firmware returns */

@@ -30,6 +30,7 @@
 #ifndef __ASM_GENERIC_U_BOOT_H__
 #define __ASM_GENERIC_U_BOOT_H__
 
+/* Indicates that SPL is being run from a previous U-Boot, not a boot ROM */
 #define SPL_RUNNING_FROM_UBOOT	0x3afcb001UL
 
 /*

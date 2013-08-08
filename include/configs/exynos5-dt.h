@@ -266,9 +266,6 @@
  */
 #define CONFIG_SYS_INIT_SP_ADDR	(CONFIG_IRAM_TOP - 0x800)
 
-/* The place where we put our SPL marker */
-#define CONFIG_SPL_MARKER	(CONFIG_IRAM_TOP - 4)
-
 /* I2C */
 #define CONFIG_SYS_I2C_INIT_BOARD
 #define CONFIG_HARD_I2C
