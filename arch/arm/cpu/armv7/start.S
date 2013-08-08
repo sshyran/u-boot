@@ -124,6 +124,9 @@ IRQ_STACK_START_IN:
  */
 
 reset:
+#if defined(CONFIG_SPL_BUILD) && defined(CONFIG_SPL_HEADER_SIZE)
+	bl	check_relocate
+#endif
 	bl	save_boot_params
 	/*
 	 * disable interrupts (FIQ and IRQ), also set the cpu to SVC32 mode,
@@ -276,6 +279,34 @@ ENTRY(cpu_init_crit)
 	 */
 	b	lowlevel_init		@ go setup pll,mux,memory
 ENDPROC(cpu_init_crit)
+#endif
+
+#if defined(CONFIG_SPL_BUILD) && defined(CONFIG_SPL_HEADER_SIZE)
+/*
+ * Check if we have been loaded to the right place - if not, relocate and
+ * return to the correct place. We can only do this if we have an SPL header
+ * telling us the number of bytes to relocate.
+ */
+ENTRY(check_relocate)
+	ldr	r9, =_start
+	adr	r8, _start
+	subs	r10, r9, r8
+	bxeq	lr		@ No need to relocate
+
+	sub	r9, r9, #CONFIG_SPL_HEADER_SIZE
+	sub	r8, r8, #CONFIG_SPL_HEADER_SIZE
+	ldr	r10, [r8]	@ SPL header has size word
+1:
+	ldmia	r8!, {r4-r7}
+	stmia	r9!, {r4-r7}
+	subs	r10, r10, #16
+	bge	1b
+
+	@ We have copied ourself to the right place, so return to the copy
+	sub	r10, r9, r8
+	add	lr, lr, r10
+	bx	lr
+ENDPROC(check_relocate)
 #endif
 
 #ifndef CONFIG_SPL_BUILD
