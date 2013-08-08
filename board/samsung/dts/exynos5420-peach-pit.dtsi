@@ -11,6 +11,7 @@
 		serial0 = "/serial@12C30000";
 		console = "/serial@12C30000";
 		pmic = "/i2c@12ca0000";
+		rtc = "/i2c@12ca0000/power-regulator@9";
 	};
 
 	board-rev {
