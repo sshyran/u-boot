@@ -224,7 +224,7 @@ int cmd_process(int flag, int argc, char * const argv[],
 	}
 #define U_BOOT_CMD_MKENT_COMPLETE(_name, _maxargs, _rep, _cmd, _usage,	\
 				  _help, _comp, _info)			\
-	_CMD_REMOVE(_name, _cmd)
+	_CMD_REMOVE(_name ## _cmd, _cmd)
 
 #define U_BOOT_CMD_COMPLETE(_name, _maxargs, _rep, _cmd, _usage, _help,	\
 			    _comp, _info)				\
