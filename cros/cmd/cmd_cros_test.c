@@ -428,8 +428,8 @@ static int process_region(struct ssync_info *ssync,
 	memset(ssync->new_data, ssync->ec.flash_erase_value, size);
 
 	entry = region == EC_FLASH_REGION_RW ?
-		&ssync->fmap.readonly.ec_rw.image :
-		&ssync->fmap.readonly.ec_ro.image;
+		&ssync->fmap.readonly.ec_rw :
+		&ssync->fmap.readonly.ec_ro;
 	ret = do_ssync(ssync, offset, size, entry);
 	if (ret)
 		return -1;

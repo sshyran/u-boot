@@ -92,16 +92,11 @@ static enum section_t lookup_section(const char *name)
  * @param depth		Depth of node: 1 for a normal section, 2 for a
  *			sub-section
  * @param config	Place to put the information we read
- * @param rwp		Indicates the type of data in the last depth 1 node
- *			that we read. For example, if *rwp == NULL then we
- *			read the ro section; if *rwp == &config->readwrite_a
- *			then we read the rw-a section. This is used to work
- *			out which section we are referring to at depth 2.
- * @param ecp		Indicates the EC node that we are currently
- *			processing (this is used at depth 2 to refer back
- *			to the EC node). We get the flash offset of the EC
- *			node so we can work out the absolute position of the
- *			EC in flash. Plus we write the EC hash.
+ * @param fwp		Indicates the type of data in the last depth 1 node
+ *			that we read. It points to &config->readonly,
+ *			&config->readwrite_a or &config->readwrite_b. This
+ *			is used to work out which section we are referring
+ *			to at depth 2.
  *
  * Both rwp and ecp start as NULL and are updated when we see an RW and an
  * EC region respectively. This function is called for every node in the
@@ -111,51 +106,15 @@ static enum section_t lookup_section(const char *name)
  * @return 0 if ok, -ve on error
  */
 static int process_fmap_node(const void *blob, int node, int depth,
-		struct twostop_fmap *config, struct fmap_firmware_entry **rwp,
-		struct fmap_ec_image **ecp)
+		struct twostop_fmap *config, struct fmap_firmware_entry **fwp)
 {
-	struct fmap_firmware_entry *rw = *rwp;
+	struct fmap_firmware_entry *fw = *fwp;
 	enum section_t section;
-	struct fmap_entry entry;
-	const char *name, *subname, *prop;
+	struct fmap_entry *entry;
+	const char *name, *subname;
 	int len;
 
-	/*
-	 * At depth 2, we are looking for our ec subnode. There really is no
-	 * need for this situation - we no longer have multiple images in
-	 * each region so that hashes could be stored up one level.
-	 * crbug.com/254311
-	 */
 	name = fdt_get_name(blob, node, &len);
-	if (depth == 2) {
-		struct fmap_ec_image *ec = *ecp;
-		struct fmap_entry *entry;
-		ulong offset = 0;
-
-		if (ec) {
-			entry = &ec->image;
-			offset = entry->offset;
-			ec->hash = fdt_getprop(blob, node, "hash",
-					       &ec->hash_size);
-		} else if (rw) {
-			if (0 == strcmp(name, "boot")) {
-				entry = &rw->boot_rwbin;
-				offset = rw->boot.offset;
-			} else {
-				return 0;
-			}
-		} else {
-			return 0;
-		}
-		if (fdtdec_read_fmap_entry(blob, node, name, entry))
-			return -FDT_ERR_NOTFOUND;
-
-		/* Add the section offset to get an 'absolute offset' */
-		entry->offset += offset;
-		return 0;
-	}
-
-	*ecp = NULL;
 	if (name && !strcmp("rw-vblock-dev", name)) {
 		/* handle optional dev key */
 		if (fdtdec_read_fmap_entry(blob, node, name,
@@ -169,13 +128,13 @@ static int process_fmap_node(const void *blob, int node, int depth,
 	if (len < 4 || *name != 'r' || name[2] != '-')
 		return 0;
 	if (name[1] == 'o') {
-		rw = NULL;
+		fw = &config->readonly;
 		subname = name + 3;
 	} else if (name[1] == 'w') {
 		if (name[3] == 'a')
-			rw = &config->readwrite_a;
+			fw = &config->readwrite_a;
 		else if (name[3] == 'b')
-			rw = &config->readwrite_b;
+			fw = &config->readwrite_b;
 		else
 			return 0;
 		subname = name + 4;
@@ -185,76 +144,61 @@ static int process_fmap_node(const void *blob, int node, int depth,
 		return 0;
 	}
 
-	/* Read in the 'reg' property */
-	if (fdtdec_read_fmap_entry(blob, node, name, &entry))
-		return -FDT_ERR_NOTFOUND;
-
 	/* Figure out what section we are dealing with, either ro or rw */
 	section = lookup_section(subname);
-	if (rw) {
-		switch (section) {
-		case SECTION_BASE:
-			rw->all = entry;
-			rw->block_offset = fdtdec_get_uint64(blob, node,
-							"block-offset", ~0ULL);
-			if (rw->block_offset == ~0ULL)
-				VBDEBUG("Node '%s': bad block-offset\n", name);
-			break;
-		case SECTION_FIRMWARE_ID:
-			rw->firmware_id = entry;
-			break;
-		case SECTION_VBLOCK:
-			rw->vblock = entry;
-			break;
-		case SECTION_BOOT:
-			rw->boot = entry;
-			rw->boot_rwbin = entry;
-			prop = fdt_getprop(blob, node, "compress", NULL);
-			rw->compress = prop && (0 == strcmp(prop, "lzo")) ?
-				CROS_COMPRESS_LZO : CROS_COMPRESS_NONE;
-			break;
-		case SECTION_ECRW:
-			rw->ec_rw.image = entry;
-			*ecp = &rw->ec_rw;
-			break;
-		default:
-			return 0;
-		}
-	} else {
-		switch (section) {
-		case SECTION_GBB:
-			config->readonly.gbb = entry;
-			break;
-		case SECTION_FMAP:
-			config->readonly.fmap = entry;
-			break;
-		case SECTION_FIRMWARE_ID:
-			config->readonly.firmware_id = entry;
-			break;
-		case SECTION_BOOT:
-			config->readonly.boot = entry;
-			break;
-		case SECTION_ECRO:
-			config->readonly.ec_ro.image = entry;
-			*ecp = &config->readonly.ec_ro;
-			break;
-		case SECTION_ECRW:
-			config->readonly.ec_rw.image = entry;
-			*ecp = &config->readonly.ec_rw;
-			break;
-		default:
-			return 0;
-		}
+	entry = NULL;
+
+	/*
+	 * TODO(sjg@chromium.org): We could use offsetof() here and avoid
+	 * this switch by putting the offset of each field in a table.
+	 */
+	switch (section) {
+	case SECTION_BASE:
+		entry = &fw->all;
+		fw->block_offset = fdtdec_get_uint64(blob, node,
+						"block-offset", ~0ULL);
+		if (fw->block_offset == ~0ULL)
+			VBDEBUG("Node '%s': bad block-offset\n", name);
+		break;
+	case SECTION_FIRMWARE_ID:
+		entry = &fw->firmware_id;
+		break;
+	case SECTION_BOOT:
+		entry = &fw->boot;
+		break;
+	case SECTION_GBB:
+		entry = &fw->gbb;
+		break;
+	case SECTION_VBLOCK:
+		entry = &fw->vblock;
+		break;
+	case SECTION_FMAP:
+		entry = &fw->fmap;
+		break;
+	case SECTION_ECRW:
+		entry = &fw->ec_rw;
+		break;
+	case SECTION_ECRO:
+		entry = &fw->ec_ro;
+		break;
+	case SECTION_COUNT:
+	case SECTION_NONE:
+		return 0;
 	}
-	*rwp = rw;
+
+	/* Read in the properties */
+	assert(entry);
+	if (entry && fdtdec_read_fmap_entry(blob, node, name, entry))
+		return -FDT_ERR_NOTFOUND;
+
+	*fwp = fw;
 
 	return 0;
 }
 
 int cros_fdtdec_flashmap(const void *blob, struct twostop_fmap *config)
 {
-	struct fmap_firmware_entry *rw = NULL;
-	struct fmap_ec_image *ec = NULL;
+	struct fmap_firmware_entry *fw = NULL;
 	struct fmap_entry entry;
 	int offset;
 	int depth;
@@ -280,7 +224,7 @@ int cros_fdtdec_flashmap(const void *blob, struct twostop_fmap *config)
 		node = fdt_next_node(blob, offset, &depth);
 		if (node > 0 && depth > 0) {
 			if (process_fmap_node(blob, node, depth, config,
-						&rw, &ec)) {
+					      &fw)) {
 				VBDEBUG("Failed to process Flashmap\n");
 				return -1;
 			}

@@ -230,9 +230,9 @@ VbError_t VbExEcGetExpectedRW(enum VbSelectFirmware_t select,
 		return VBERROR_UNKNOWN;
 	}
 
-	offset = fw_entry->ec_rw.image.offset;
-	size = fw_entry->ec_rw.image.length;
-	VBDEBUG("EC-RW image offset %#x size %#x.\n", offset, size);
+	offset = fw_entry->ec_rw.offset;
+	size = fw_entry->ec_rw.used;
+	VBDEBUG("EC-RW image offset %#x used %#x.\n", offset, size);
 
 	/* Sanity-check; we don't expect EC images > 1MB */
 	if (size <= 0 || size > 0x100000) {
@@ -271,7 +271,7 @@ VbError_t VbExEcGetExpectedRWHash(enum VbSelectFirmware_t select,
 		       const uint8_t **hash, int *hash_size)
 {
 	struct twostop_fmap fmap;
-	struct fmap_ec_image *ec;
+	struct fmap_entry *ec;
 
 	*hash = NULL;
 
@@ -285,6 +285,10 @@ VbError_t VbExEcGetExpectedRWHash(enum VbSelectFirmware_t select,
 		ec = &fmap.readwrite_b.ec_rw;
 		break;
 	default:
+		return VBERROR_UNKNOWN;
+	}
+	if (!ec->hash) {
+		VBDEBUG("Failed to read EC hash.\n");
 		return VBERROR_UNKNOWN;
 	}
 	*hash = ec->hash;

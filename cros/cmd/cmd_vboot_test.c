@@ -205,11 +205,12 @@ static int do_vboot_poweroff(cmd_tbl_t *cmdtp,
 }
 
 static void show_ec_bin(const char *name, const char *region,
-			struct fmap_ec_image *ec)
+			struct fmap_entry *ec)
 {
 	printf("EC %s binary %s at %#x, length %#x\n", region, name,
-	       ec->image.offset, ec->image.length);
-	printf("EC Hash size %d:\n", ec->hash_size);
+	       ec->offset, ec->length);
+	printf("EC Hash size %d at %08lx:\n", ec->hash_size,
+	       (ulong)map_to_sysmem(ec->hash));
 	if (ec->hash_size > 0)
 		print_buffer(0, ec->hash, 1, ec->hash_size, 0);
 }
