@@ -10,6 +10,7 @@
 
 #include <common.h>
 #include <libfdt.h>
+#include <asm/io.h>
 #include <cros/common.h>
 #include <cros/cros_fdtdec.h>
 #include <cros/fmap.h>
