@@ -245,16 +245,18 @@ static int send_command(struct cros_ec_dev *dev, uint8_t cmd, int cmd_version,
 			const void *dout, int dout_len,
 			uint8_t **dinp, int din_len)
 {
-	int ret;
+	int ret = -1;
 
 	/* Handle protocol version 3 support */
 	if (dev->protocol_version == 3)
 		ret = send_command_proto3(dev, cmd, cmd_version,
 					  dout, dout_len, dinp, din_len);
+#ifndef CONFIG_SANDBOX
 	else
 		ret = cros_ec_if_command(dev, cmd, cmd_version,
 				      (const uint8_t *)dout, dout_len,
 				dinp, din_len);
+#endif
 	return ret;
 }
 
