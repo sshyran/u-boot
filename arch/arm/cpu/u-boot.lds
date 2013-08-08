@@ -68,7 +68,10 @@ SECTIONS
 	}
 
 	.rel.dyn : {
+/* U-Boot RO cannot relocate, so we don't need this data */
+#ifndef CONFIG_CROS_RO
 		*(.rel*)
+#endif
 	}
 
 	.rel_dyn_end :
@@ -113,4 +116,7 @@ SECTIONS
 	/DISCARD/ : { *(.plt*) }
 	/DISCARD/ : { *(.interp*) }
 	/DISCARD/ : { *(.gnu*) }
+#ifdef CONFIG_CROS_RO
+	/DISCARD/ : { *(.rel*) }
+#endif
 }
