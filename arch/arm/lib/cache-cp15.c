@@ -93,12 +93,14 @@ __weak void dram_bank_mmu_setup(int bank)
 	/* Data cache configuration is set per 1MB memory sections. */
 	/* Set starting section */
 	i = bd->bi_dram[bank].start >> 20;
+	if (!bd->bi_dram[bank].size)
+		return;
 	/*
-	 * Set the top section limit. Note that for banks of size zero the
-	 * boundary is equal to starting section, so the 'for' loop below will
-	 * not be entered.
+	 * Set the top section limit. When the bank is smaller than a section,
+	 * we set the whole section. This allows us to enable the cache for
+	 * on-chip SRAMs.
 	 */
-	top = i + (bd->bi_dram[bank].size >> 20);
+	top = i + ((bd->bi_dram[bank].size + 0xfffff) >> 20);
 	for (; i < top; i++) {
 #if defined(CONFIG_SYS_ARM_CACHE_WRITETHROUGH)
 		set_section_dcache(i, DCACHE_WRITETHROUGH);
