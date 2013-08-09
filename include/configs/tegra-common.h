@@ -174,4 +174,7 @@
 #define CONFIG_BOUNCE_BUFFER
 #define CONFIG_CRC32_VERIFY
 
+/* Temp fix for build break */
+#define CONFIG_SYS_MONITOR_BASE		CONFIG_SYS_TEXT_BASE
+
 #endif /* _TEGRA_COMMON_H_ */
