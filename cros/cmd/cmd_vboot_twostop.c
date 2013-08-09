@@ -239,10 +239,10 @@ twostop_init_cparams(struct twostop_fmap *fmap, void *gbb,
 #endif
 	VBDEBUG("cparams:\n");
 	VBDEBUG("- %-20s: %08x\n", "gbb_data",
-		map_to_sysmem(cparams->gbb_data));
-	VBDEBUG("- %-20s: %08x\n", "gbb_size", cparams->gbb_size);
+		(unsigned)map_to_sysmem(cparams->gbb_data));
+	VBDEBUG("- %-20s: %08x\n", "gbb_size", (unsigned)cparams->gbb_size);
 	VBDEBUG("- %-20s: %08x\n", "shared_data_blob",
-		map_to_sysmem(cparams->shared_data_blob));
+		(unsigned)map_to_sysmem(cparams->shared_data_blob));
 	VBDEBUG("- %-20s: %08x\n", "shared_data_size",
 		cparams->shared_data_size);
 
@@ -730,7 +730,8 @@ twostop_jump(crossystem_data_t *cdata, void *fw_blob, uint32_t fw_size,
 	void *dest = map_sysmem(CONFIG_SYS_TEXT_BASE, fw_size);
 
 	VBDEBUG("jump to readwrite main firmware at %#08x, pos %#08x, size %#x\n",
-		CONFIG_SYS_TEXT_BASE, map_to_sysmem(fw_blob), fw_size);
+		CONFIG_SYS_TEXT_BASE, (unsigned)map_to_sysmem(fw_blob),
+		fw_size);
 
 	/*
 	 * TODO: This version of U-Boot must be loaded at a fixed location. It
@@ -904,7 +905,7 @@ twostop_main_firmware(struct twostop_fmap *fmap, void *gbb,
 
 	VBDEBUG("kparams:\n");
 	VBDEBUG("- kernel_buffer:      : %08x\n",
-		map_to_sysmem(kparams.kernel_buffer));
+		(unsigned)map_to_sysmem(kparams.kernel_buffer));
 	VBDEBUG("- kernel_buffer_size: : %08x\n",
 			kparams.kernel_buffer_size);
 
@@ -928,7 +929,7 @@ twostop_main_firmware(struct twostop_fmap *fmap, void *gbb,
 
 	VBDEBUG("kparams:\n");
 	VBDEBUG("- kernel_buffer:      : %08x\n",
-		map_to_sysmem(kparams.kernel_buffer));
+		(unsigned)map_to_sysmem(kparams.kernel_buffer));
 	VBDEBUG("- kernel_buffer_size: : %08x\n",
 			kparams.kernel_buffer_size);
 	VBDEBUG("- disk_handle:        : %p\n", kparams.disk_handle);

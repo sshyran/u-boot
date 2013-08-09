@@ -62,7 +62,7 @@ int crossystem_data_init(crossystem_data_t *cdata,
 			 uint8_t *hardware_id,
 			 uint8_t *readonly_firmware_id)
 {
-	VBDEBUG("crossystem data at %08x\n", map_to_sysmem(cdata));
+	VBDEBUG("crossystem data at %08x\n", (unsigned) map_to_sysmem(cdata));
 
 	memset(cdata, '\0', sizeof(*cdata));
 
