@@ -413,11 +413,12 @@ static uint8_t *read_gbb_from_firmware(void)
 	firmware_storage_t file;
 	struct twostop_fmap fmap;
 	void *gbb;
-	size_t gbb_size;
+	fdt_addr_t gbb_base;
+	fdt_size_t gbb_size;
 
-	gbb = cros_fdtdec_alloc_region(gd->fdt_blob,
-			"google-binary-block-offset", &gbb_size);
-	if (!gbb) {
+	if (cros_fdtdec_decode_region(gd->fdt_blob,
+					    "google-binary-block", NULL,
+					    &gbb_base, &gbb_size)) {
 		VbExDebug("Failed to find gbb region!\n");
 		return NULL;
 	}
@@ -433,6 +434,7 @@ static uint8_t *read_gbb_from_firmware(void)
 		return NULL;
 	}
 
+	gbb = map_sysmem(gbb_base, gbb_size);
 	if (gbb_init(gbb, &file, fmap.readonly.gbb.offset, gbb_size)) {
 		VbExDebug("Failed to read GBB!\n");
 		return NULL;

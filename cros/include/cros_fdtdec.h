@@ -43,21 +43,24 @@ int cros_fdtdec_config_node(const void *blob);
 int cros_fdtdec_config_has_prop(const void *fdt, const char *name);
 
 /**
- * Look up a property in chromeos-config which contains a memory region
- * address and size. Then return a pointer to this address. if the address
- * is zero, it is allocated with malloc() instead.
+ * Decode a named region within a memory bank of a given type.
  *
- * The property must hold one address with a length. This is only tested on
- * 32-bit machines.
+ * The properties are looked up in the /chromeos-config node/
+ *
+ * See fdtdec_decode_memory_region() for more details.
  *
  * @param blob		FDT blob
- * @param node		node to examine
- * @param prop_name	name of property to find
- * @param size		returns size of region
+ * @param mem_type	Type of memory to use, which is a name, such as
+ *			"u-boot" or "kernel".
+ * @param suffix	String to append to the memory/offset
+ *			property names
+ * @param basep		Returns base of region
+ * @param sizep		Returns size of region
  * @return pointer to region, or NULL if property not found/malloc failed
  */
-void *cros_fdtdec_alloc_region(const void *blob,
-		const char *prop_name, size_t *size);
+int cros_fdtdec_decode_region(const void *blob, const char *mem_type,
+			      const char *suffix, fdt_addr_t *basep,
+			      fdt_size_t *sizep);
 
 /**
  * Returns information from the FDT about memory for a given root

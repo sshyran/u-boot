@@ -9,6 +9,7 @@
  */
 
 #include <common.h>
+#include <errno.h>
 #include <libfdt.h>
 #include <asm/io.h>
 #include <cros/common.h>
@@ -259,34 +260,24 @@ int cros_fdtdec_config_has_prop(const void *blob, const char *name)
 		fdt_get_property(blob, nodeoffset, name, NULL) != NULL;
 }
 
-void *cros_fdtdec_alloc_region(const void *blob,
-		const char *prop_name, size_t *size)
+int cros_fdtdec_decode_region(const void *blob, const char *mem_type,
+			      const char *suffix, fdt_addr_t *basep,
+			      fdt_size_t *sizep)
 {
 	int node = cros_fdtdec_config_node(blob);
-	fdt_addr_t addr;
-	fdt_size_t conv_size;
-	void *ptr;
+	int ret;
 
 	if (node < 0)
-		return NULL;
-
-	if (fdtdec_decode_region(blob, node, prop_name, &addr, &conv_size)) {
-		VBDEBUG("failed to find %s in /chromeos-config'\n", prop_name);
-		return NULL;
+		return -ENOENT;
+	ret = fdtdec_decode_memory_region(blob, node, mem_type, suffix, basep,
+					  sizep);
+	if (ret) {
+		VBDEBUG("failed to find %s suffix %s in /chromeos-config\n",
+			mem_type, suffix);
+		return ret;
 	}
 
-	if (!addr)
-		ptr = malloc(conv_size);
-	else
-		ptr = map_sysmem(addr, conv_size) + DRAM_BASE_ADDRESS;
-
-	if (!ptr) {
-		VBDEBUG("failed to alloc %d bytes for %s'\n", conv_size,
-			prop_name);
-	}
-	*size = conv_size;
-
-	return ptr;
+	return 0;
 }
 
 int cros_fdtdec_memory(const void *blob, const char *name,

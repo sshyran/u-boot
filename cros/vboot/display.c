@@ -325,20 +325,19 @@ VbError_t VbExDisplayDebugInfo(const char *info_str)
 {
 #ifdef CONFIG_CHROMEOS_DISPLAY
 	crossystem_data_t *cdata;
-	size_t size;
+	fdt_addr_t base;
+	fdt_size_t size;
 
 	display_callbacks_.dc_position_cursor(0, 0);
 	display_callbacks_.dc_puts(info_str);
 
-
-	cdata = cros_fdtdec_alloc_region(gd->fdt_blob,
-					 "cros-system-data-offset",
-					 &size);
-	if (!cdata) {
+	if (cros_fdtdec_decode_region(gd->fdt_blob, "cros-system-data", NULL,
+				      &base, &size)) {
 		VBDEBUG("cros-system-data missing "
 				"from fdt, or malloc failed\n");
 		return VBERROR_UNKNOWN;
 	}
+	cdata = map_sysmem(base, size);
 
 	/* Sanity check in case this memory is not yet set up */
 	show_cdata_string("read-only firmware id: ",

@@ -883,7 +883,8 @@ twostop_main_firmware(struct twostop_fmap *fmap, void *gbb,
 	VbError_t err;
 	VbSelectAndLoadKernelParams kparams;
 	VbCommonParams cparams;
-	size_t size = 0;
+	fdt_addr_t base;
+	fdt_size_t size = 0;
 
 #ifdef CONFIG_BOOTSTAGE_STASH
 	bootstage_unstash((void *)CONFIG_BOOTSTAGE_STASH,
@@ -897,17 +898,18 @@ twostop_main_firmware(struct twostop_fmap *fmap, void *gbb,
 
 	/*
 	 * Note that in case "kernel" is not found in the device tree, the
-	 * "size" value is going to remain unchanged.
+	 * "size" value is going to remain unchanged. This is for x86 which
+	 * loads its kernel wherever the kernel wants to be loaded.
 	 */
-	kparams.kernel_buffer = cros_fdtdec_alloc_region(gd->fdt_blob,
-		"kernel-offset", &size);
+	kparams.kernel_buffer = NULL;
+	if (!cros_fdtdec_decode_region(gd->fdt_blob, "kernel", NULL, &base,
+				       &size))
+		kparams.kernel_buffer = map_sysmem(base, size);
 	kparams.kernel_buffer_size = size;
 
 	VBDEBUG("kparams:\n");
-	VBDEBUG("- kernel_buffer:      : %08x\n",
-		(unsigned)map_to_sysmem(kparams.kernel_buffer));
-	VBDEBUG("- kernel_buffer_size: : %08x\n",
-			kparams.kernel_buffer_size);
+	VBDEBUG("- kernel_buffer:      : %08x\n", base);
+	VBDEBUG("- kernel_buffer_size: : %08x\n", size);
 
 #ifdef CONFIG_EXYNOS_DISPLAYPORT
 	exynos_lcd_check_next_stage(gd->fdt_blob, 0);
@@ -970,20 +972,19 @@ twostop_main_firmware(struct twostop_fmap *fmap, void *gbb,
 static int setup_gbb_and_cdata(void **gbb, size_t *gbb_size,
 			       crossystem_data_t **cdata, int verify)
 {
-	size_t size;
+	fdt_addr_t base;
+	fdt_size_t size;
 
-	*gbb = cros_fdtdec_alloc_region(gd->fdt_blob,
-			"google-binary-block-offset", gbb_size);
+        if (cros_fdtdec_decode_region(gd->fdt_blob, "google-binary-block",
+				      NULL, &base, &size)) {
+                VBDEBUG("google-binary-block-offset missing from fdt\n");
+                return -1;
+        }
+        *gbb = map_sysmem(base, size);
+	*gbb_size = size;
 
-	if (!*gbb) {
-		VBDEBUG("google-binary-block-offset missing "
-			"from fdt, or malloc failed\n");
-		return -1;
-	}
-
-	*cdata = cros_fdtdec_alloc_region(gd->fdt_blob,
-					  "cros-system-data-offset", &size);
-	if (!*cdata) {
+	if (cros_fdtdec_decode_region(gd->fdt_blob, "cros-system-data",
+				      NULL, &base, &size)) {
 		VBDEBUG("cros-system-data-offset missing "
 				"from fdt, or malloc failed\n");
 		return -1;
@@ -993,6 +994,7 @@ static int setup_gbb_and_cdata(void **gbb, size_t *gbb_size,
 	 * TODO(clchiou): readwrite firmware should check version of the data
 	 * blobs
 	 */
+        *cdata = map_sysmem(base, size);
 	if (verify && crossystem_data_check_integrity(*cdata)) {
 		VBDEBUG("invalid crossystem data\n");
 		return -1;
