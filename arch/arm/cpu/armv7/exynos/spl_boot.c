@@ -400,7 +400,7 @@ enum boot_mode copy_uboot_to_ram(ulong uboot_addr, ulong uboot_size,
 		hang();
 		break;
 	}
-	debug("done.\n");
+	debug("loaded to %lx, size %lx", uboot_addr, uboot_size);
 
 	return bootmode;
 }
@@ -421,9 +421,8 @@ void memzero(void *s, size_t n)
  *
  * @param gdp   Value to give to gd
  */
-static void setup_global_data(gd_t *gdp)
+static void setup_global_data(void)
 {
-	gd = gdp;
 	memzero((void *)gd, sizeof(gd_t));
 	gd->flags |= GD_FLG_RELOC;
 	gd->baudrate = CONFIG_BAUDRATE;
@@ -465,14 +464,13 @@ __weak void board_process_wakeup(void)
 void board_init_f(unsigned long bootflag)
 {
 	struct spl_machine_param *param;
-	__attribute__((aligned(8))) gd_t local_gd;
 	__attribute__((noreturn)) void (*uboot)(uint32_t marker);
 	enum boot_mode boot_mode;
 	int actions;
 
 	param = spl_get_machine_params();
 	boot_mode = param->boot_source;
-	setup_global_data(&local_gd);
+	setup_global_data();
 	arch_cpu_init();
 
 	actions = lowlevel_select_actions();
