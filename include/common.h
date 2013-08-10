@@ -339,6 +339,23 @@ int arch_early_init_r(void);
 void board_show_dram(ulong size);
 
 /**
+ * Verify a loaded image, using an available hash
+ *
+ * This function is board-specific, called after SPL loads an image and before
+ * it jumps to it. If the image does not verify, this should not return, but
+ * should take corrective action, such as rebooting.
+ *
+ * @firmware_num: Firmware number being executed
+ * @start: Address of start of U-Boot
+ * @size: Size of U-Boot
+ * @debug: True to output debug info if posible
+ * @return 0 if image verified, -ve if no verification was available,
+ * but the image is assumed to be correct.
+ */
+int board_image_verify(int firmware_num, ulong start, ulong size,
+		       int enable_debug);
+
+/**
  * arch_fixup_memory_node() - Write arch-specific memory information to fdt
  *
  * Defined in arch/$(ARCH)/lib/bootm.c

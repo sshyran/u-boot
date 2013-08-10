@@ -520,6 +520,17 @@ void board_init_f(unsigned long bootflag)
 	copy_uboot_to_ram(param->uboot_start, param->uboot_size, boot_mode,
 			  offset, enable_debug);
 
+#ifdef CONFIG_SPL_VERIFY
+	if (!board_image_verify(running_firmware, param->uboot_start,
+				param->uboot_size, enable_debug)) {
+		if (enable_debug)
+			puts(", verified");
+	} else {
+		if (enable_debug)
+			puts(", skip verify");
+	}
+#endif
+
 	/* Jump to U-Boot image */
 	if (enable_debug)
 		puts(", jump\n");

@@ -3068,6 +3068,12 @@ FIT uImage format:
 		option to re-enable it. This will affect the output of the
 		bootm command when booting a FIT image.
 
+		CONFIG_SPL_VERIFY
+		Instructs the SPL to call board_image_verify() after loading
+		U-Boot in order to verify it. If enabled, this function must
+		be provided by the board code.
+
+
 Modem Support:
 --------------
 
