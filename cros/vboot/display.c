@@ -243,7 +243,7 @@ static int sanity_check_bitmap(void *buffer, uint32_t buffersize)
 
 	if (buffersize < sizeof(bmp_image_t)) {
 		VBDEBUG("buffersize = %u < sizeof(bmp_image_t) = %u\n",
-				buffersize, sizeof(bmp_image_t));
+				buffersize, (unsigned)sizeof(bmp_image_t));
 		return -1;
 	}
 

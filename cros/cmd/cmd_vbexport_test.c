@@ -17,6 +17,7 @@
 #include <common.h>
 #include <command.h>
 #include <gbb_header.h>
+#include <asm/io.h>
 #include <cros/cros_init.h>
 #include <cros/firmware_storage.h>
 #include <cros/gbb.h>
@@ -55,9 +56,10 @@ static int do_vbexport_test_debug(cmd_tbl_t *cmdtp, int flag,
 	VbExDebug("Expect: 2222222222 0x84746b8e\n");
 	VbExDebug("Actual: %u 0x%x\n", lu, lu);
 	VbExDebug("Expect: -8888888888888888888 0x84a452a6a1dc71c8\n");
-	VbExDebug("Actual: %lld 0x%llx\n", lld, lld);
+	VbExDebug("Actual: %lld %#llx\n", (long long)lld, (long long)lld);
 	VbExDebug("Expect: 11111111111111111111 0x9a3298afb5ac71c7\n");
-	VbExDebug("Actual: %llu 0x%llx\n", llu, llu);
+	VbExDebug("Actual: %llu %#llx\n", (unsigned long long)llu,
+		  (unsigned long long)llu);
 	return 0;
 }
 
@@ -201,8 +203,8 @@ static int do_vbexport_test_diskinfo_flags(uint32_t flags)
 		for (i = 0; i < count; i++) {
 			VbExDebug("%p  %-9llu %-10llu %-2u %s",
 				  info[i].handle,
-				  info[i].bytes_per_lba,
-				  info[i].lba_count,
+				  (unsigned long long)info[i].bytes_per_lba,
+				  (unsigned long long)info[i].lba_count,
 				  info[i].flags,
 				  info[i].name);
 
@@ -283,13 +285,13 @@ static int do_vbexport_test_diskrw(cmd_tbl_t *cmdtp, int flag,
 	}
 	t1 = VbExGetTimer();
 	VbExDebug("test_diskrw: disk_read, lba_count: %u, time: %llu\n",
-			test_lba_count, t1 - t0);
+		  test_lba_count, (unsigned long long)(t1 - t0));
 
 	t0 = VbExGetTimer();
 	ret = VbExDiskWrite(handle, TEST_LBA_START, test_lba_count, target_buf);
 	t1 = VbExGetTimer();
 	VbExDebug("test_diskrw: disk_write, lba_count: %u, time: %llu\n",
-			test_lba_count, t1 - t0);
+		  test_lba_count, (unsigned long long)(t1 - t0));
 
 	if (ret) {
 		VbExDebug("Failed to write disk.\n");

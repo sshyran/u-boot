@@ -35,7 +35,7 @@ int gbb_init(void *gbb, firmware_storage_t *file, uint32_t gbb_offset,
 		VBDEBUG("%s: invalid gbb header entries\n", __func__);
 		VBDEBUG("   hwid_end=%x\n", hwid_end);
 		VBDEBUG("   gbbh->hwid_offset=%x\n", gbbh->hwid_offset);
-		VBDEBUG("   gbb_size=%x\n", gbb_size);
+		VBDEBUG("   gbb_size=%zx\n", gbb_size);
 		VBDEBUG("   rootkey_end=%x\n", rootkey_end);
 		VBDEBUG("   gbbh->rootkey_offset=%x\n",
 			gbbh->rootkey_offset);
@@ -100,7 +100,7 @@ int gbb_read_recovery_key(void *gbb, firmware_storage_t *file,
 		VBDEBUG("   gbbh->recovery_key_size=%x\n",
 			gbbh->recovery_key_size);
 		VBDEBUG("   rkey_end=%x\n", rkey_end);
-		VBDEBUG("   gbb_size=%x\n", gbb_size);
+		VBDEBUG("   gbb_size=%zx\n", gbb_size);
 		return 1;
 	}
 

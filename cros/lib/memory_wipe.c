@@ -129,7 +129,7 @@ void memory_wipe_execute(struct memory_wipe *wipe)
 		end = cur->next->pos;
 
 		VBDEBUG("\t[%#016llx, %#016llx)\n",
-			(uint64_t)start, (uint64_t)end);
+			(unsigned long long)start, (unsigned long long)end);
 		arch_phys_memset(start, 0, end - start);
 	}
 }

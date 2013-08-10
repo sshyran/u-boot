@@ -14,6 +14,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <asm/io.h>
 #include <cros_ec.h>
 #include <cros/common.h>
 #include <cros/cros_fdtdec.h>
@@ -78,13 +79,13 @@ static int do_vboot_test_fwrw(cmd_tbl_t *cmdtp,
 	}
 	t1 = VbExGetTimer();
 	VbExDebug("test_fwrw: fw_read, length: %#x, time: %llu\n",
-			test_length, t1 - t0);
+		  test_length, (unsigned long long)(t1 - t0));
 
 	t0 = VbExGetTimer();
 	ret = file.write(&file, TEST_FW_START, test_length, target_buf);
 	t1 = VbExGetTimer();
 	VbExDebug("test_fwrw: fw_write, length: %#x, time: %llu\n",
-			test_length, t1 - t0);
+		  test_length, (unsigned long long)(t1 - t0));
 
 	if (ret) {
 		VbExDebug("Failed to write firmware!\n");
