@@ -21,11 +21,16 @@ COBJS-$(CONFIG_SCSI_AHCI) += boot_device_scsi.o
 COBJS-$(CONFIG_CHROMEOS) += display.o
 COBJS-$(CONFIG_CHROMEOS) += ec.o
 COBJS-$(CONFIG_CHROMEOS) += keyboard.o
-COBJS-$(CONFIG_CHROMEOS) += load_firmware.o
+COBJS-$(CONFIG_CROS_LEGACY_VBOOT) += load_firmware.o
 COBJS-$(CONFIG_CHROMEOS) += misc.o
 COBJS-$(CONFIG_CHROMEOS) += nvstorage.o
+ifndef CONFIG_CROS_RO
 COBJS-$(CONFIG_CHROMEOS) += nvstorage_disk.o
+endif
+ifdef CONFIG_CROS_EC
 COBJS-$(CONFIG_CHROMEOS) += nvstorage_cros_ec.o
+endif
+COBJS-$(CONFIG_CHROMEOS) += stages.o
 COBJS-$(CONFIG_CHROMEOS) += tlcl_stub.o
 COBJS-$(CONFIG_CHROMEOS) += utility.o
 

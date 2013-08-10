@@ -23,4 +23,10 @@ typedef struct {
 	} fw[2];
 } hasher_state_t;
 
+/**
+ * Version of VbExHashFirmwareBody() for legacy vboot
+ */
+VbError_t load_firmware_VbExHashFirmwareBody(VbCommonParams *cparams,
+					     uint32_t firmware_index);
+
 #endif /* CHROMEOS_HASHER_STATE_H_ */

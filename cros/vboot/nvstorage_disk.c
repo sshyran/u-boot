@@ -11,6 +11,7 @@
 #include <common.h>
 #include <cros/common.h>
 #include <cros/nvstorage.h>
+#include <cros/vboot.h>
 
 /* Import the header files from vboot_reference. */
 #include <vboot_api.h>
@@ -121,8 +122,51 @@ static VbError_t nvstorage_write_disk(const uint8_t *buf)
 	return VBERROR_SUCCESS;
 }
 
+static int nvstorage_read_fdt_disk(struct vboot_info *vboot, const void *blob,
+				   int node)
+{
+	vboot->nvcontext_lba = fdtdec_get_int(blob, node,
+					"nonvolatile-context-lba", -1);
+	vboot->nvcontext_offset = fdtdec_get_int(blob, node,
+					"nonvolatile-context-offset", -1);
+	vboot->nvcontext_size = fdtdec_get_int(blob, node,
+					"nonvolatile-context-size", 0);
+
+	return 0;
+}
+
+static int nvstorage_write_fdt_disk(const struct vboot_info *vboot, void *blob,
+				    int node)
+{
+	int ret;
+
+	ret = fdt_setprop_cell(blob, node, "nonvolatile-context-lba",
+			       vboot->nvcontext_lba);
+	if (!ret) {
+		ret = fdt_setprop_cell(blob, node,
+				       "nonvolatile-context-offset",
+				       vboot->nvcontext_offset);
+	}
+	if (!ret) {
+		ret = fdt_setprop_cell(blob, node, "nonvolatile-context-size",
+				       vboot->nvcontext_size);
+	}
+
+	return 0;
+}
+
+static void nvstorage_dump_disk(const struct vboot_info *vboot)
+{
+	VBDEBUG(" %-30s: lba=%08lx, offset=%08x, size=%08x\n",	__func__,
+		(ulong)vboot->nvcontext_lba, vboot->nvcontext_offset,
+		vboot->nvcontext_size);
+}
+
 CROS_NVSTORAGE_METHOD(disk) = {
 	.name = "disk",
 	.read = nvstorage_read_disk,
 	.write = nvstorage_write_disk,
+	.read_fdt = nvstorage_read_fdt_disk,
+	.write_fdt = nvstorage_write_fdt_disk,
+	.dump = nvstorage_dump_disk,
 };

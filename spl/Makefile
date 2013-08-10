@@ -99,6 +99,10 @@ ifneq ($(CONFIG_EXYNOS4)$(CONFIG_EXYNOS5),)
 LIBS-y += $(CPUDIR)/s5p-common/libs5p-common.o
 endif
 
+ifdef SOC
+LIBS-$(CONFIG_CHROMEOS) += cros/$(SOC)/libcros_board.o
+endif
+
 # Add GCC lib
 ifeq ("$(USE_PRIVATE_LIBGCC)", "yes")
 PLATFORM_LIBGCC = $(SPLTREE)/arch/$(ARCH)/lib/libgcc.o

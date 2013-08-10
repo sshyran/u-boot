@@ -13,13 +13,7 @@
 
 #include <fdtdec.h>
 #include <cros/fmap.h>
-
-/* Firmware type as given by the fdt */
-enum cros_firmware_type {
-	CROS_FIRMWARE_RO,
-	CROS_FIRMWARE_RW_A,
-	CROS_FIRMWARE_RW_B,
-};
+#include <ec_commands.h>
 
 /* Decode Chrome OS specific configuration from fdt */
 

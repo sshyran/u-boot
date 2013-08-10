@@ -14,9 +14,11 @@
  */
 
 #include <common.h>
+#include <fdtdec.h>
 #include <asm/global_data.h>
 #include <malloc.h>
 #include <cros/common.h>
+#include <cros/cros_fdtdec.h>
 #include <cros/cros_init.h>
 #include <cros/pcbeep.h>
 #include <cros/power_management.h>
@@ -153,4 +155,21 @@ void *Memset(void *d, const uint8_t c, uint64_t n)
 uint64_t VbExGetTimer(void)
 {
 	return timer_get_us();
+}
+
+int board_should_enable_lcd_panel(const void *blob)
+{
+	int node;
+
+	/*
+	 * We enable the LCD panel in RW U-Boot when using
+	 * early-firmware-selection. This is because the RO U-Boot does not
+	 * have the LCD driver.
+	 * TODO(sjg@chromium.org): We could put the link training part in RO.
+	 * This is essentially a short-cut, rather than doing this work
+	 * properly for now.
+	 */
+	node = cros_fdtdec_config_node(blob);
+	return node >= 0 &&
+		fdtdec_get_bool(blob, node, "early-firmware-selection");
 }

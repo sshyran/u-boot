@@ -15,6 +15,7 @@
 #include <cros/boot_kernel.h>
 #include <cros/common.h>
 #include <cros/crossystem_data.h>
+#include <cros/vboot.h>
 #include <i8042.h>
 #ifdef CONFIG_X86
 #include <asm/zimage.h>
@@ -28,7 +29,7 @@ enum { CROS_32BIT_ENTRY_ADDR = 0x100000 };
  * We uses a static variable to communicate with ft_board_setup().
  * For more information, please see commit log.
  */
-static crossystem_data_t *g_crossystem_data = NULL;
+static crossystem_data_t *g_crossystem_data;
 
 /* defined in common/cmd_bootm.c */
 int do_bootm(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
@@ -41,6 +42,9 @@ int do_bootm(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 
 /* Extra buffer to string replacement */
 #define EXTRA_BUFFER		4096
+
+/* Pointer to the vboot information so we can handle ft_board_setup() */
+struct vboot_info *boot_kernel_vboot_ptr;
 
 /**
  * This loads kernel command line from the buffer that holds the loaded kernel
@@ -203,7 +207,8 @@ static int update_cmdline(char *src, int devnum, int partnum, uint8_t *guid,
 	return 0;
 }
 
-int boot_kernel(VbSelectAndLoadKernelParams *kparams, crossystem_data_t *cdata)
+int boot_kernel(struct vboot_info *vboot, VbSelectAndLoadKernelParams *kparams,
+		crossystem_data_t *cdata)
 {
 	/* sizeof(CHROMEOS_BOOTARGS) reserves extra 1 byte */
 	char cmdline_buf[sizeof(CHROMEOS_BOOTARGS) + CROS_CONFIG_SIZE];
@@ -221,6 +226,11 @@ int boot_kernel(VbSelectAndLoadKernelParams *kparams, crossystem_data_t *cdata)
 	sprintf(address, "%#08lx",
 		(ulong)map_to_sysmem(kparams->kernel_buffer));
 #endif
+
+	if (!vboot == !cdata) {
+		VBDEBUG("Must pass exactly one of vboot or cdata\n");
+		return -1;
+	}
 
 	strcpy(cmdline_buf, CHROMEOS_BOOTARGS);
 
@@ -267,6 +277,7 @@ int boot_kernel(VbSelectAndLoadKernelParams *kparams, crossystem_data_t *cdata)
 	VBDEBUG_PUTS("\n");
 
 	g_crossystem_data = cdata;
+	boot_kernel_vboot_ptr = vboot;
 
 	/* Disable keyboard and flush buffer so that further key strokes
 	 * won't interfere kernel driver init. */
@@ -277,7 +288,10 @@ int boot_kernel(VbSelectAndLoadKernelParams *kparams, crossystem_data_t *cdata)
 #endif
 
 #ifdef CONFIG_X86
-	crossystem_data_update_acpi(cdata);
+	if (vboot)
+		vboot_update_acpi(vboot);
+	else
+		crossystem_data_update_acpi(cdata);
 
 	params = (struct boot_params *)(uintptr_t)
 		(kparams->bootloader_address - CROS_PARAMS_SIZE);
@@ -289,6 +303,7 @@ int boot_kernel(VbSelectAndLoadKernelParams *kparams, crossystem_data_t *cdata)
 	cmdtp.name = "bootm";
 	do_bootm(&cmdtp, 0, ARRAY_SIZE(argv), argv);
 #endif
+	boot_kernel_vboot_ptr = NULL;
 
 	VBDEBUG("failed to boot; is kernel broken?\n");
 	return 1;
@@ -308,23 +323,37 @@ __weak int ft_system_setup(void *blob, bd_t *bd)
  */
 int ft_board_setup(void *fdt, bd_t *bd)
 {
+	struct vboot_info *vboot = boot_kernel_vboot_ptr;
+	crossystem_data_t *cdata = g_crossystem_data;
 	int err;
 
+	if (!vboot == !cdata) {
+		VBDEBUG("warning: Must pass exactly one of vboot or cdata\n");
+		return 0;
+	}
+
+	/* This function should be provided by the board file */
 	err = ft_system_setup(fdt, bd);
 	if (err) {
 		VBDEBUG("warning: fdt_system_setup() fails\n");
 		return err;
 	}
-	if (!g_crossystem_data) {
-		VBDEBUG("warning: g_crossystem_data is NULL\n");
-		return 0;
+
+	if (vboot) {
+		err = vboot_write_to_fdt(vboot, fdt);
+		if (err) {
+			VBDEBUG("cdata_write_to_fdt() failed\n");
+			return err;
+		}
+	} else {
+		/* Legacy code crosbug.com/p/21810 */
+		err = crossystem_data_embed_into_fdt(cdata, fdt);
+		if (err) {
+			VBDEBUG("crossystem_data_embed_into_fdt() failed\n");
+			return err;
+		}
 	}
 
-	err = crossystem_data_embed_into_fdt(g_crossystem_data, fdt);
-	if (err) {
-		VBDEBUG("crossystem_data_embed_into_fdt() failed\n");
-		return err;
-	}
 	VBDEBUG("Completed setting up fdt information for kerrnel\n");
 
 	return 0;

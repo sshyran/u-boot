@@ -68,6 +68,9 @@
 
 #ifndef CONFIG_CROS_RO
 #define CONFIG_CHROMEOS_DISPLAY
+
+/* Enable legacy vboot_twostop - crosbug.com/p/21810 */
+#define CONFIG_CROS_LEGACY_VBOOT
 #endif
 
 #ifndef CONFIG_CROS_FULL

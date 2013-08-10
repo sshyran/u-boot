@@ -330,6 +330,25 @@ int board_i2c_claim_bus(int node);
 int arch_early_init_r(void);
 
 /**
+ * board_should_enable_lcd_panel() - Check if we should enable the LCD panel.
+ *
+ * This can be called to check that the LCD has not already been inited, or
+ * will be inited later (so we only do this once).
+ *
+ * @blob: FDT blob containing configuration
+ * @return true if we should enable the LCD panel
+ */
+int board_should_enable_lcd_panel(const void *blob);
+
+/**
+ * board_process_wakeup() - Board-specific wakeup processing
+ *
+ * If the board has particular processing, it can do this here, and either
+ * return (for a normal wakeup) or not.
+ */
+void board_process_wakeup(void);
+
+/**
  * Show the DRAM size in a board-specific way
  *
  * This is used by boards to display DRAM information in their own way.

@@ -1,6 +1,9 @@
 Chrome OS dts config bindings
 =============================
 
+Note: EFS mean Early Firmware Selection, where the read-only firmware runs
+from internal on-chip ram (IRAM) instead of SDRAM.
+
 cros-system-data-offset
   location (offset into DRAM and size) of the memory area allocated for
   crossystem data on Exynos platforms.
@@ -33,3 +36,20 @@ skip-i8042
 usb-keyboard
 	If present, indicates that the machine has a USB keyboard as the
 	primary input, so it will be set up before boot proceeds.
+
+early-firmware-selection
+	Enable early firmware selection. This has the following effects:
+
+	1. In the flashmap, the 'type,efs' property is used in preference
+	to 'type'.
+
+	2. In /config, u-boot-memory,efs and u-boot-offset,efs are used
+	instead of  u-boot-memory and u-boot-offset.
+
+	3. In vboot, RO firmware loads the RW spl regions instead of the
+	RW boot regions.
+
+early-firmware-verification
+	Fully verify the U-Boot that SPL will load before returning success
+	to vboot in VbExHashFirmwareBody().
+

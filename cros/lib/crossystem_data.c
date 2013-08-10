@@ -27,6 +27,8 @@
 #include <asm/arch-coreboot/sysinfo.h>
 #endif
 
+/* This is the legacy crossystem code crosbug.com/p/21810 */
+
 #define CROSSYSTEM_DATA_SIGNATURE "CHROMEOS"
 
 /* This is used to keep bootstub and readwite main firmware in sync */
@@ -108,7 +110,7 @@ int crossystem_data_check_integrity(crossystem_data_t *cdata)
 {
 	if (cdata->total_size != sizeof(*cdata)) {
 		VBDEBUG("blob size mismatch: %08x != %08x\n",
-				cdata->total_size, sizeof(*cdata));
+				cdata->total_size, (unsigned)sizeof(*cdata));
 		return 1;
 	}
 

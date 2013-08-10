@@ -236,6 +236,22 @@ rootdisk-offset
 silent-console
 	If present, the console is silenced by default on boot.
 
+u-boot-offset
+	Offset to load U-Boot from start of memory. Note that memory is
+	normally SDRAM, but can be IRAN when EFS is used.
+
+u-boot-offset,efs
+	Same as u-boot-offset, but used when 'early-firmware-selection' is
+	present in /chromeos-config.
+
+samsung,bl1-offset
+	For exynos, the offset from start of IRAM to load BL1 during
+	initial boot
+
+samsung,bl2-offset
+	For exynos, the offset from start of IRAM to load BL2 during initial
+	boot
+
 
 Limitations
 -----------

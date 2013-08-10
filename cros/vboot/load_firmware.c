@@ -28,7 +28,8 @@ static uintptr_t firmware_body_size(const uintptr_t vblock_address)
 	return preamble->body_signature.data_size;
 }
 
-VbError_t VbExHashFirmwareBody(VbCommonParams* cparams, uint32_t firmware_index)
+VbError_t load_firmware_VbExHashFirmwareBody(VbCommonParams *cparams,
+					     uint32_t firmware_index)
 {
 	hasher_state_t *s = cparams->caller_context;
 	const int i = (firmware_index == VB_SELECT_FIRMWARE_A ? 0 : 1);

@@ -18,6 +18,13 @@ COBJS-$(CONFIG_CHROMEOS_GPIO_FLAG) += vboot_flag_gpio_arch.o
 COBJS-$(CONFIG_CHROMEOS) += legacy.o
 COBJS-$(CONFIG_POWER_TPS65090_EC) += tps65090_ec.o
 
+ifdef CONFIG_SPL_BUILD
+ifdef CONFIG_VAR_SIZE_SPL
+COBJS-$(CONFIG_CHROMEOS) += verify.o
+COBJS-$(CONFIG_CHROMEOS) += wakeup.o
+endif
+endif
+
 COBJS	:= $(COBJS-y)
 OBJS	:= $(addprefix $(obj),$(COBJS))
 

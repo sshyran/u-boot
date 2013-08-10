@@ -29,6 +29,7 @@
 #include <cros/memory_wipe.h>
 #include <cros/nvstorage.h>
 #include <cros/power_management.h>
+#include <cros/vboot.h>
 #include <cros/vboot_flag.h>
 #include <linux/lzo.h>
 #include <spi.h>
@@ -769,7 +770,7 @@ twostop_jump(crossystem_data_t *cdata, void *fw_blob, uint32_t fw_size,
 	 */
 	cleanup_before_linux();
 
-	VBDEBUG("Jump to firmware\n");
+	VBDEBUG("Jump to RW firmware\n");
 #ifdef CONFIG_SANDBOX
 	os_jump_to_image(dest, fw_size);
 #else
@@ -938,7 +939,7 @@ twostop_main_firmware(struct twostop_fmap *fmap, void *gbb,
 	VBDEBUG("- partition_number:   : %08x\n",
 			kparams.partition_number);
 	VBDEBUG("- bootloader_address: : %08llx\n",
-			kparams.bootloader_address);
+		(unsigned long long)kparams.bootloader_address);
 	VBDEBUG("- bootloader_size:    : %08x\n",
 			kparams.bootloader_size);
 	VBDEBUG("- partition_guid:     :");
@@ -953,7 +954,7 @@ twostop_main_firmware(struct twostop_fmap *fmap, void *gbb,
 	 * update active EC copy in cdata. */
 	set_active_ec_firmware(cdata);
 	crossystem_data_dump(cdata);
-	boot_kernel(&kparams, cdata);
+	boot_kernel(NULL, &kparams, cdata);
 
 	/* It is an error if boot_kenel returns */
 	return TWOSTOP_SELECT_ERROR;
@@ -1171,6 +1172,8 @@ do_vboot_twostop(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	bootstage_mark_name(BOOTSTAGE_VBOOT_TWOSTOP, "do_vboot_twostop");
 
+	vboot_set_legacy(true);
+
 	if (cros_init()) {
 		VBDEBUG("fail to init cros library\n");
 		goto on_error;
@@ -1186,8 +1189,8 @@ do_vboot_twostop(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	 * readwrite firmware code path.
 	 */
 	ro_firmware = is_processor_reset();
-	VBDEBUG("Starting %s firmware\n", ro_firmware ? "read-only" :
-			"read-write");
+	VBDEBUG("Starting legacy %s firmware\n", ro_firmware ? "read-only" :
+		"read-write");
 	if (ro_firmware)
 		selection = twostop_boot(0);
 	else
@@ -1212,14 +1215,9 @@ on_error:
 U_BOOT_CMD(vboot_twostop, 1, 1, do_vboot_twostop,
 		"verified boot twostop firmware", NULL);
 
-int board_run_command(const char *cmd)
+int run_legacy_vboot_twostop(void)
 {
-	if (0 == strcmp(cmd, "vboot_twostop"))
-		return do_vboot_twostop(NULL, 0, 0, NULL);
-	else
-		printf("Unknown command '%s'\n", cmd);
-
-	return 1;
+	return do_vboot_twostop(NULL, 0, 0, NULL);
 }
 
 static int
@@ -1232,6 +1230,8 @@ do_vboot_load_oprom(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		VBDEBUG("fail to init cros library\n");
 		return -1;
 	}
+
+	vboot_set_legacy(true);
 
 	/* We should be in RO now. */
 	if (!is_processor_reset()) {

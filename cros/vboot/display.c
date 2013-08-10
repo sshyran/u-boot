@@ -18,6 +18,7 @@
 #include <cros/cros_fdtdec.h>
 #include <cros/common.h>
 #include <cros/crossystem_data.h>
+#include <cros/vboot.h>
 #include <lzma/LzmaTypes.h>
 #include <lzma/LzmaDec.h>
 #include <lzma/LzmaTools.h>
@@ -69,15 +70,14 @@ static struct display_callbacks display_callbacks_ = {
 VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
 {
 	/*
-	 * crosbug.com/p/13492
-	 * This may be an unexpected display init request - probably due to a
-	 * software sync. Read the bmpblk.
-	 */
-	cros_cboot_twostop_read_bmp_block();
-#ifdef CONFIG_EXYNOS_DISPLAYPORT
-	/* Make sure the LCD is up */
-	exynos_lcd_check_next_stage(gd->fdt_blob, 1);
-#endif
+	* crosbug.com/p/13492
+	* This may be an unexpected display init request - probably due to a
+	* software sync. Read the bmpblk.
+	* We can remove this once we have the GBB API in place and used on
+	* all boards.
+	*/
+	if (vboot_is_legacy())
+		cros_cboot_twostop_read_bmp_block();
 
 #ifdef CONFIG_CHROMEOS_DISPLAY
 	*width = display_callbacks_.dc_get_pixel_width();
@@ -311,25 +311,36 @@ static void show_cdata_string(const char *prompt, const char *str)
 VbError_t VbExDisplayDebugInfo(const char *info_str)
 {
 #ifdef CONFIG_CHROMEOS_DISPLAY
-	crossystem_data_t *cdata;
-	fdt_addr_t base;
-	fdt_size_t size;
+	if (vboot_is_legacy()) {
+		/* Keep old vboot_twostop code - crosbug.com/p/21810 */
+		crossystem_data_t *cdata;
+		fdt_addr_t base;
+		fdt_size_t size;
 
-	display_callbacks_.dc_position_cursor(0, 0);
-	display_callbacks_.dc_puts(info_str);
+		display_callbacks_.dc_position_cursor(0, 0);
+		display_callbacks_.dc_puts(info_str);
 
-	if (cros_fdtdec_decode_region(gd->fdt_blob, "cros-system-data", NULL,
-				&base, &size)) {
-		VBDEBUG("cros-system-data missing "
-				"from fdt, or malloc failed\n");
-		return VBERROR_UNKNOWN;
+		if (cros_fdtdec_decode_region(gd->fdt_blob, "cros-system-data",
+					      NULL, &base, &size)) {
+			VBDEBUG("cros-system-data missing from fdt\n");
+			return VBERROR_UNKNOWN;
+		}
+		cdata = map_sysmem(base, size);
+
+		/* Sanity check in case this memory is not yet set up */
+		show_cdata_string("read-only firmware id: ",
+				  cdata->readonly_firmware_id);
+		show_cdata_string("active firmware id: ", cdata->firmware_id);
+	} else {
+		struct vboot_info *vboot = vboot_get();
+
+		display_callbacks_.dc_position_cursor(0, 0);
+		display_callbacks_.dc_puts(info_str);
+
+		show_cdata_string("read-only firmware id: ",
+				  vboot->readonly_firmware_id);
+		show_cdata_string("active firmware id: ", vboot->firmware_id);
 	}
-	cdata = map_sysmem(base, size);
-
-	/* Sanity check in case this memory is not yet set up */
-	show_cdata_string("read-only firmware id: ",
-				cdata->readonly_firmware_id);
-	show_cdata_string("active firmware id: ", cdata->firmware_id);
 #endif
 	return VBERROR_SUCCESS;
 }

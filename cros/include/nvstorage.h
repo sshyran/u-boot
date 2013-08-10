@@ -12,7 +12,8 @@
 #define CHROMEOS_NVSTORAGE_H_
 
 #include <vboot_api.h>
-#include <crossystem_data.h>
+
+struct vboot_info;
 
 /*
  * When the disk-based NV context driver is used, the VbNvContext is stored
@@ -34,6 +35,32 @@ struct nvstorage_method {
 	const char *name;
 	VbError_t (*read)(uint8_t *buf);
 	VbError_t (*write)(const uint8_t *buf);
+	/**
+	 * read_fdt() - Read method information from device tree
+	 *
+	 * @blob: Device tree to read from
+	 * @offset: Node offset in device tree to read from
+	 * @vboot: Place to put the data that is read
+	 * @return 0 if OK, -FDT_ERR_... on error
+	 */
+	int (*read_fdt)(struct vboot_info *vboot, const void *blob,
+			int offset);
+	/**
+	 * write_fdt() - Write method information to device tree
+	 *
+	 * @blob: Device tree to write to
+	 * @offset: Node offset in device tree to write to
+	 * @vboot: Place containing data to be written
+	 * @return 0 if OK, -FDT_ERR_... on error
+	 */
+	int (*write_fdt)(const struct vboot_info *vboot, void *blob,
+			 int offset);
+	/**
+	 * dump() - Dump out nvstorage information
+	 *
+	 * @vboot: Place containing data to be written
+	 */
+	void (*dump)(const struct vboot_info *vboot);
 };
 
 /**

@@ -14,15 +14,20 @@
 #include <cros/crossystem_data.h>
 #include <vboot_api.h>
 
+struct vboot_info;
+
 /**
+ * crosbug.com/p/21810
  * This boots kernel specified in [kparmas].
  *
+ * @param vboot         Verified boot information
  * @param kparams       kparams returned from VbSelectAndLoadKernel()
  * @param cdata         crossystem data pointer
  * @return non-zero if it fails to boot; otherwise it never returns
  *         to its caller
  */
 /* TODO define error codes on different errors */
-int boot_kernel(VbSelectAndLoadKernelParams *kparams, crossystem_data_t *cdata);
+int boot_kernel(struct vboot_info *vboot, VbSelectAndLoadKernelParams *kparams,
+		crossystem_data_t *cdata);
 
 #endif /* CHROMEOS_BOOT_KERNEL_H */

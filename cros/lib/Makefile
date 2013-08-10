@@ -29,6 +29,9 @@ COBJS-$(CONFIG_CHROMEOS_GPIO_FLAG) += vboot_flag_gpio.o
 COBJS-$(CONFIG_CHROMEOS_KEY_FLAG) += vboot_flag_key.o
 COBJS-$(CONFIG_CHROMEOS_CROS_EC_FLAG) += vboot_flag_cros_ec.o
 COBJS-$(CONFIG_CHROMEOS) += vboot_flag_debug.o
+COBJS-$(CONFIG_CHROMEOS) += vboot.o vboot_dump.o vboot_fdt.o
+COBJS-$(CONFIG_CHROMEOS) += readonly.o
+COBJS-$(CONFIG_CHROMEOS) += readwrite.o
 
 COBJS	:= $(COBJS-y)
 OBJS	:= $(addprefix $(obj),$(COBJS))
