@@ -289,8 +289,7 @@ static int setup_mon_len(void)
 #ifdef CONFIG_SANDBOX
 	gd->mon_len = (ulong)&_end - (ulong)_init;
 #else
-	/* TODO: use (ulong)&__bss_end - (ulong)&__text_start; ? */
-	gd->mon_len = (ulong)&__bss_end - CONFIG_SYS_MONITOR_BASE;
+	gd->mon_len = (ulong)&__bss_end - (ulong)_start;
 #endif
 	return 0;
 }
