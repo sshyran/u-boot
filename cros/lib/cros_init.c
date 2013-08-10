@@ -10,6 +10,7 @@
 
 #include <common.h>
 #include <bootstage.h>
+#include <cros_ec.h>
 #include <cros/common.h>
 #include <cros/boot_device.h>
 #include <cros/nvstorage.h>
@@ -18,7 +19,21 @@
 
 int cros_init(void)
 {
-	bootstage_set_next_id(BOOTSTAGE_VBOOT_LAST);
+#ifdef CONFIG_CROS_EC
+	if (!board_get_cros_ec_dev()) {
+		VBDEBUG("cros_ec not available\n");
+		return -1;
+	}
+#endif
+	/*
+	 * Empty keyboard buffer before boot.  In case EC did not clear its
+	 * buffer between power cycles, this prevents vboot of current power
+	 * cycle being affected by keystrokes of previous power cycle.
+	 */
+	while (tstc())
+		getc();
+
+	display_clear();
 
 	if (nvstorage_init()) {
 		VBDEBUG("nvstorage_init failed\n");

@@ -1171,34 +1171,10 @@ do_vboot_twostop(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	bootstage_mark_name(BOOTSTAGE_VBOOT_TWOSTOP, "do_vboot_twostop");
 
-	/*
-	 * Empty keyboard buffer before boot.  In case EC did not clear its
-	 * buffer between power cycles, this prevents vboot of current power
-	 * cycle being affected by keystrokes of previous power cycle.
-	 */
-	while (tstc())
-		getc();
-
 	if (cros_init()) {
 		VBDEBUG("fail to init cros library\n");
 		goto on_error;
 	}
-
-	/*
-	 * TODO: We should clear screen later if we load graphics optionally.
-	 * In normal mode, we don't need to load graphics driver and clear
-	 * screen.
-	 */
-	display_clear();
-
-	/*
-	 * TODO(sjg@chromium.org): root cause issue crosbug.com/p/11075
-	 *
-	 * Ensure there are no keys in the keyboard buffer, so that we don't
-	 * accidentally see a space key and go into recovery mode.
-	 */
-	while (tstc())
-		(void)getc();
 
 	/*
 	 * A processor reset jumps to the reset entry point (which is the
