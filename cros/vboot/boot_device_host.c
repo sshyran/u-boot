@@ -25,13 +25,12 @@ static int boot_device_host_scan(block_dev_desc_t **desc, int max_devs,
 	int index, found;
 
 	for (index = found = 0; index < max_devs; index++) {
-		block_dev_desc_t *scsi;
+		block_dev_desc_t *blk_dev;
 
-		scsi = host_get_dev(index);
-		if (!scsi)
+		if (host_get_dev_err(index, &blk_dev))
 			continue;
 
-		desc[found++] = scsi;
+		desc[found++] = blk_dev;
 	}
 	return found;
 }
