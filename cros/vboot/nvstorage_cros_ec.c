@@ -49,7 +49,6 @@ static VbError_t nvstorage_write_cros_ec(const uint8_t *buf)
 
 CROS_NVSTORAGE_METHOD(cros_ec) = {
 	.name = "cros-ec",
-	.type = NONVOLATILE_STORAGE_CROS_EC,
 	.read = nvstorage_read_cros_ec,
 	.write = nvstorage_write_cros_ec,
 };

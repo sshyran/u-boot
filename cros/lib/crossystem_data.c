@@ -96,7 +96,9 @@ int crossystem_data_init(crossystem_data_t *cdata,
 	cdata->board.arm.nonvolatile_context_lba = CHROMEOS_VBNVCONTEXT_LBA;
 	cdata->board.arm.nonvolatile_context_offset = 0;
 	cdata->board.arm.nonvolatile_context_size = VBNV_BLOCK_SIZE;
-	cdata->board.arm.nonvolatile_context_storage = nvstorage_get_type();
+	strncpy(cdata->board.arm.nonvolatile_context_storage,
+		nvstorage_get_method()->name,
+		sizeof(cdata->board.arm.nonvolatile_context_storage));
 #endif
 
 	return 0;
@@ -224,32 +226,20 @@ static int process_cdata(crossystem_data_t *cdata, void *fdt)
 			readonly_firmware_id));
 
 #ifdef CONFIG_ARM
-	switch (cdata->board.arm.nonvolatile_context_storage) {
-	case NONVOLATILE_STORAGE_NVRAM:
-		CALL(fdt_setprop(fdt, nodeoffset,
-				"nonvolatile-context-storage",
-				"nvram", sizeof("nvram")));
-		break;
-	case NONVOLATILE_STORAGE_CROS_EC:
-		CALL(fdt_setprop(fdt, nodeoffset,
-				"nonvolatile-context-storage",
-				"mkbp", sizeof("mkbp")));
-		break;
-	case NONVOLATILE_STORAGE_DISK:
-		CALL(fdt_setprop(fdt, nodeoffset,
-				"nonvolatile-context-storage",
-				"disk", sizeof("disk")));
+	char *name;
+
+	name = cdata->board.arm.nonvolatile_context_storage;
+	if (!strcmp(name, "cros-ec"))
+		name = "mkbp";
+	CALL(fdt_setprop_string(fdt, nodeoffset, "nonvolatile-context-storage",
+				name));
+	if (!strcmp(name, "disk")) {
 		CALL(set_scalar_prop("nonvolatile-context-lba",
 				board.arm.nonvolatile_context_lba));
 		CALL(set_scalar_prop("nonvolatile-context-offset",
 				board.arm.nonvolatile_context_offset));
 		CALL(set_scalar_prop("nonvolatile-context-size",
 				board.arm.nonvolatile_context_size));
-		break;
-	default:
-		VBDEBUG("Could not match nonvolatile_context_storage: %d\n",
-				cdata->board.arm.nonvolatile_context_storage);
-		err = 1;
 	}
 #endif /* CONFIG_ARM */
 
@@ -366,7 +356,7 @@ void crossystem_data_dump(crossystem_data_t *cdata)
 	_p("%08llx",	board.arm.nonvolatile_context_lba);
 	_p("%08x",	board.arm.nonvolatile_context_offset);
 	_p("%08x",	board.arm.nonvolatile_context_size);
-	_p("%08x",	board.arm.nonvolatile_context_storage);
+	_p("%s",	board.arm.nonvolatile_context_storage);
 #endif
 #undef _p
 }

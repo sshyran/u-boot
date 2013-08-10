@@ -85,7 +85,6 @@ static VbError_t nvstorage_write_nvram(const uint8_t *buf)
 
 CROS_NVSTORAGE_METHOD(nvram) = {
 	.name = "nvram",
-	.type = NONVOLATILE_STORAGE_NVRAM,
 	.read = nvstorage_read_nvram,
 	.write = nvstorage_write_nvram,
 };

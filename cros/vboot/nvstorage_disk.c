@@ -123,7 +123,6 @@ static VbError_t nvstorage_write_disk(const uint8_t *buf)
 
 CROS_NVSTORAGE_METHOD(disk) = {
 	.name = "disk",
-	.type = NONVOLATILE_STORAGE_DISK,
 	.read = nvstorage_read_disk,
 	.write = nvstorage_write_disk,
 };

@@ -69,39 +69,15 @@ int nvstorage_init(void)
 
 	croscfg_node = cros_fdtdec_config_node(blob);
 	if (croscfg_node < 0)
-		return 1;
+		return -1;
 
 	media = fdt_getprop(blob, croscfg_node, "nvstorage-media", &length);
 	if (!media) {
 		VBDEBUG("Cannot find nvstorage-media\n");
-		return 1;
+		return -1;
 	}
 
 	return nvstorage_set_name(media);
-}
-
-uint8_t nvstorage_get_type(void)
-{
-	return nvstorage_method ? nvstorage_method->type :
-			NONVOLATILE_STORAGE_NONE;
-}
-
-int nvstorage_set_type(uint8_t type)
-{
-	struct nvstorage_method *method, *start;
-	int upto, count;
-
-	start = ll_entry_start(struct nvstorage_method, nvstorage_method);
-	count = ll_entry_count(struct nvstorage_method, nvstorage_method);
-	for (upto = 0, method = start; upto < count; method++, upto++) {
-		if (method->type == type) {
-			nvstorage_method = method;
-			return 0;
-		}
-	}
-
-	VBDEBUG("Unknown/unsupport storage type: %d, count=%d\n", type, count);
-	return -1;
 }
 
 VbError_t VbExNvStorageRead(uint8_t* buf)

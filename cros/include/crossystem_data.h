@@ -114,7 +114,7 @@ typedef struct {
 			uint64_t	nonvolatile_context_lba;
 			uint16_t	nonvolatile_context_offset;
 			uint16_t	nonvolatile_context_size;
-			uint8_t		nonvolatile_context_storage;
+			char		nonvolatile_context_storage[32];
 		} arm;
 	} board;
 

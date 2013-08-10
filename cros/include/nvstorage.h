@@ -15,40 +15,70 @@
 #include <crossystem_data.h>
 
 /*
- * The VbNvContext is stored in block 0, which is also the MBR on x86
- * platforms but generally unused on ARM platforms.  Given this, it is not a
- * perfect place for storing stuff, but since there are no fixed blocks that we
- * may use reliably, block 0 is our only option left.
+ * When the disk-based NV context driver is used, the VbNvContext is stored
+ * in block 0, which is also the MBR on x86 platforms but generally unused on
+ * ARM platforms.  Given this, it is not a perfect place for storing stuff,
+ * but since there are no fixed blocks that we may use reliably, block 0 is
+ * our only option left.
+ *
+ * For MMC booting machines it may be appropriate to put this in the boot
+ * region. Note that it changes fairly regularly with software updates and
+ * other system events.
+ *
+ * TODO(sjg@chromium.org): Actually this value is in the device tree, so it
+ * should be not be hard-coded like this.
  */
 #define CHROMEOS_VBNVCONTEXT_LBA	0
 
-int nvstorage_init(void);
-
-/**
- * Get current type of non-volatile storage, which is a 8-bit enum value
- * defined in crossystem.h.
- *
- * @return	Current type of non-volatile storage.
- */
-uint8_t nvstorage_get_type(void);
-
-/**
- * Set new storage type; if new type is different from old, driver is reloaded.
- *
- * @param type	New storage type, which is a 8-bit enum value defined in
- *		crossystem.h.
- * @return	0 on success, non-0 on error.
- */
-int nvstorage_set_type(uint8_t type);
-
 struct nvstorage_method {
 	const char *name;
-	enum vboot_nvstorage_type type;
 	VbError_t (*read)(uint8_t *buf);
 	VbError_t (*write)(const uint8_t *buf);
 };
 
-/* Declare a non-volatile storage method, capable of accessing vb context */
+/**
+ * Select the configured non-volatile storage driver
+ *
+ * @return 0 if OK, -ve on error
+ */
+int nvstorage_init(void);
+
+/**
+ * Get current non-volatile storage method
+ *
+ * @return	Current method structure for non-volatile storage, or NULL
+ *		if there is no method.
+ */
+struct nvstorage_method *nvstorage_get_method(void);
+
+/**
+ * Set the current non-volatile storage method
+ *
+ * @param method	Pointer to storage method
+ */
+void nvstorage_set_method(struct nvstorage_method *method);
+
+/**
+ * Find a non-volatile storage method by name
+ *
+ * @param name	Name to to method to search for
+ * @return pointer to storage method, or NULL if not found
+ */
+struct nvstorage_method *nvstorage_find_name(const char *name);
+
+/**
+ * Set new non-volatile storage type
+ *
+ * @param name	New storage type, a string
+ * @return	0 on success, non-0 on error.
+ */
+int nvstorage_set_name(const char *name);
+
+/*
+ * Declare a non-volatile storage method, capable of accessing vboot context.
+ * This is a 16-byte region used to remember things like recovery request and
+ * reason.
+ */
 #define CROS_NVSTORAGE_METHOD(_name) \
 	ll_entry_declare(struct nvstorage_method, _name, nvstorage_method)
 
