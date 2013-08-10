@@ -120,14 +120,16 @@ VbError_t VbExRegionRead(VbCommonParams *cparams,
 	struct vboot_info *vboot = cparams->caller_context;
 	firmware_storage_t *file = &vboot->file;
 
-	if (region != VB_REGION_GBB)
-		return VBERROR_INVALID_PARAMETER;
+	if (region != VB_REGION_GBB) {
+		VBDEBUG("Only GBB region is supported, region=%d\n", region);
+		return VBERROR_REGION_READ_INVALID;
+	}
 
 	if (file->read(file, vboot->fmap.readonly.gbb.offset + offset, size,
 		       buf)) {
 		VBDEBUG("failed to read from gbb offset %x sze %x\n",
 			offset, size);
-		return VBERROR_FIRMWARE_READ_FAILED;
+		return VBERROR_REGION_READ_FAILED;
 	}
 
 	return 0;

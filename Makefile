@@ -439,7 +439,8 @@ vboot:
 		CFLAGS="$(subst ",\",$(CFLAGS_VBOOT))" \
 		$(MAKE) -C $(VBOOT_SOURCE) \
 		BUILD=$(OBJTREE)/include/generated/vboot \
-		ARCH=$(VBOOT_SUBMAKE_ARCH)
+		ARCH=$(VBOOT_SUBMAKE_ARCH) \
+		$(if CONFIG_VBOOT_REGION_READ,REGION_READ=1,,)
 
 __LIBS += $(obj)include/generated/vboot/vboot_fw.a
 VBOOT_TARGET := vboot
