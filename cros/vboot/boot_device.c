@@ -157,19 +157,22 @@ VbError_t VbExDiskRead(VbExDiskHandle_t handle, uint64_t lba_start,
                        uint64_t lba_count, void *buffer)
 {
 	block_dev_desc_t *dev = (block_dev_desc_t *)handle;
+	uint64_t blks_read;
 
-	bootstage_start(BOOTSTAGE_ACCUM_VBOOT_BOOT_DEVICE_READ,
-			"boot_device_read");
+        VBDEBUG("lba_start=%u, lba_count=%u\n",
+		(unsigned)lba_start, (unsigned)lba_count);
 	if (dev == NULL)
 		return VBERROR_DISK_NO_DEVICE;
 
 	if (lba_start >= dev->lba || lba_start + lba_count > dev->lba)
 		return VBERROR_DISK_OUT_OF_RANGE;
 
-	if (dev->block_read(dev->dev, lba_start, lba_count, buffer)
-			!= lba_count)
-		return VBERROR_DISK_READ_ERROR;
+	bootstage_start(BOOTSTAGE_ACCUM_VBOOT_BOOT_DEVICE_READ,
+			"boot_device_read");
+	blks_read = dev->block_read(dev->dev, lba_start, lba_count, buffer);
 	bootstage_accum(BOOTSTAGE_ACCUM_VBOOT_BOOT_DEVICE_READ);
+	if (blks_read != lba_count)
+		return VBERROR_DISK_READ_ERROR;
 
 	return VBERROR_SUCCESS;
 }
