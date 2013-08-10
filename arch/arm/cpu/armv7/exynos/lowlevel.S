@@ -30,7 +30,8 @@ lowlevel_init:
 #ifdef CONFIG_EXYNOS5420
 	adr     r0, code_base		@ r0: source address (start)
 	adr     r1, code_end		@ r1: source address (end)
-	ldr     r2, =0x02073000		@ r2: target address
+
+	ldr     r2, =CONFIG_EXYNOS_RELOCATE_CODE_BASE	@ r2: target address
 1:
 	ldmia   r0!, {r3-r6}
 	stmia   r2!, {r3-r6}
@@ -44,9 +45,8 @@ lowlevel_init:
  * This is a workaround code which is supposed to act as a
  * substitute/supplement to the iROM code.
  *
- * This workaround code is relocated to the address 0x02073000
- * because that comes out to be the last 4KB of the iRAM
- * (Base Address - 0x02020000, Limit Address - 0x020740000).
+ * This workaround code is relocated to the address
+ * CONFIG_EXYNOS_RELOCATE_CODE_BASE
  *
  * U-boot and kernel are aware of this code and flags by the simple
  * fact that we are implementing a workaround in the last 4KB
@@ -133,6 +133,7 @@ svc_entry:
 	ldrne   r1, =(0x10040000 + 0x800)
 	ldrne   pc, [r1]
 	tst     r10, #(1 << 0)
+	/* TODO(sjg@chromium.org): What does this do? Hard coded address.. */
 	ldrne   pc, =0x23e00000
 	adr     r0, _hotplug_addr
 wait_for_addr:
@@ -144,9 +145,4 @@ wait_for_addr:
 	.ltorg
 code_end:
 #endif
-	/*
-	 * Set the stack pointer, although it will be overwritten by the caller
-	 * It seems we will not boot if this function is empty.
-	 */
-	ldr	sp, =CONFIG_SYS_INIT_SP_ADDR
 	mov	pc, lr
