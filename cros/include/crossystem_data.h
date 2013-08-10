@@ -101,9 +101,9 @@ typedef struct {
 	uint8_t		firmware_type;
 	uint8_t         oprom_matters;
 	uint8_t		pad4;
-	uint8_t 	hardware_id[ID_LEN];
-	uint8_t		readonly_firmware_id[ID_LEN];
-	uint8_t		firmware_id[ID_LEN];
+	char	 	hardware_id[ID_LEN];
+	char		readonly_firmware_id[ID_LEN];
+	char		firmware_id[ID_LEN];
 
 	union {
 		/* We reserve 208 bytes for board specific data */

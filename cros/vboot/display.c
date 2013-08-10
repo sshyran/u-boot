@@ -23,19 +23,12 @@
 #include <lzma/LzmaTools.h>
 #include <asm/unaligned.h>
 
-#ifdef CONFIG_EXYNOS_DISPLAYPORT
-/* for exynos_lcd_check_next_stage() */
-#include <asm/arch/s5p-dp.h>
-#endif
+#include <asm/io.h>
 
 #define PRINT_MAX_ROW	20
 #define PRINT_MAX_COL	80
 
 DECLARE_GLOBAL_DATA_PTR;
-
-#if defined(CONFIG_CHROMEOS_DISPLAY) && defined(CONFIG_SANDBOX)
-#error CONFIG_CHROMEOS_DISPLAY is not handled for Sandbox configuration
-#endif
 
 struct display_callbacks {
 	int (*dc_get_pixel_width) (void);
@@ -162,8 +155,6 @@ VbError_t VbExDisplayScreen(uint32_t screen_type)
 		/* clear the screen */
 #ifdef CONFIG_CHROMEOS_DISPLAY
 		display_clear();
-#elif defined(CONFIG_SANDBOX)
-		msg = "<screen cleared>";
 #endif
 		break;
 	case VB_SCREEN_DEVELOPER_WARNING:
@@ -193,8 +184,6 @@ VbError_t VbExDisplayScreen(uint32_t screen_type)
 	if (msg != NULL) {
 #ifdef CONFIG_CHROMEOS_DISPLAY
 		print_on_center(msg);
-#elif defined(CONFIG_SANDBOX)
-		VbExDebug("%s", msg);
 #endif
 	}
 	return VBERROR_SUCCESS;
@@ -289,7 +278,7 @@ VbError_t VbExDisplayImage(uint32_t x, uint32_t y,
 	if (sanity_check_bitmap(buffer, buffersize))
 		return VBERROR_INVALID_BMPFV;
 
-	ret = display_callbacks_.dc_display_bitmap((ulong)buffer, x, y);
+	ret = display_callbacks_.dc_display_bitmap(map_to_sysmem(buffer), x, y);
 	if (ret) {
 		VBDEBUG("LCD display error.\n");
 		return VBERROR_UNKNOWN;
@@ -309,10 +298,8 @@ VbError_t VbExDisplayImage(uint32_t x, uint32_t y,
  * @str:	String to print. If the length if > 200 then we assume it is
  *		corrupted
  */
-static void show_cdata_string(const char *prompt, const unsigned char *ustr)
+static void show_cdata_string(const char *prompt, const char *str)
 {
-	const char *str = (const char *)ustr;
-
 	display_callbacks_.dc_puts(prompt);
 	if (strlen(str) > 200)
 		str = "corrupted";
@@ -332,7 +319,7 @@ VbError_t VbExDisplayDebugInfo(const char *info_str)
 	display_callbacks_.dc_puts(info_str);
 
 	if (cros_fdtdec_decode_region(gd->fdt_blob, "cros-system-data", NULL,
-				      &base, &size)) {
+				&base, &size)) {
 		VBDEBUG("cros-system-data missing "
 				"from fdt, or malloc failed\n");
 		return VBERROR_UNKNOWN;
@@ -341,7 +328,7 @@ VbError_t VbExDisplayDebugInfo(const char *info_str)
 
 	/* Sanity check in case this memory is not yet set up */
 	show_cdata_string("read-only firmware id: ",
-			  cdata->readonly_firmware_id);
+				cdata->readonly_firmware_id);
 	show_cdata_string("active firmware id: ", cdata->firmware_id);
 #endif
 	return VBERROR_SUCCESS;
