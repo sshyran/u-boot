@@ -310,7 +310,8 @@ static int check_and_set_wp(void)
 #endif
 
 enum boot_mode copy_uboot_to_ram(ulong uboot_addr, ulong uboot_size,
-				 enum boot_mode bootmode, ulong uboot_offset)
+				 enum boot_mode bootmode, ulong uboot_offset,
+				 bool enable_debug)
 {
 	int is_cr_z_set;
 	unsigned int sec_boot_check;
@@ -331,28 +332,33 @@ enum boot_mode copy_uboot_to_ram(ulong uboot_addr, ulong uboot_size,
 			bootmode = readl(EXYNOS5_POWER_BASE) & OM_STAT;
 	}
 
-	debug("\n");
+	if (enable_debug)
+		puts("\n");
 	switch (bootmode) {
 	case BOOT_MODE_SERIAL:
 #ifdef CONFIG_EXYNOS_FAST_SPI_BOOT
-		debug("SPI fast...");
+		if (enable_debug)
+			puts("SPI fast...");
 		/* let us our own function to copy u-boot from SF */
 		exynos_spi_copy(uboot_size, uboot_addr, uboot_offset);
 #else
-		debug("SPI iROM...");
+		if (enable_debug)
+			puts("SPI iROM...");
 		spi_copy = get_irom_func(SPI_INDEX);
 		spi_copy(uboot_offset, uboot_size, uboot_addr);
 #endif
 		break;
 	case BOOT_MODE_MMC:
-		debug("MMC...");
+		if (enable_debug)
+			puts("MMC...");
 		copy_bl2 = get_irom_func(MMC_INDEX);
 		copy_bl2(CONFIG_UBOOT_OFFSET / MMC_MAX_BLOCK_LEN,
 			 DIV_ROUND_UP(uboot_size, MMC_MAX_BLOCK_LEN),
 			 uboot_addr);
 		break;
 	case BOOT_MODE_EMMC:
-		debug("eMMC...");
+		if (enable_debug)
+			puts("eMMC...");
 #ifdef CONFIG_SPL_MMC_BOOT_WP
 		/*
 		 * GPIOs on the Exynos 5250 default to pulled down.  It will
@@ -385,7 +391,8 @@ enum boot_mode copy_uboot_to_ram(ulong uboot_addr, ulong uboot_size,
 #endif
 		break;
 	case BOOT_MODE_USB:
-		debug("USB...");
+		if (enable_debug)
+			puts("USB...");
 		/*
 		 * iROM needs program flow prediction to be disabled
 		 * before copy from USB device to RAM
@@ -400,7 +407,8 @@ enum boot_mode copy_uboot_to_ram(ulong uboot_addr, ulong uboot_size,
 		hang();
 		break;
 	}
-	debug("loaded to %lx, size %lx", uboot_addr, uboot_size);
+	if (enable_debug)
+		printf("loaded to %lx, size %lx", uboot_addr, uboot_size);
 
 	return bootmode;
 }
@@ -466,9 +474,11 @@ void board_init_f(unsigned long bootflag)
 	struct spl_machine_param *param;
 	__attribute__((noreturn)) void (*uboot)(uint32_t marker);
 	enum boot_mode boot_mode;
+	bool enable_debug;
 	int actions;
 
 	param = spl_get_machine_params();
+	enable_debug = param->spl_debug;
 	boot_mode = param->boot_source;
 	setup_global_data();
 	arch_cpu_init();
@@ -502,10 +512,11 @@ void board_init_f(unsigned long bootflag)
 	}
 
 	copy_uboot_to_ram(param->uboot_start, param->uboot_size, boot_mode,
-			  param->uboot_offset);
+			  param->uboot_offset, enable_debug);
 
 	/* Jump to U-Boot image */
-	debug(", jump\n");
+	if (enable_debug)
+		puts(", jump\n");
 	uboot = map_sysmem(param->uboot_start, param->uboot_size);
 	(*uboot)(running_from_uboot ? SPL_RUNNING_FROM_UBOOT : 0);
 	/* Never returns Here */

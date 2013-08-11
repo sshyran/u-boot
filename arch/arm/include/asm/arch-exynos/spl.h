@@ -78,9 +78,10 @@ struct spl_machine_param {
 	 * A		RW SPL IRAM start
 	 * U		RW SPL size
 	 * d		Skip SDRAM init
+	 * D		SPL debug
 	 * \0		termination
 	 */
-	char		params[20];	/* Length must be word-aligned */
+	char		params[24];	/* Length must be word-aligned */
 	u32		mem_iv_size;	/* Memory channel interleaving size */
 	enum ddr_mode	mem_type;	/* Type of on-board memory */
 	u32		uboot_start;	/* U-Boot start address */
@@ -116,6 +117,7 @@ struct spl_machine_param {
 	u32		rw_spl_start;	/* RW SPL start address */
 	u32		rw_spl_size;	/* RW SPL size */
 	u32		skip_sdram_init;	/* Don't init SDRAM */
+	u32		spl_debug;	/* Enable debug output in SPL */
 } __attribute__((__packed__));
 #endif
 
