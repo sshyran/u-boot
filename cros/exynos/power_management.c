@@ -24,10 +24,10 @@ int is_processor_reset(void)
 /* This function never returns */
 void cold_reboot(void)
 {
-#ifdef CONFIG_CONSOLE_RECORDING
+#if defined(CONFIG_CONSOLE_RECORDING) && !defined(CONFIG_SPL_BUILD)
 	console_dump_record(true);
 #endif
-	VBDEBUG("Reboot\n");
+	puts("Reboot\n");
 
 	/* Add a delay to allow serial output to drain */
 	mdelay(100);
@@ -37,10 +37,10 @@ void cold_reboot(void)
 /* This function never returns */
 void power_off(void)
 {
-#ifdef CONFIG_CONSOLE_RECORDING
+#if defined(CONFIG_CONSOLE_RECORDING) && !defined(CONFIG_SPL_BUILD)
 	console_dump_record(true);
 #endif
-	VBDEBUG("Power off\n");
+	puts("Power off\n");
 
 	/* Add a delay to allow serial output to drain */
 	mdelay(100);

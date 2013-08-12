@@ -42,6 +42,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define CONSOLE_BUFFER_SIZE  4000
 #endif
 
+#ifndef CONFIG_SPL_BUILD
 static char console_record_buffer[CONSOLE_BUFFER_SIZE];
 static int buffer_index;
 
@@ -67,19 +68,22 @@ void console_dump_record(int serial_only)
 
 	buffer_index = 0;
 }
+#endif /* CONFIG_SPL_BUILD */
 
 /* Record character sent to the console if there is room in the buffer. */
 static void record_console_putc(char c)
 {
+#ifndef CONFIG_SPL_BUILD
 	if (console_recording_on && (gd->flags & GD_FLG_RELOC)) {
 		/*
 		 * Pre relocate recoding not supported yet, we don't want to
 		 * write into bss and don't have a mechanism yet to carry a
 		 * smaller buffer from pre-relocation time.
 		 */
-		if (buffer_index < sizeof(console_record_buffer))
+		if (buffer_index < (int)sizeof(console_record_buffer))
 			console_record_buffer[buffer_index++] = c;
 	}
+#endif
 }
 
 void console_get_record(struct record_descriptor *rd)
