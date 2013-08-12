@@ -161,4 +161,12 @@ struct spl_machine_param *spl_get_machine_params(void);
  */
 struct spl_hash *spl_get_hash(void);
 
+/**
+ * Extract the hash from an SPL image
+ *
+ * @param hdr_base: Pointer to start of SPL (its header)
+ * @return pointer to hash if found, else NULL
+ */
+struct spl_hash *spl_extract_hash(void *hdr_base);
+
 #endif /* __ASM_ARCH_EXYNOS_SPL_H__ */

@@ -590,25 +590,11 @@ int printf(const char *fmt, ...)
 struct spl_hash *spl_get_hash(void)
 {
 #ifdef CONFIG_VAR_SIZE_SPL
-	struct spl_var_size_header *hdr;
-	struct spl_hash *hash;
-	ulong hdr_base;
+	void *hdr_base;
 
 	/* Find the variable-size-SPL header */
-	hdr_base = (ulong)_start - CONFIG_SPL_HEADER_SIZE;
-	hdr = (struct spl_var_size_header *)hdr_base;
-	if (!hdr->hash_offset)
-		return NULL;
-
-	/* Find the hash block- we only support SHA256 */
-	hash = (struct spl_hash *)(hdr_base + hdr->hash_offset);
-	if (hash->signature != SPL_HASH_SIGNATURE ||
-	    hash->version != SPL_HASH_VERSION ||
-	    hash->size < sizeof(*hash) ||
-	    strncmp(hash->algo, "sha256", 6))
-		return NULL;
-
-	return hash;
+	hdr_base = (void *)_start - CONFIG_SPL_HEADER_SIZE;
+	return spl_extract_hash(hdr_base);
 #else
 	return NULL;
 #endif

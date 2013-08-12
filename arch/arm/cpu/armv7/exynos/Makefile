@@ -22,7 +22,7 @@ include $(TOPDIR)/config.mk
 
 LIB	= $(obj)lib$(SOC).o
 
-COBJS-y	+= clock.o power.o soc.o system.o pinmux.o
+COBJS-y	+= clock.o power.o spl_hash.o soc.o system.o pinmux.o
 
 ifdef CONFIG_EXYNOS5
 COBJS-y	+= clock_init.o tzpc_init.o
