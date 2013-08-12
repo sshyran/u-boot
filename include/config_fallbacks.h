@@ -54,9 +54,4 @@
 #define HAVE_BLOCK_DEVICE
 #endif
 
-#ifndef CONFIG_CMDLINE
-/* Do all linking at the end to minimize image size */
-#define CONFIG_FINAL_LINK
-#endif
-
 #endif	/* __CONFIG_FALLBACKS_H */
