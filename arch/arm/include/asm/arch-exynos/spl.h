@@ -79,6 +79,7 @@ struct spl_machine_param {
 	 * U		RW SPL size
 	 * d		Skip SDRAM init
 	 * D		SPL debug
+	 * p		Vboot persist start
 	 * \0		termination
 	 */
 	char		params[24];	/* Length must be word-aligned */
@@ -118,6 +119,7 @@ struct spl_machine_param {
 	u32		rw_spl_size;	/* RW SPL size */
 	u32		skip_sdram_init;	/* Don't init SDRAM */
 	u32		spl_debug;	/* Enable debug output in SPL */
+	u32		vboot_persist_start;	/* Vboot persistence area */
 } __attribute__((__packed__));
 #endif
 
