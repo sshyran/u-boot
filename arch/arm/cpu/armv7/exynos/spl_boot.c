@@ -62,7 +62,9 @@ static const u32 irom_ptr_table[] = {
 	[USB_INDEX] = 0x02020070,	/* iROM Function Pointer-USB boot*/
 	};
 
+static uint32_t uboot_load_offset __attribute__ ((section(".data")));
 static bool running_from_uboot __attribute__ ((section(".data")));
+static uint8_t running_firmware __attribute__ ((section(".data")));
 
 void *get_irom_func(int index)
 {
@@ -407,8 +409,10 @@ enum boot_mode copy_uboot_to_ram(ulong uboot_addr, ulong uboot_size,
 		hang();
 		break;
 	}
-	if (enable_debug)
-		printf("loaded to %lx, size %lx", uboot_addr, uboot_size);
+	if (enable_debug) {
+		printf("loaded from offset %lx to %lx, size %lx", uboot_offset,
+		       uboot_addr, uboot_size);
+	}
 
 	return bootmode;
 }
@@ -475,6 +479,7 @@ void board_init_f(unsigned long bootflag)
 	__attribute__((noreturn)) void (*uboot)(uint32_t marker);
 	enum boot_mode boot_mode;
 	bool enable_debug;
+	uint32_t offset;
 	int actions;
 
 	param = spl_get_machine_params();
@@ -511,8 +516,9 @@ void board_init_f(unsigned long bootflag)
 		power_exit_wakeup();
 	}
 
+	offset = running_from_uboot ? uboot_load_offset : param->uboot_offset;
 	copy_uboot_to_ram(param->uboot_start, param->uboot_size, boot_mode,
-			  param->uboot_offset, enable_debug);
+			  offset, enable_debug);
 
 	/* Jump to U-Boot image */
 	if (enable_debug)
@@ -534,6 +540,10 @@ void board_init_r(gd_t *id, ulong dest_addr)
 void save_boot_params(u32 r0, u32 r1, u32 r2, u32 r3)
 {
 	running_from_uboot = (r0 == SPL_RUNNING_FROM_UBOOT);
+	if (running_from_uboot) {
+		running_firmware = r1;
+		uboot_load_offset = r2;
+	}
 }
 
 #ifdef CONFIG_SPL_SERIAL_SUPPORT
