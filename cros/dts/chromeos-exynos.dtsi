@@ -20,7 +20,7 @@
 		boot-device = "emmc";	/* Where SPL loads U-Boot from */
 		flash-method = "exynos";/* How to flash the board */
 		firmware-storage = <&firmware_storage_spi>;
-		nvstorage-media = "mkbp";
+		nvstorage-media = "cros-ec";
 		ec-software-sync;       /* EC firmware in sync with BIOS */
 		ec-slow-update;         /* Display WAIT screen when updating */
 
@@ -31,6 +31,12 @@
 		kernel-offset = <0x00008000 0x00800000>;
 		cros-system-data-offset = <0x00808000 0x8000>;
 		google-binary-block-offset = <0x00810000 0x100000>;
+		cros-system-data-memory,efs = "/iram";
+		cros-system-data-offset,efs = <0x00051800 0x13c0>;
+		vboot-persist-memory = "/iram";
+		vboot-persist-offset = <0x00052bc0 0x40>;
+		vboot-persist-memory,efs = "/iram";
+		vboot-persist-offset,efs = <0x00052bc0 0x40>;
 	};
 
 	config {

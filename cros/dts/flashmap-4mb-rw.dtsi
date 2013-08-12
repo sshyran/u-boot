@@ -45,28 +45,37 @@
 			 * each RW_SECTION. */
 			reg = <0x00200000 0x00002000>;
 			type = "keyblock boot,dtb";
+			type,efs = "keyblock exynos-bl2.rw";
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
 			version = <1>;
 			kernelkey = "kernel_subkey.vbpubk";
 			preamble-flags = <1>;
 		};
+
+		rw-a-spl {
+			label = "fw-spl-a";
+			size = <0x8000>;
+			type = "blob exynos-bl2.rw boot,dtb";
+			payload = "/flash/rw-a-boot";
+		};
+
 		rw-a-boot {
 			/* Alignment: no requirement (yet). */
 			label = "fw-main-a";
-			reg = <0x00202000 0x000de000>;
+			size = <0xd2000>;
 			type = "blob boot,dtb";
 		};
 		rw-a-ec {
 			label = "ec-rw-a";
-			reg = <0x002e0000 0x0000ff00>;
+			size = <0xff00>;
 			type = "blob ecrw";
 			add-hash;
 		};
 		rw-a-firmware-id {
 			/* Alignment: no requirement. */
 			label = "rw-fwid-a";
-			reg = <0x002eff00 0x00000100>;
+			size = <0x100>;
 			read-only;
 			type = "blobstring fwid";
 		};
@@ -84,28 +93,37 @@
 			 * each RW_SECTION. */
 			reg = <0x00300000 0x00002000>;
 			type = "keyblock boot,dtb";
+			type,efs = "keyblock exynos-bl2.rw";
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
 			version = <1>;
 			kernelkey = "kernel_subkey.vbpubk";
 			preamble-flags = <1>;
 		};
+
+		rw-b-spl {
+			label = "fw-spl-b";
+			size = <0x8000>;
+			type = "blob exynos-bl2.rw boot,dtb";
+			payload = "/flash/rw-b-boot";
+		};
+
 		rw-b-boot {
 			label = "fw-main-b";
 			/* Alignment: no requirement (yet). */
-			reg = <0x00302000 0x000de000>;
+			size = <0xd2000>;
 			type = "blob boot,dtb";
 		};
 		rw-b-ec {
 			label = "ec-rw-b";
-			reg = <0x003e0000 0x0000ff00>;
+			size = <0xff00>;
 			type = "blob ecrw";
 			add-hash;
 		};
 		rw-b-firmware-id {
 			label = "rw-fwid-b";
 			/* Alignment: no requirement. */
-			reg = <0x003eff00 0x00000100>;
+			size = <0x100>;
 			read-only;
 			type = "blobstring fwid";
 		};

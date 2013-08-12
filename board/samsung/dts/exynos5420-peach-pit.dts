@@ -19,4 +19,18 @@
 
 	compatible = "google,pit-rev#", "google,pit",
 		"google,peach", "samsung,exynos5420", "samsung,exynos5";
+
+	/* For Early-Firmware-Selection */
+	flash@0 {
+		rw-a-spl {
+			hash-target;
+		};
+		rw-b-spl {
+			hash-target;
+		};
+		ro-spl-rec {
+			hash-target;
+		};
+	};
+
 };

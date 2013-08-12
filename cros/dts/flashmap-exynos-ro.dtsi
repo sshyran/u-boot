@@ -55,14 +55,17 @@
 			read-only;
 			filename = "bl2.bin";
 			type = "blob exynos-bl2 boot,dtb";
+			type,efs = "blob exynos-bl2 ro-boot,dtb";
+			payload = "/flash/ro-boot";
 			required;
 		};
 
 		ro-boot {
 			label = "u-boot";
-			size = <0xa0000>;
+			size = <0x80000>;
 			read-only;
 			type = "blob boot,dtb";
+			type,efs = "blob ro-boot,dtb";
 			required;
 		};
 
@@ -88,7 +91,7 @@
 			 * For example, aligning to 512KB is better than to
 			 * 256KB. */
 			size = <0x8000>;
-			align = <0x10000>;
+			align = <0x8000>;
 			read-only;
 			type = "fdtmap";
 			ver-major = <1>;
@@ -102,18 +105,35 @@
 		ro-fmap {
 			label = "fmap";
 			size = <0x4000>;
-			align = <0x10000>;
+			align = <0x4000>;
 			read-only;
 			type = "fmap";
 			ver-major = <1>;
 			ver-minor = <0>;
 		};
 
+		ro-spl-rec {
+			label = "bl2 spl rec";
+			size = <0x8000>;
+			read-only;
+			filename = "bl2.bin";
+			type = "blob exynos-bl2.rec boot,dtb";
+			payload = "/flash/ro-boot-rec";
+			required;
+		};
+
+		ro-boot-rec {
+			label = "u-boot";
+			size = <0x90000>;
+			read-only;
+			type = "blob boot,dtb";
+		};
+
 		ro-gbb {
 			label = "gbb";
 
 			/* GBB offset must be aligned to 4K bytes */
-			size = <0x000ef000>;
+			size = <0x80000>;
 			read-only;
 			type = "blob gbb";
 		};

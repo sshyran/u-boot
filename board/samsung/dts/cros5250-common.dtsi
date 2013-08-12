@@ -54,6 +54,11 @@
 		google,bad-wake-gpios = <&gpio 0x70 0>;
 		hwid = "DAISY TEST A-A 9382";
 		machine-arch-id = <3774>;
+
+		u-boot-memory = "/memory";
+		u-boot-offset = <0x3e00000>;
+		samsung,bl1-offset = <0x1400>;
+		samsung,bl2-offset = <0x3400>;
 	};
 
 	chromeos-config {
@@ -88,6 +93,10 @@
 	memory {
 		reg = <0x40000000 0x80000000>;
 	};
+
+	iram {
+		reg = <0x02020000 0x00050000>;
+        };
 
 	ramoops {
 		reg = <0x41f00000 0x00100000>;
