@@ -65,6 +65,14 @@
 			ver-minor = <0>;
 		};
 
+		ro-boot-rec {
+			label = "u-boot-rec";
+			size = <0x300000>;
+			read-only;
+			type = "blob boot,dtb";
+			required;
+		};
+
 		ro-gbb {
 			label = "gbb";
 

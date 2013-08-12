@@ -14,6 +14,9 @@
 / {
 	config {
 		hwid = "sandbox TEST A-A 1968";
+		silent-console = <0>;
+		u-boot-memory = "/memory";
+		u-boot-offset = <0 0x300000>;
 	};
 
 	chromeos-config {
@@ -52,9 +55,9 @@
 			sandbox-value = <1>;
 		};
 		vboot-flag-power-off {
-			compatible = "google,gpio-flag";
-			/* PMC1_ONO#,  XEINT_10 aka gpx12 */
-			gpio = <&gpio 90 1>;
+			compatible = "google,key-flag";
+			/* Use KEY_PAUSE to similate power button */
+			key = <116>;
 		};
 		vboot-flag-oprom-loaded {
 			compatible = "google,const-flag";
@@ -65,10 +68,6 @@
 			/* APU1_EC_EN_RW, XEINT_19 aka gpx23 */
 			gpio = <&gpio 99 0>;
 		};
-	};
-
-	config {
-		silent-console = <0>;
 	};
 
 	chosen {

@@ -13,9 +13,9 @@
 
 /* Unfortunately we don't support everything yet */
 #undef CONFIG_CHROMEOS_USB
-#undef CONFIG_CHROMEOS_DISPLAY
 
 #define CONFIG_CHROMEOS_GPIO_FLAG
 #define CONFIG_CHROMEOS_CROS_EC_FLAG
+#define CONFIG_CHROMEOS_KEY_FLAG
 
 #endif /* __configs_chromeos_sandbox_h__ */
