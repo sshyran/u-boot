@@ -42,4 +42,13 @@
 #define CONFIG_NR_DRAM_BANKS	4
 #define SDRAM_BANK_SIZE		(512UL << 20)	/* 512 MB */
 
+/*
+ * Data passed to the kernel must be within lowmem, and it is
+ * recommended that it be placed just after the 128MB boundary,
+ * which the kernel decompressor must not passed.  Limit data
+ * to 256MB so that data is placed low in memory, but starting
+ * with sufficient space to avoid overrunning the 128MB boundary.
+ */
+#define CONFIG_SYS_BOOTMAPSZ            (1 << 28)
+
 #endif
