@@ -242,19 +242,19 @@ int firmware_storage_open(firmware_storage_t *file)
 	/* Lookup partition size */
 	node = fdt_path_offset(blob, "/flash/wp-ro");
 	if (node < 0) {
-		VBDEBUG("fail to lookup ro section\n", err);
+		VBDEBUG("fail to lookup ro section\n");
 		return -1;
 	}
 
 	err = fdtdec_read_fmap_entry(blob, node, "wp-ro", &entry);
 	if (err) {
-		VBDEBUG("fail to determine ro section size\n", err);
+		VBDEBUG("fail to determine ro section size\n");
 		return -1;
 	}
 
 	vboot_mmc = malloc(sizeof(*vboot_mmc));
 	if (!vboot_mmc) {
-		VBDEBUG("fail to allocate context structure\n", err);
+		VBDEBUG("fail to allocate context structure\n");
 		return -1;
 	}
 
