@@ -95,9 +95,12 @@ void __gpio_early_init_uart(void)
 void gpio_early_init_uart(void)
 __attribute__((weak, alias("__gpio_early_init_uart")));
 
+/* TODO(twarren@nvidia.com): Create this only in boards that have NAND */
 void __pin_mux_nand(void)
 {
+#if defined(CONFIG_TEGRA_NAND)
 	funcmux_select(PERIPH_ID_NDFLASH, FUNCMUX_DEFAULT);
+#endif
 }
 
 void pin_mux_nand(void) __attribute__((weak, alias("__pin_mux_nand")));
@@ -168,7 +171,7 @@ int board_init(void)
 # endif /* CONFIG_TEGRA_PMU */
 #endif /* CONFIG_TEGRA_I2C */
 
-#ifdef CONFIG_TEGRA114
+#if defined(CONFIG_TEGRA114) || defined(CONFIG_TEGRA124)
 	/* Enable needed power rails. TBD: Move to kernel or driver init. */
 	board_vreg_init();
 #endif
