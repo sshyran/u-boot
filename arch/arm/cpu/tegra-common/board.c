@@ -135,11 +135,17 @@ static int uart_configs[] = {
 	-1,
 	-1,
 	-1,
-#else	/* Tegra114 */
+#elif defined(CONFIG_TEGRA114)
 	FUNCMUX_UART1_KBC,	/* UARTA */
 	-1,
 	-1,
 	FUNCMUX_UART4_GMI,	/* UARTD */
+	-1,
+#else	/* Tegra12x */
+	FUNCMUX_UART1_KBC,	/* UARTA */
+	-1,
+	-1,
+	FUNCMUX_UART4_GPIO,	/* UARTD */
 	-1,
 #endif
 };

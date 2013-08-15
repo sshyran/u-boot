@@ -46,17 +46,18 @@ void config_cache(void)
 		"orreq r0, r0, #1\n"		/* ACTLR.FW, bit 0 */
 		"mcr p15, 0, r0, c1, c0, 1\n");
 
-	/* Currently, only T114 needs this L2 cache change to boot Linux */
+	/* Currently, only T1x4 needs this L2 cache change to boot Linux */
 	reg = (readl(&gp->hidrev) & HIDREV_CHIPID_MASK);
-	if (reg != (CHIPID_TEGRA114 << HIDREV_CHIPID_SHIFT))
-		return;
-	/*
-	 * Systems with an architectural L2 cache must not use the PL310.
-	 * Config L2CTLR here for a data RAM latency of 3 cycles.
-	 */
-	asm volatile(
-		"mrc p15, 1, r1, c9, c0, 2\n"
-		"and r1, r1, #0xFFFFFFF8\n"
-		"orr r1, r1, #2\n"
-		"mcr p15, 1, r1, c9, c0, 2\n");
+	reg = (reg >> HIDREV_CHIPID_SHIFT) & 0xFF;
+	if ((reg == CHIPID_TEGRA114) || (reg == CHIPID_TEGRA124)) {
+		/*
+		 * SoCs with an architectural L2 cache must not use the PL310.
+		 * Config L2CTLR here for a data RAM latency of 3 cycles.
+		 */
+		asm volatile(
+			"mrc p15, 1, r1, c9, c0, 2\n"
+			"and r1, r1, #0xFFFFFFF8\n"
+			"orr r1, r1, #2\n"
+			"mcr p15, 1, r1, c9, c0, 2\n");
+	}
 }

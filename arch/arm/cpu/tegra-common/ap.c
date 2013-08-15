@@ -43,7 +43,7 @@ int tegra_get_chip(void)
 	/*
 	 * This is undocumented, Chip ID is bits 15:8 of the register
 	 * APB_MISC + 0x804, and has value 0x20 for Tegra20, 0x30 for
-	 * Tegra30, and 0x35 for T114.
+	 * Tegra30, 0x35 for T114 and 0x40 for T124.
 	 */
 	rev = (readl(&gp->hidrev) & HIDREV_CHIPID_MASK) >> HIDREV_CHIPID_SHIFT;
 	debug("%s: CHIPID is 0x%02X\n", __func__, rev);
@@ -99,7 +99,14 @@ int tegra_get_chip_sku(void)
 			return TEGRA_SOC_T114;
 		}
 		break;
+	case CHIPID_TEGRA124:
+		switch (sku_id) {
+		}
+		case SKU_ID_T124_ENG:
+			return TEGRA_SOC_T124;
+		break;
 	}
+
 	/* unknown chip/sku id */
 	printf("%s: ERROR: UNKNOWN CHIP/SKU ID COMBO (0x%02X/0x%02X)\n",
 		__func__, chip_id, sku_id);
@@ -137,7 +144,7 @@ static u32 get_odmdata(void)
 	 * The BCT start and size are stored in the BIT in IRAM.
 	 * Read the data @ bct_start + (bct_size - 12). This works
 	 * on T20 and T30 BCTs, which are locked down. If this changes
-	 * in new chips (T114, etc.), we can revisit this algorithm.
+	 * in new chips (T1x4, etc.), we can revisit this algorithm.
 	 */
 
 	u32 bct_start, odmdata;
