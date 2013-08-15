@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2010-2011
+ * (C) Copyright 2010-2013
  * NVIDIA Corporation <www.nvidia.com>
  *
  * See file CREDITS for list of people who contributed to this
@@ -28,7 +28,8 @@
 
 #if defined(CONFIG_TEGRA20)
 #define NVBL_PLLP_KHZ	(216000)
-#elif defined(CONFIG_TEGRA30) || defined(CONFIG_TEGRA114)
+#elif defined(CONFIG_TEGRA30) || defined(CONFIG_TEGRA114) || \
+	defined(CONFIG_TEGRA124)
 #define NVBL_PLLP_KHZ	(408000)
 #else
 #error "Unknown Tegra chip!"
@@ -82,3 +83,4 @@ int tegra_get_chip(void);
 int tegra_get_sku_info(void);
 int tegra_get_chip_sku(void);
 void adjust_pllp_out_freqs(void);
+void pmic_enable_cpu_vdd(void);

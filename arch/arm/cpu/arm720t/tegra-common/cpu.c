@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2012, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2013, NVIDIA CORPORATION.  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -101,6 +101,19 @@ struct clk_pll_table tegra_pll_x_table[TEGRA_SOC_CNT][CLOCK_OSC_FREQ_COUNT] = {
 	 { 116, 1, 1, 8},	/* actual: 696.0 MHz */
 	 { 108, 2, 1, 8},	/* actual: 702.0 MHz */
 	},
+
+	/* T124: 1.9 GHz    */
+	/*
+	 * Field Bits Width
+	 *  n    15:8   8
+	 *  m     7:0   8
+	 *  p    23:20  4
+	 */
+	{{ 108, 1, 1, 8},	/* actual: 702.0 MHz */
+	 { 73, 1, 1, 4},	/* actual: 700.8 MHz */
+	 { 116, 1, 1, 8},	/* actual: 696.0 MHz */
+	 { 108, 2, 1, 8},	/* actual: 702.0 MHz */
+	},
 };
 
 void adjust_pllp_out_freqs(void)
@@ -137,6 +150,18 @@ int pllx_set_rate(struct clk_pll_simple *pll , u32 divn, u32 divm,
 	if (check_mnp_divisors(divn, divm, divp) == -1)
 		printf("pllx_set_rate: PLLX divisor out of range!\n");
 
+#if defined(CONFIG_TEGRA124)
+	struct clk_rst_ctlr *clkrst = (struct clk_rst_ctlr *)NV_PA_CLK_RST_BASE;
+
+	/* Disable IDDQ */
+	reg = readl(&clkrst->crc_pllx_misc3);
+	reg &= ~PLLX_IDDQ_MASK;
+	writel(reg, &clkrst->crc_pllx_misc3);
+	udelay(2);
+	debug("%s: IDDQ: PLLX IDDQ = 0x%08X\n", __func__,
+	      readl(&clkrst->crc_pllx_misc3));
+#endif	/* T124 */
+
 	/* Set BYPASS, m, n and p to PLLX_BASE */
 	reg = PLL_BYPASS_MASK | (divm << PLL_DIVM_SHIFT);
 	reg |= ((divn << PLL_DIVN_SHIFT) | (divp << PLL_DIVP_SHIFT));
@@ -145,23 +170,28 @@ int pllx_set_rate(struct clk_pll_simple *pll , u32 divn, u32 divm,
 	/* Set cpcon to PLLX_MISC */
 	reg = (cpcon << PLL_CPCON_SHIFT);
 
-	/* Set dccon to PLLX_MISC if freq > 600MHz */
+	/* Set dccon to PLLX_MISC if freq > 600MHz - still needed for T124? */
 	if (divn > 600)
 		reg |= (1 << PLL_DCCON_SHIFT);
 	writel(reg, &pll->pll_misc);
 
-	/* Enable PLLX */
-	reg = readl(&pll->pll_base);
-	reg |= PLL_ENABLE_MASK;
-
 	/* Disable BYPASS */
+	reg = readl(&pll->pll_base);
 	reg &= ~PLL_BYPASS_MASK;
 	writel(reg, &pll->pll_base);
+	debug(" pllx_set_rate: base = 0x%08X\n", reg);
 
 	/* Set lock_enable to PLLX_MISC */
 	reg = readl(&pll->pll_misc);
 	reg |= PLL_LOCK_ENABLE_MASK;
 	writel(reg, &pll->pll_misc);
+	debug(" pllx_set_rate: misc = 0x%08X\n", reg);
+
+	/* Enable PLLX last, as per JZ */
+	reg = readl(&pll->pll_base);
+	reg |= PLL_ENABLE_MASK;
+	writel(reg, &pll->pll_base);
+	debug(" pllx_set_rate: base final = 0x%08X\n", reg);
 
 	return 0;
 }
@@ -196,7 +226,7 @@ void init_pllx(void)
 	sel = &tegra_pll_x_table[chip_sku][osc];
 	pllx_set_rate(pll, sel->n, sel->m, sel->p, sel->cpcon);
 
-	/* adjust PLLP_out1-4 on T3x/T114 */
+	/* adjust PLLP_out1-4 on T3x/T1x4 */
 	if (soc_type >= CHIPID_TEGRA30) {
 		debug("  init_pllx: adjusting PLLP out freqs\n");
 		adjust_pllp_out_freqs();
@@ -339,7 +369,8 @@ void clock_enable_coresight(void)
 	 * 144MHz for PLLP base 216MHz and 204MHz for PLLP base 408MHz
 	 */
 	soc_type = tegra_get_chip();
-	if (soc_type == CHIPID_TEGRA30 || soc_type == CHIPID_TEGRA114)
+	if (soc_type == CHIPID_TEGRA30 || soc_type == CHIPID_TEGRA114 || \
+	    soc_type == CHIPID_TEGRA124)
 		src = CLK_DIVIDER(NVBL_PLLP_KHZ, 204000);
 	else if (soc_type == CHIPID_TEGRA20)
 		src = CLK_DIVIDER(NVBL_PLLP_KHZ, 144000);
