@@ -353,6 +353,7 @@ int check_mnp_divisors(u32 divn, u32 divm, u32 divp);
  *  CHIPID_TEGRA20      0x20
  *  CHIPID_TEGRA30      0x30
  *  CHIPID_TEGRA114     0x35
+ *  CHIPID_TEGRA124     0x40
  */
 int tegra_get_chip_type(void);
 

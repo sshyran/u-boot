@@ -85,6 +85,7 @@ enum {
 	SKU_ID_T40T		= 0x4,
 	SKU_ID_T40S		= 0x5,
 	SKU_ID_AP40		= 0x6,
+	SKU_ID_T124_ENG		= 0x00, /* unknown value, unfused */
 };
 
 /*
@@ -98,6 +99,7 @@ enum {
 	TEGRA_SOC_T25,
 	TEGRA_SOC_T30,
 	TEGRA_SOC_T114,
+	TEGRA_SOC_T124,
 
 	TEGRA_SOC_CNT,
 	TEGRA_SOC_UNKNOWN	= -1,
