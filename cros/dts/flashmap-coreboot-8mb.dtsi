@@ -54,11 +54,11 @@
 			reg = <0x00180000 0x00680000>;
 		};
 
-		/* ---- Section: Rewritable VPD 4 KB ---- */
+		/* ---- Section: Rewritable VPD 16 KB ---- */
 		rw-vpd {
 			label = "rw-vpd";
 			/* Alignment: 4k (for updating) */
-			reg = <0x00180000 0x00001000>;
+			reg = <0x00180000 0x00004000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
@@ -70,7 +70,7 @@
 		 */
 		rw-unused {
 			label = "rw-unused";
-			reg = <0x00181000 0x00067000>;
+			reg = <0x00184000 0x00064000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};

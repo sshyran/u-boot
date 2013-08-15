@@ -218,23 +218,11 @@
 			wipe-value = [00];
 		};
 
-		/* ---- Section: Rewritable VPD 8 KB ---- */
+		/* ---- Section: Rewritable VPD 16 KB ---- */
 		rw-vpd {
 			label = "rw-vpd";
 			/* Alignment: 4k (for updating) */
-			reg = <0x003fc000 0x00002000>;
-			type = "wiped";
-			wipe-value = [ff];
-		};
-
-		/*
-		 * This space is currently unused and reserved for future
-		 * extensions. cros_bundle_firmware dislikes holes in the
-		 * FMAP, so we cover all empty space here.
-		 */
-		rw-unused {
-			label = "rw-unused";
-			reg = <0x003fe000 0x00002000>;
+			reg = <0x003fc000 0x00004000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
