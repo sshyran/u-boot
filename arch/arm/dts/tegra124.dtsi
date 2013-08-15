@@ -1,0 +1,328 @@
+/include/ "skeleton.dtsi"
+
+/ {
+	compatible = "nvidia,tegra124";
+
+	tegra_car: clock {
+		compatible = "nvidia,tegra114-car";
+		reg = <0x60006000 0x1000>;
+		#clock-cells = <1>;
+	};
+
+	apbdma: dma {
+		compatible = "nvidia,tegra114-apbdma", "nvidia,tegra30-apbdma";
+		reg = <0x6000a000 0x1400>;
+		interrupts = <0 104 0x04
+			      0 105 0x04
+			      0 106 0x04
+			      0 107 0x04
+			      0 108 0x04
+			      0 109 0x04
+			      0 110 0x04
+			      0 111 0x04
+			      0 112 0x04
+			      0 113 0x04
+			      0 114 0x04
+			      0 115 0x04
+			      0 116 0x04
+			      0 117 0x04
+			      0 118 0x04
+			      0 119 0x04
+			      0 128 0x04
+			      0 129 0x04
+			      0 130 0x04
+			      0 131 0x04
+			      0 132 0x04
+			      0 133 0x04
+			      0 134 0x04
+			      0 135 0x04
+			      0 136 0x04
+			      0 137 0x04
+			      0 138 0x04
+			      0 139 0x04
+			      0 140 0x04
+			      0 141 0x04
+			      0 142 0x04
+			      0 143 0x04>;
+	};
+
+	gpio: gpio {
+		compatible = "nvidia,tegra114-gpio";
+		reg = <0x6000d000 0x1000>;
+		interrupts = <0 32 0x04
+			      0 33 0x04
+			      0 34 0x04
+			      0 35 0x04
+			      0 55 0x04
+			      0 87 0x04
+			      0 89 0x04
+			      0 125 0x04>;
+		#gpio-cells = <2>;
+		gpio-controller;
+		#interrupt-cells = <2>;
+		interrupt-controller;
+	};
+
+	i2c@7000c000 {
+		compatible = "nvidia,tegra114-i2c";
+		reg = <0x7000c000 0x100>;
+		interrupts = <0 38 0x04>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		clocks = <&tegra_car 12>;
+		status = "disabled";
+	};
+
+	i2c@7000c400 {
+		compatible = "nvidia,tegra114-i2c";
+		reg = <0x7000c400 0x100>;
+		interrupts = <0 84 0x04>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		clocks = <&tegra_car 54>;
+		status = "disabled";
+	};
+
+	i2c@7000c500 {
+		compatible = "nvidia,tegra114-i2c";
+		reg = <0x7000c500 0x100>;
+		interrupts = <0 92 0x04>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		clocks = <&tegra_car 67>;
+		status = "disabled";
+	};
+
+	i2c@7000c700 {
+		compatible = "nvidia,tegra114-i2c";
+		reg = <0x7000c700 0x100>;
+		interrupts = <0 120 0x04>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		clocks = <&tegra_car 103>;
+		status = "disabled";
+	};
+
+	i2c@7000d000 {
+		compatible = "nvidia,tegra114-i2c";
+		reg = <0x7000d000 0x100>;
+		interrupts = <0 53 0x04>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		clocks = <&tegra_car 47>;
+		status = "disabled";
+	};
+
+	i2c@7000d100 {
+		compatible = "nvidia,tegra114-i2c";
+		reg = <0x7000d100 0x100>;
+		interrupts = <0 53 0x04>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		clocks = <&tegra_car 47>;
+		status = "disabled";
+        };
+
+	spi@7000d400 {
+		compatible = "nvidia,tegra114-spi";
+		reg = <0x7000d400 0x200>;
+		interrupts = <0 59 0x04>;
+		nvidia,dma-request-selector = <&apbdma 15>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "disabled";
+		clocks = <&tegra_car 41>;
+	};
+
+	spi@7000d600 {
+		compatible = "nvidia,tegra114-spi";
+		reg = <0x7000d600 0x200>;
+		interrupts = <0 82 0x04>;
+		nvidia,dma-request-selector = <&apbdma 16>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "disabled";
+		clocks = <&tegra_car 44>;
+	};
+
+	spi@7000d800 {
+		compatible = "nvidia,tegra114-spi";
+		reg = <0x7000d800 0x200>;
+		interrupts = <0 83 0x04>;
+		nvidia,dma-request-selector = <&apbdma 17>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "disabled";
+		clocks = <&tegra_car 46>;
+	};
+
+	spi@7000da00 {
+		compatible = "nvidia,tegra114-spi";
+		reg = <0x7000da00 0x200>;
+		interrupts = <0 93 0x04>;
+		nvidia,dma-request-selector = <&apbdma 18>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "disabled";
+		clocks = <&tegra_car 68>;
+	};
+
+	spi@7000dc00 {
+		compatible = "nvidia,tegra114-spi";
+		reg = <0x7000dc00 0x200>;
+		interrupts = <0 94 0x04>;
+		nvidia,dma-request-selector = <&apbdma 27>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "disabled";
+		clocks = <&tegra_car 104>;
+	};
+
+	spi@7000de00 {
+		compatible = "nvidia,tegra114-spi";
+		reg = <0x7000de00 0x200>;
+		interrupts = <0 79 0x04>;
+		nvidia,dma-request-selector = <&apbdma 28>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "disabled";
+		clocks = <&tegra_car 105>;
+	};
+
+	sdhci@700b0000 {
+		compatible = "nvidia,tegra30-sdhci";
+		reg = <0x700b0000 0x200>;
+		interrupts = <0 14 0x04>;
+		clocks = <&tegra_car 14>;
+		status = "disable";
+	};
+
+	sdhci@700b0200 {
+		compatible = "nvidia,tegra30-sdhci";
+		reg = <0x700b0200 0x200>;
+		interrupts = <0 15 0x04>;
+		clocks = <&tegra_car 9>;
+		status = "disable";
+	};
+
+	sdhci@700b0400 {
+		compatible = "nvidia,tegra30-sdhci";
+		reg = <0x700b0400 0x200>;
+		interrupts = <0 19 0x04>;
+		clocks = <&tegra_car 69>;
+		status = "disable";
+	};
+
+	sdhci@700b0600 {
+		compatible = "nvidia,tegra30-sdhci";
+		reg = <0x700b0600 0x200>;
+		interrupts = <0 31 0x04>;
+		clocks = <&tegra_car 15>;
+		status = "disable";
+	};
+
+/* This table has USB timing parameters for each Oscillator frequency we
+ * support. There are four sets of values:
+ *
+ * 1. PLLU configuration information (reference clock is osc/clk_m and
+ * PLLU-FOs are fixed at 12MHz/60MHz/480MHz).
+ * Reference frequency MHZ 12.0  13.0 19.2  26.0
+ * ----------------------------------------------------
+ *      DIVN              960   960    200   960
+ *      DIVM               12    13      4    26
+ *      CPCON              12    12      3    12
+ *      LFCON               2     2      2     2
+ *
+ * 2. PLL CONFIGURATION & PARAMETERS for different clock generators:
+ * Reference frequency MHZ 12.0  13.0  19.2  26.0
+ * ----------------------------------------------------
+ * PLLU_ENABLE_DLY_COUNT   02     2     3     4
+ * PLLU_STABLE_COUNT       47    51    75   102
+ * PLL_ACTIVE_DLY_COUNT    08     9    12     9
+ * XTAL_FREQ_COUNT        118   127   188   254
+ *
+ * 3. Debounce values IdDig, Avalid, Bvalid, VbusValid, VbusWakeUp, and
+ * SessEnd. Each of these signals have their own debouncer and for each of
+ * those one out of two debouncing times can be chosen (BIAS_DEBOUNCE_A or
+ * BIAS_DEBOUNCE_B).
+ *
+ * The values of DEBOUNCE_A and DEBOUNCE_B are calculated as follows:
+ *    0xffff -> No debouncing at all
+ *    <n> ms = <n> * 1000 / (1/19.2MHz) / 4
+ *
+ * So to program a 10 ms debounce for BIAS_DEBOUNCE_A, we have:
+ * BIAS_DEBOUNCE_A[15:0] = 10 * 1000 * 19.2 / 4  = 48000 = 0xBB80
+ *
+ * We need to use only DebounceA for BOOTROM. We don't need the DebounceB
+ * values, so we can keep those to default.
+ *
+ * 4. The 20 microsecond delay after bias cell operation.
+ *    UTMIP_BIAS_PAD_TRK_COUNT
+ *
+ * enum {
+ *	PARAM_DIVN,                     // PLL FEEDBACK DIVIDER
+ *	PARAM_DIVM,                     // PLL INPUT DIVIDER
+ *	PARAM_DIVP,                     // POST DIVIDER (2^N)
+ *	PARAM_CPCON,                    // BASE PLLC CHARGE Pump setup ctrl
+ *	PARAM_LFCON,                    // BASE PLLC LOOP FILter setup ctrl
+ *	PARAM_ENABLE_DELAY_COUNT,       // PLL-U Enable Delay Count
+ *	PARAM_STABLE_COUNT,             // PLL-U STABLE count
+ *	PARAM_ACTIVE_DELAY_COUNT,       // PLL-U Active delay count
+ *	PARAM_XTAL_FREQ_COUNT,          // PLL-U XTAL frequency count
+ *	PARAM_DEBOUNCE_A_TIME,          // 10MS DELAY for BIAS_DEBOUNCE_A
+ *	PARAM_BIAS_TIME,                // 20US DELAY AFter bias cell op
+ *					// UTMIP_BIAS_PAD_TRK_COUNT
+ *};
+ */
+	usbparams@0 {
+		compatible = "nvidia,usbparams";
+		osc-frequency = <13000000>;
+		/* DivN, DivM, DivP, CPCON, LFCON, Delays      Debounce, Bias */
+		params = <0x3c0 0x0d 0x00 0xc 2  0x02 0x33 0x09 0x7f  0x7ef4 6>;
+	};
+
+	usbparams@1 {
+		compatible = "nvidia,usbparams";
+		osc-frequency = <19200000>;
+		params = <0x0c8 0x04 0x00 0x3 2  0x03 0x4b 0x0c 0xbc  0xbb80 8>;
+	};
+
+	usbparams@2 {
+		compatible = "nvidia,usbparams";
+		osc-frequency = <12000000>;
+		params = <0x3c0 0x0c 0x00 0xc 2  0x02 0x2f 0x08 0x76  0x7530 5>;
+	};
+
+	usbparams@3 {
+		compatible = "nvidia,usbparams";
+		osc-frequency = <26000000>;
+		params = <0x3c0 0x1a 0x00 0xc 2  0x04 0x66 0x09 0xfe  0xfde8 0xb>;
+	};
+
+	usb@7d000000 {
+		compatible = "nvidia,tegra114-ehci", "nvidia,tegra30-ehci";
+		reg = <0x7d000000 0x4000>;
+		interrupts = < 52 >;
+		phy_type = "utmi";
+		clocks = <&tegra_car 22>;	/* PERIPH_ID_USBD */
+		status = "disabled";
+	};
+
+	usb@7d004000 {
+		compatible = "nvidia,tegra114-ehci", "nvidia,tegra30-ehci";
+		reg = <0x7d004000 0x4000>;
+		interrupts = < 53 >;
+		phy_type = "hsic";
+		clocks = <&tegra_car 58>;	/* PERIPH_ID_USB2 */
+		status = "disabled";
+	};
+
+	usb@7d008000 {
+		compatible = "nvidia,tegra114-ehci", "nvidia,tegra30-ehci";
+		reg = <0x7d008000 0x4000>;
+		interrupts = < 129 >;
+		phy_type = "utmi";
+		clocks = <&tegra_car 59>;	/* PERIPH_ID_USB3 */
+		status = "disabled";
+	};
+};
