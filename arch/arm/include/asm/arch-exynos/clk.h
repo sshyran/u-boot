@@ -33,12 +33,6 @@
 #define CPLL	8
 #define DPLL	9
 
-enum pll_src_bit {
-	EXYNOS_SRC_MPLL = 6,
-	EXYNOS_SRC_EPLL,
-	EXYNOS_SRC_VPLL,
-};
-
 unsigned long get_pll_clk(int pllreg);
 unsigned long get_arm_clk(void);
 unsigned long get_i2c_clk(void);
@@ -61,6 +55,25 @@ int set_spi_clk(int periph_id, unsigned int rate);
  *
  * @return frequency of the peripheral clk
  */
-unsigned long clock_get_periph_rate(int peripheral);
+long clock_get_periph_rate(int peripheral);
 
+/**
+ * set the clk frequency rate of the required peripheral
+ *
+ * @param peripheral	Peripheral id
+ * @param rate		frequency to be set
+ *
+ * @return 0 if success else -1
+ */
+int clock_set_periph_rate(int periph_id, unsigned long rate);
+
+/**
+ * set the clk source mux value of the required peripheral
+ *
+ * @param peripheral	Peripheral id
+ * @param src		source to be set
+ *
+ * @return 0 if success else -1
+ */
+int clock_set_periph_source(int periph_id, int src);
 #endif
