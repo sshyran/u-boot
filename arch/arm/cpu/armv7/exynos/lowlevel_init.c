@@ -26,13 +26,13 @@
 #include <config.h>
 #include <asm/arch/cpu.h>
 #include <asm/arch/dmc.h>
-#include <asm/arch/power.h>
-#include <asm/arch/tzpc.h>
+#include <asm/arch/mct.h>
 #include <asm/arch/periph.h>
 #include <asm/arch/pinmux.h>
 #include <asm/arch/power.h>
 #include <asm/arch/setup.h>
 #include <asm/arch/system.h>
+#include <asm/arch/tzpc.h>
 
 #ifdef CONFIG_EXYNOS5420
 /*
@@ -231,6 +231,16 @@ int lowlevel_select_actions(void)
 	return actions;
 }
 
+static void mct_init(void)
+{
+	struct exynos5_mct *mct = (struct exynos5_mct *)samsung_get_base_mct();
+
+	writel(0, &mct->mct_cfg);
+	writel(0, &mct->g_cnt_l);
+	writel(0, &mct->g_cnt_u);
+	writel(MCT_G_TCON_TIMER_ENABLE, &mct->g_tcon);
+}
+
 void lowlevel_do_init(int actions)
 {
 	/* Do this since it ensures that power remains up */
@@ -244,6 +254,7 @@ void lowlevel_do_init(int actions)
 		secondary_cores_configure();
 #endif
 		system_clock_init();
+		mct_init();
 	}
 
 #ifdef CONFIG_SPL_SERIAL_SUPPORT
