@@ -735,9 +735,14 @@ static int run_main_loop(void)
 }
 
 #ifdef CONFIG_ELOG
-static int add_elog_boot_event(void)
+static int elog_init_wrapper(void)
 {
-	elog_add_event_dword(ELOG_TYPE_BOOT, 0);
+	if (elog_init() == 0)
+		elog_add_event_dword(ELOG_TYPE_BOOT, 0);
+	/*
+	 * Always claim success. If it didn't work then we just won't have
+	 * eventlog this boot.
+	 */
 	return 0;
 }
 #endif
@@ -894,8 +899,7 @@ static const init_fnc_t init_sequence_r[] = {
 	timer_init,		/* initialize timer */
 #endif
 #ifdef CONFIG_ELOG
-	elog_init,
-	add_elog_boot_event,
+	elog_init_wrapper,
 #endif
 #if defined(CONFIG_STATUS_LED) && defined(STATUS_LED_BOOT)
 	initr_status_led,
