@@ -29,7 +29,7 @@
 #include <asm/arch/clk_rst.h>
 #include <asm/arch-tegra20/tegra20_sflash.h>
 #include <asm/arch-tegra20/tegra20_slink.h>
-#include <asm/arch-tegra114/tegra114_spi.h>
+#include <asm/arch-tegra/tegra1x4_spi.h>
 #include <spi.h>
 #include <fdtdec.h>
 
