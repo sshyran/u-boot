@@ -572,11 +572,12 @@ int clock_set_periph_rate(int periph_id, unsigned long rate)
 		div = div - 1;
 		pre_div = pre_div - 1;
 	} else {
-		sclk = clock_get_periph_rate(periph_id);
-		div = DIV_ROUND_UP(sclk, rate);
+		sclk = get_src_clk(periph_id);
+
+		div = DIV_ROUND_UP(sclk, rate) - 1;
 		if (bit_info->prediv_offset >= 0) {
 			sub_clk = sclk / (div + 1);
-			pre_div =  DIV_ROUND_UP(sub_clk, rate);
+			pre_div = DIV_ROUND_UP(sub_clk, rate) - 1;
 		}
 	}
 
