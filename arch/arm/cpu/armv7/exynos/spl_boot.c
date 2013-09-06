@@ -92,6 +92,30 @@ static int config_branch_prediction(int set_cr_z)
 	return cr & CR_Z;
 }
 
+/*
+ * Prepare a `fake' dram description so that the mmu can be set up, then
+ * enable dcache.
+ */
+static void spl_enable_dcache(void)
+{
+	bd_t bd;
+
+	memset(&bd, '\0', sizeof(bd));
+
+	/* First bank is IRAM */
+	bd.bi_dram[0].start = CONFIG_PHY_IRAM_BASE;
+	bd.bi_dram[0].size = CONFIG_IRAM_TOP - CONFIG_PHY_IRAM_BASE;
+
+	/* Second is all of DRAM - 2GB for now */
+	bd.bi_dram[1].start = CONFIG_SYS_SDRAM_BASE;
+	bd.bi_dram[1].size = 2UL << 30;
+
+	gd->bd = &bd;
+	gd->arch.tlb_addr = CONFIG_PHY_IRAM_TLB_BASE;
+	dcache_enable();
+	gd->bd = NULL;
+}
+
 #if defined(CONFIG_ELOG) || defined(CONFIG_EXYNOS_FAST_SPI_BOOT)
 /**
  * Dedicated function for receiving data over SPI in 4 byte chunnks.
@@ -565,6 +589,14 @@ static int check_and_set_wp(void)
 }
 #endif
 
+/*
+ * Based on boot mode determine if dcache should be enabled.
+ */
+static int spl_use_dcache(enum boot_mode bootmode)
+{
+	return (bootmode != BOOT_MODE_USB);
+}
+
 enum boot_mode copy_uboot_to_ram(ulong uboot_addr, ulong uboot_size,
 				 enum boot_mode bootmode, ulong uboot_offset,
 				 bool enable_debug)
@@ -587,6 +619,9 @@ enum boot_mode copy_uboot_to_ram(ulong uboot_addr, ulong uboot_size,
 		else
 			bootmode = readl(EXYNOS5_POWER_BASE) & OM_STAT;
 	}
+
+	if (spl_use_dcache(bootmode))
+		spl_enable_dcache();
 
 	if (enable_debug)
 		puts("\n");
@@ -663,6 +698,10 @@ enum boot_mode copy_uboot_to_ram(ulong uboot_addr, ulong uboot_size,
 		hang();
 		break;
 	}
+
+	if (spl_use_dcache(bootmode))
+		flush_dcache_range(CONFIG_SYS_TEXT_BASE,
+				   CONFIG_SYS_TEXT_BASE + uboot_size);
 	if (enable_debug) {
 		printf("loaded from offset %lx to %lx, size %lx", uboot_offset,
 		       uboot_addr, uboot_size);

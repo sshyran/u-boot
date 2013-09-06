@@ -411,6 +411,11 @@
 /* iRAM */
 #define CONFIG_PHY_IRAM_BASE		0x02020000
 
+/*
+ * When dcache is enabled by SPL, this is where the TLB is stored, 16K
+ * starting at this offset.
+ */
+#define CONFIG_PHY_IRAM_TLB_BASE	(CONFIG_PHY_IRAM_BASE + 0xc000)
 #define CONFIG_EXYNOS_RELOCATE_CODE_SIZE	0x1000
 #define CONFIG_EXYNOS_RELOCATE_CODE_BASE	(CONFIG_IRAM_TOP - \
 		CONFIG_EXYNOS_RELOCATE_CODE_SIZE)
