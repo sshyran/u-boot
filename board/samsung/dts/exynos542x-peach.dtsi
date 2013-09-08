@@ -107,6 +107,7 @@
 		 */
 		u-boot-memory,efs = "/iram";
 		u-boot-offset,efs = <0xc000 0x44000>;
+		lazy-init = <1>;
 	};
 
 	chromeos-config {
