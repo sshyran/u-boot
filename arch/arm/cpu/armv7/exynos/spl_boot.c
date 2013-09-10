@@ -699,9 +699,12 @@ enum boot_mode copy_uboot_to_ram(ulong uboot_addr, ulong uboot_size,
 		break;
 	}
 
-	if (spl_use_dcache(bootmode))
+	if (spl_use_dcache(bootmode)) {
 		flush_dcache_range(CONFIG_SYS_TEXT_BASE,
 				   CONFIG_SYS_TEXT_BASE + uboot_size);
+		invalidate_icache_all();
+	}
+
 	if (enable_debug) {
 		printf("loaded from offset %lx to %lx, size %lx", uboot_offset,
 		       uboot_addr, uboot_size);
