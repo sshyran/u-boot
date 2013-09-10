@@ -144,7 +144,7 @@ void t1x4_init_clocks(void)
 	writel(val, &pmc->pmc_osc_edpd_over);
 
 	/* Set HOLD_CKE_LOW_EN to 1 */
-	setbits_le32(NV_PA_PMC_BASE + PMC_CNTRL2, HOLD_CKE_LOW_EN);
+	setbits_le32(&pmc->pmc_cntrl2, HOLD_CKE_LOW_EN);
 
 	debug("Setting up PLLX\n");
 	init_pllx();
