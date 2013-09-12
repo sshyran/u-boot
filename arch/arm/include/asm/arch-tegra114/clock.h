@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2013, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2013, NVIDIA CORPORATION.  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -19,10 +19,6 @@
 #ifndef _TEGRA114_CLOCK_H_
 #define _TEGRA114_CLOCK_H_
 
-#include <asm/arch-tegra/clock.h>
-
-/* CLK_RST_CONTROLLER_OSC_CTRL_0 */
-#define OSC_FREQ_SHIFT          28
-#define OSC_FREQ_MASK           (0xF << OSC_FREQ_SHIFT)
+#include <asm/arch-tegra/tegra1x4-clock.h>
 
 #endif	/* _TEGRA114_CLOCK_H_ */
