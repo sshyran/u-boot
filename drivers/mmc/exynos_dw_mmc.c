@@ -80,19 +80,11 @@ int exynos_dwmci_add_port(int index, u32 regbase, int bus_width,
 	struct dwmci_host *host = NULL;
 	int ret;
 	unsigned long freq;
+	unsigned int ratio;
 	host = malloc(sizeof(struct dwmci_host));
 	if (!host) {
 		printf("dwmci_host malloc fail!\n");
 		return 1;
-	}
-
-	/* request mmc clock vlaue of 52MHz.  */
-	freq = 52000000;
-	/* set the clock rate for mmc */
-	ret = clock_set_periph_rate(PERIPH_ID_SDMMC0 + index, freq);
-	if (ret < 0) {
-		debug("Clock rate not set\n");
-		return -1;
 	}
 
 	host->name = "EXYNOS DWMMC";
@@ -106,6 +98,17 @@ int exynos_dwmci_add_port(int index, u32 regbase, int bus_width,
 			host->clksel_val = DWMMC_MMC0_CLKSEL_VAL;
 		if (2 == index)
 			host->clksel_val = DWMMC_MMC2_CLKSEL_VAL;
+	}
+
+	/* request mmc clock vlaue of 52MHz. */
+	ratio = ((host->clksel_val >> DWMCI_DIVRATIO_BIT)
+			& DWMCI_DIVRATIO_MASK) + 1;
+	freq = 52000000 * ratio;
+	/* set the clock rate for mmc */
+	ret = clock_set_periph_rate(PERIPH_ID_SDMMC0 + index, freq);
+	if (ret < 0) {
+		debug("Clock rate not set\n");
+		return -1;
 	}
 
 	host->clksel = exynos_dwmci_clksel;
