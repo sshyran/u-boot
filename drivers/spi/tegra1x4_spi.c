@@ -24,6 +24,7 @@
 #include <common.h>
 #include <malloc.h>
 #include <asm/io.h>
+#include <asm/errno.h>
 #include <asm/gpio.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/clk_rst.h>
@@ -85,6 +86,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define SPI_TIMEOUT		1000
 #define TEGRA_SPI_MAX_FREQ	52000000
+#define SPI_REPLY_TIMEOUT_MS	100
 
 struct spi_regs {
 	u32 command1;	/* 000:SPI_COMMAND1 register */
@@ -155,13 +157,12 @@ struct spi_slave *tegra114_spi_setup_slave(unsigned int bus, unsigned int cs,
 		return NULL;
 	}
 
-	spi = malloc(sizeof(struct tegra_spi_slave));
+	spi = spi_alloc_slave(struct tegra_spi_slave, bus, cs);
 	if (!spi) {
 		printf("SPI error: malloc of SPI structure failed\n");
 		return NULL;
 	}
-	spi->slave.bus = bus;
-	spi->slave.cs = cs;
+
 	spi->ctrl = &spi_ctrls[bus];
 	if (!spi->ctrl) {
 		printf("SPI error: could not find controller for bus %d\n",
@@ -176,6 +177,19 @@ struct spi_slave *tegra114_spi_setup_slave(unsigned int bus, unsigned int cs,
 	}
 	spi->ctrl->mode = mode;
 	spi->last_transaction_us = timer_get_us();
+
+	/* Change SPI clock to correct frequency, PLLP_OUT0 source */
+	clock_start_periph_pll(spi->ctrl->periph_id, CLOCK_ID_PERIPH,
+			       spi->ctrl->freq);
+
+	/*
+	 * The above set clock routine resets SPI controller, which causes CS
+	 * to be active for a short duration while setting clock.
+	 * Because of this CS active but no data transaction, EC is complaining
+	 * (outputting to console) and not able to receive next CS immediately.
+	 * Delay a little bit.
+	 */
+	udelay(100);
 
 	return &spi->slave;
 }
@@ -233,10 +247,6 @@ int tegra114_spi_claim_bus(struct spi_slave *slave)
 {
 	struct tegra_spi_slave *spi = to_tegra_spi(slave);
 	struct spi_regs *regs = spi->ctrl->regs;
-
-	/* Change SPI clock to correct frequency, PLLP_OUT0 source */
-	clock_start_periph_pll(spi->ctrl->periph_id, CLOCK_ID_PERIPH,
-			       spi->ctrl->freq);
 
 	/* Clear stale status here */
 	setbits_le32(&regs->fifo_status,
@@ -303,34 +313,120 @@ void spi_set_deactivate_delay_us(struct spi_slave *slave, int delay_us)
 	      __func__, spi->ctrl->deactivate_delay_us);
 }
 
+static int spi_check_fifo_error(int fifo_status)
+{
+	int ret = 0;
+
+	if (fifo_status & SPI_FIFO_STS_ERR) {
+		ret = fifo_status;
+		debug("%s: got a fifo error: ", __func__);
+		if (fifo_status & SPI_FIFO_STS_TX_FIFO_OVF)
+			debug("tx FIFO overflow ");
+		if (fifo_status & SPI_FIFO_STS_TX_FIFO_UNR)
+			debug("tx FIFO underrun ");
+		if (fifo_status & SPI_FIFO_STS_RX_FIFO_OVF)
+			debug("rx FIFO overflow ");
+		if (fifo_status & SPI_FIFO_STS_RX_FIFO_UNR)
+			debug("rx FIFO underrun ");
+		if (fifo_status & SPI_FIFO_STS_TX_FIFO_FULL)
+			debug("tx FIFO full ");
+		if (fifo_status & SPI_FIFO_STS_TX_FIFO_EMPTY)
+			debug("tx FIFO empty ");
+		if (fifo_status & SPI_FIFO_STS_RX_FIFO_FULL)
+			debug("rx FIFO full ");
+		if (fifo_status & SPI_FIFO_STS_RX_FIFO_EMPTY)
+			debug("rx FIFO empty ");
+		debug("\n");
+	} else {
+		/* no error, but fifo is still empty, set as an error */
+		if (fifo_status & SPI_FIFO_STS_RX_FIFO_EMPTY) {
+			ret = SPI_FIFO_STS_RX_FIFO_EMPTY;
+			debug("%s: rx FIFO should not be empty\n", __func__);
+		}
+	}
+
+	return ret;
+}
+
+/**
+ * Output number of 'bytes' of data from dout to SPI interface.
+ *
+ * If out_bytes is 0 or if dout is NULL, data of 0 is output to SPI interface.
+ *
+ * @param regs		pointer to SPI register structure
+ * @param dout		data is output from this pointer
+ * @param bytes		# of bytes to send, must be <= 4
+ * @param out_bytes	a counter to keep track # of bytes to output from dout;
+ *			will be updated by this routine if data are outputted
+ *			from dout
+ * @return # of bytes are output from dout.
+ */
+static int spi_out_data(struct spi_regs *regs, const u8 *dout, int bytes,
+			int *out_bytes)
+{
+	int tmpdout;
+	int dout_len;
+
+	if (dout && (*out_bytes > 0)) {
+		memcpy((void *)&tmpdout, (void *)dout, bytes);
+		*out_bytes -= bytes;
+		dout_len = bytes;
+	} else {
+		tmpdout = 0;
+		dout_len = 0;
+	}
+
+	clrsetbits_le32(&regs->command1,
+			SPI_CMD1_BIT_LEN_MASK << SPI_CMD1_BIT_LEN_SHIFT,
+			(bytes * 8 - 1) << SPI_CMD1_BIT_LEN_SHIFT);
+	writel(tmpdout, &regs->tx_fifo);
+	setbits_le32(&regs->command1, SPI_CMD1_GO);
+
+	return dout_len;
+}
+
 int tegra114_spi_xfer(struct spi_slave *slave, unsigned int bitlen,
 		const void *data_out, void *data_in, unsigned long flags)
 {
 	struct tegra_spi_slave *spi = to_tegra_spi(slave);
 	struct spi_regs *regs = spi->ctrl->regs;
-	u32 reg, tmpdout, tmpdin = 0;
+	u32 tmpdin = 0;
 	const u8 *dout = data_out;
 	u8 *din = data_in;
-	int num_bytes;
+	int num_bytes, out_bytes;
 	int ret;
+	int found = 1;
+	u32 max_timeout_ms = 0;
+	u32 start_time = 0;
+	unsigned header = slave->frame_header;
 
 	debug("%s: slave %u:%u dout %p din %p bitlen %u\n",
 	      __func__, slave->bus, slave->cs, dout, din, bitlen);
 	if (bitlen % 8)
 		return -1;
 	num_bytes = bitlen / 8;
+	out_bytes = num_bytes;
+
+	if (slave->half_duplex) {
+		found = 0;
+		max_timeout_ms = slave->max_timeout_ms;
+		if (max_timeout_ms == 0)
+			max_timeout_ms = SPI_REPLY_TIMEOUT_MS;
+
+		start_time = get_timer(0);
+	}
 
 	ret = 0;
 
 	/* clear all error status bits */
-	reg = readl(&regs->fifo_status);
-	writel(reg, &regs->fifo_status);
+	writel(readl(&regs->fifo_status), &regs->fifo_status);
 
 	/* clear ready bit */
 	setbits_le32(&regs->xfer_status, SPI_XFER_STS_RDY);
 
-	clrsetbits_le32(&regs->command1, SPI_CMD1_CS_SW_VAL,
-			SPI_CMD1_RX_EN | SPI_CMD1_TX_EN | SPI_CMD1_LSBY_FE |
+	clrsetbits_le32(&regs->command1,
+			SPI_CMD1_LSBI_FE | SPI_CMD1_LSBY_FE,
+			SPI_CMD1_RX_EN | SPI_CMD1_TX_EN |
 			(slave->cs << SPI_CMD1_CS_SEL_SHIFT));
 
 	/* set xfer size to 1 block (32 bits) */
@@ -342,96 +438,84 @@ int tegra114_spi_xfer(struct spi_slave *slave, unsigned int bitlen,
 	/* handle data in 32-bit chunks */
 	while (num_bytes > 0) {
 		int bytes;
-		int is_read = 0;
-		int tm, i;
+		int tm;
+		u8 *pheader;
+		u32 fifo_status, xfer_status;
 
-		tmpdout = 0;
+		if (!found)
+			if (get_timer(start_time) > max_timeout_ms) {
+				printf("%s: did not get reply in %u ms\n",
+				       __func__, max_timeout_ms);
+				ret = -EIO;
+				break;
+			}
+
+		/* Send out data, 4 bytes a time */
 		bytes = (num_bytes > 4) ?  4 : num_bytes;
-
-		if (dout != NULL) {
-			for (i = 0; i < bytes; ++i)
-				tmpdout = (tmpdout << 8) | dout[i];
-			dout += bytes;
-		}
-
-		num_bytes -= bytes;
-
-		clrsetbits_le32(&regs->command1,
-				SPI_CMD1_BIT_LEN_MASK << SPI_CMD1_BIT_LEN_SHIFT,
-				(bytes * 8 - 1) << SPI_CMD1_BIT_LEN_SHIFT);
-		writel(tmpdout, &regs->tx_fifo);
-		setbits_le32(&regs->command1, SPI_CMD1_GO);
+		dout += spi_out_data(regs, dout, bytes, &out_bytes);
 
 		/*
 		 * Wait for SPI transmit FIFO to empty, or to time out.
 		 * The RX FIFO status will be read and cleared last
 		 */
-		for (tm = 0, is_read = 0; tm < SPI_TIMEOUT; ++tm) {
-			u32 fifo_status, xfer_status;
-
-			fifo_status = readl(&regs->fifo_status);
-
-			/* We can exit when we've had both RX and TX activity */
-			if (is_read &&
-			    (fifo_status & SPI_FIFO_STS_TX_FIFO_EMPTY))
-				break;
-
+		for (tm = 0; tm < SPI_TIMEOUT; ++tm) {
 			xfer_status = readl(&regs->xfer_status);
-			if (!(xfer_status & SPI_XFER_STS_RDY))
-				continue;
-
-			if (fifo_status & SPI_FIFO_STS_ERR) {
-				debug("%s: got a fifo error: ", __func__);
-				if (fifo_status & SPI_FIFO_STS_TX_FIFO_OVF)
-					debug("tx FIFO overflow ");
-				if (fifo_status & SPI_FIFO_STS_TX_FIFO_UNR)
-					debug("tx FIFO underrun ");
-				if (fifo_status & SPI_FIFO_STS_RX_FIFO_OVF)
-					debug("rx FIFO overflow ");
-				if (fifo_status & SPI_FIFO_STS_RX_FIFO_UNR)
-					debug("rx FIFO underrun ");
-				if (fifo_status & SPI_FIFO_STS_TX_FIFO_FULL)
-					debug("tx FIFO full ");
-				if (fifo_status & SPI_FIFO_STS_TX_FIFO_EMPTY)
-					debug("tx FIFO empty ");
-				if (fifo_status & SPI_FIFO_STS_RX_FIFO_FULL)
-					debug("rx FIFO full ");
-				if (fifo_status & SPI_FIFO_STS_RX_FIFO_EMPTY)
-					debug("rx FIFO empty ");
-				debug("\n");
+			if (xfer_status & SPI_XFER_STS_RDY)
 				break;
-			}
+		}
 
-			if (!(fifo_status & SPI_FIFO_STS_RX_FIFO_EMPTY)) {
-				tmpdin = readl(&regs->rx_fifo);
-				is_read = 1;
+		if (tm >= SPI_TIMEOUT) {
+			debug("%s: timed out waiting for STS_RDY\n", __func__);
+			ret = tm;
+			break;	/* break out of while (num_bytes > 0) loop */
+		}
 
-				/* swap bytes read in */
-				if (din != NULL) {
-					for (i = bytes - 1; i >= 0; --i) {
-						din[i] = tmpdin & 0xff;
-						tmpdin >>= 8;
-					}
+		/* clear RDY status */
+		writel(SPI_XFER_STS_RDY, &regs->xfer_status);
+
+		/* check if there is any FIFO error */
+		fifo_status = readl(&regs->fifo_status);
+		ret = spi_check_fifo_error(fifo_status);
+		if (ret)
+			/* break out of while loop if there is any fifo error */
+			break;
+
+		/* no error, read RX FIFO */
+		tmpdin = readl(&regs->rx_fifo);
+
+		/* process input package */
+		if (din) {
+			if (found) {
+				memcpy(din, &tmpdin, bytes);
+				din += bytes;
+			} else {
+				pheader = memchr(&tmpdin, header, bytes);
+				if (pheader) {
+					int len;
+
+					found = 1;
+					/* determine how many bytes to copy */
+					len = pheader - (u8 *)&tmpdin;
+					bytes -= (len + 1);
+					memcpy(din, pheader + 1, bytes);
 					din += bytes;
+				} else {
+					bytes = 0;
 				}
 			}
 		}
 
-		if (tm >= SPI_TIMEOUT)
-			ret = tm;
-
 		/* clear ACK RDY, etc. bits */
 		writel(readl(&regs->fifo_status), &regs->fifo_status);
+
+		num_bytes -= bytes;
 	}
 
 	if (flags & SPI_XFER_END)
 		spi_cs_deactivate(slave);
 
-	debug("%s: transfer ended. Value=%08x, fifo_status = %08x\n",
-	      __func__, tmpdin, readl(&regs->fifo_status));
-
 	if (ret) {
-		printf("%s: timeout during SPI transfer, tm %d\n",
+		printf("%s: error during SPI transfer, ret=%d\n",
 		       __func__, ret);
 		return -1;
 	}
