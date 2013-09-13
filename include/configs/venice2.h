@@ -103,6 +103,13 @@
 /* USB keyboard */
 #define CONFIG_USB_KEYBOARD
 
+/* TPM */
+#define CONFIG_INFINEON_TPM_I2C
+#define CONFIG_CMD_TPM
+#define CONFIG_TPM
+#define CONFIG_TPM_TIS_I2C
+#define CONFIG_I2C_RDWR_MULT
+
 #include "tegra-common-post.h"
 
 #endif /* __CONFIG_H */
