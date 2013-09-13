@@ -85,6 +85,7 @@
 			spi-half-duplex;
 			spi-frame-header = <0xec>;
 			spi-max-frequency = <4000000>;
+			spi-max-timeout-ms = <100>;
 			ec-interrupt = <&gpio 23 1>; /* PC7, KBC_IRQ_L */
 			reg = <0>;
 		};
