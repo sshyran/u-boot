@@ -1,12 +1,10 @@
 /dts-v1/;
 
 /include/ "tegra124.dtsi"
-#ifdef CONFIG_CHROMEOS
 /include/ "flashmap-tegra-ro.dtsi"
 /include/ "flashmap-tegra-4mb-rw.dtsi"
 /include/ "chromeos-tegra.dtsi"
 /include/ "crostegra-common.dtsi"
-#endif
 
 / {
 	model = "NVIDIA Venice2";
@@ -109,5 +107,48 @@
 		/* USB2 */
 		nvidia,vbus-gpio = <&gpio 109 0>; /* gpio PN5, USB_VBUS_EN1 */
 		status = "okay";
+	};
+
+	chromeos-config {
+		virtual-dev-switch;
+
+		/* disable memory clear */
+		disable-memory-clear;
+
+		vboot-flag-write-protect {
+			compatible = "google,gpio-flag";
+			gpio = <&gpio 137 1>; /* KB_ROW1/PR1 */
+		};
+
+		vboot-flag-recovery {
+			compatible = "google,gpio-flag";
+			gpio = <&gpio 135 1>; /* KB_COL7/PQ7 */
+		};
+
+		vboot-flag-developer {
+			compatible = "google,gpio-flag";
+			gpio = <&gpio 134 0>; /* KB_COL6/PQ6 */
+		};
+
+		vboot-flag-ec-in-rw {
+			compatible = "google,gpio-flag";
+			gpio = <&gpio 164 0>; /* GPIO_PU4 */
+		};
+
+		vboot-flag-lid-open {
+			compatible = "google,gpio-flag";
+			gpio = <&gpio 140 0>; /* KB_ROW4/PR4 */
+		};
+
+		vboot-flag-power-off {
+			compatible = "google,gpio-flag";
+			gpio = <&gpio 128 1>; /* KB_COL0/PQ0 */
+		};
+
+		/* option rom */
+		vboot-flag-oprom-loaded {
+			compatible = "google,const-flag";
+			value = <0>;
+		};
 	};
 };
