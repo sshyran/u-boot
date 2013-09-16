@@ -192,11 +192,9 @@ static struct pingroup_config tegra124_pinmux_common[] = {
 	DEFAULT_PINMUX(CLK_32K_OUT,   BLINK,       NORMAL,    NORMAL,   OUTPUT),
 
 	/* KBC pinmux */
-	DEFAULT_PINMUX(KB_COL0,       KBC,         UP,        NORMAL,   INPUT),
 	DEFAULT_PINMUX(KB_COL1,       KBC,         UP,        NORMAL,   INPUT),
 	DEFAULT_PINMUX(KB_COL2,       KBC,         UP,        NORMAL,   INPUT),
 	DEFAULT_PINMUX(KB_ROW0,       KBC,         UP,        NORMAL,   INPUT),
-	DEFAULT_PINMUX(KB_ROW1,       KBC,         UP,        NORMAL,   INPUT),
 
 	/* Misc */
 	DEFAULT_PINMUX(GPIO_PV0,      RSVD1,       NORMAL,    TRISTATE, OUTPUT),
@@ -293,6 +291,27 @@ static struct pingroup_config tegra124_pinmux_common[] = {
 	DEFAULT_PINMUX(CAM_MCLK,      RSVD1,       NORMAL,    TRISTATE, INPUT),
 	DEFAULT_PINMUX(CLK3_REQ,      RSVD1,       NORMAL,    TRISTATE, INPUT),
 	DEFAULT_PINMUX(SPDIF_OUT,     RSVD1,       NORMAL,    TRISTATE, INPUT),
+
+	/*
+	 * ChromeOS specific GPIOs.
+	 */
+	/* google write protect mode: input, active low */
+	DEFAULT_PINMUX(KB_ROW1,		KBC,	UP,	TRISTATE,	INPUT),
+
+	/* developer mode: input, active high */
+	DEFAULT_PINMUX(KB_COL6,		KBC,	UP,	TRISTATE,	INPUT),
+
+	/* google recovery mode: input, active low */
+	DEFAULT_PINMUX(KB_COL7,		KBC,	UP,	TRISTATE,	INPUT),
+
+	/* ec-in-rw: input, active high */
+	DEFAULT_PINMUX(GPIO_PU4,	PWM1,	UP,	TRISTATE,	INPUT),
+
+	/* lid open: input, active high */
+	DEFAULT_PINMUX(KB_ROW4,		KBC,	UP,	TRISTATE,	INPUT),
+
+	/* power-off signal: input, active low */
+	DEFAULT_PINMUX(KB_COL0,		KBC,	UP,	TRISTATE,	INPUT),
 };
 
 static struct pingroup_config unused_pins_lowpower[] = {
@@ -323,12 +342,8 @@ static struct pingroup_config tegra124_pinmux_set_nontristate[] = {
 
 	DEFAULT_PINMUX(KB_COL3,         KBC,    UP,      NORMAL,    OUTPUT),
 	DEFAULT_PINMUX(KB_COL4,		SDMMC3, UP,	 NORMAL,    INPUT),
-	DEFAULT_PINMUX(KB_COL6,         KBC,    UP,      NORMAL,    OUTPUT),
-	DEFAULT_PINMUX(KB_COL7,         KBC,    UP,      NORMAL,    OUTPUT),
-	DEFAULT_PINMUX(KB_ROW4,         KBC,    DOWN,    NORMAL,    INPUT),
 	DEFAULT_PINMUX(KB_ROW8,         KBC,    UP,      NORMAL,    INPUT),
 
-	DEFAULT_PINMUX(GPIO_PU4,        RSVD3,  NORMAL,  NORMAL,    INPUT),
 	DEFAULT_PINMUX(GPIO_PU5,        RSVD3,  NORMAL,  NORMAL,    OUTPUT),
 	DEFAULT_PINMUX(GPIO_PU6,        RSVD3,  NORMAL,  NORMAL,    INPUT),
 
