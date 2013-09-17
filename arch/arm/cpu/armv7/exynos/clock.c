@@ -359,9 +359,22 @@ static unsigned long exynos5420_get_pll_clk(int pllreg)
 	return exynos_get_pll_clk(pllreg, r, k);
 }
 
-static unsigned long exynos5420_src_clk(int src)
+static unsigned long exynos5420_src_clk(int peripheral)
 {
+	unsigned int src;
 	unsigned long sclk;
+	unsigned long clk_base = samsung_get_base_clock();
+	struct clk_bit_info *bit_info = get_table_index(peripheral);
+
+	/*
+	 * I2C and PWM clocks are parented by aclk66_peric which is
+	 * parented by CPLL (initialized in exynos5420_clock_init()).
+	 */
+	if (bit_info->src_offset < 0)
+		return get_pll_clk(CPLL);
+
+	src = readl(clk_base + bit_info->src_offset);
+	src = (src >> bit_info->src_bit) & bit_info->src_mask;
 
 	switch (src) {
 	case 0x3:
@@ -379,9 +392,22 @@ static unsigned long exynos5420_src_clk(int src)
 	return sclk;
 }
 
-static long exynos5_src_clk(int src)
+static long exynos5_src_clk(int peripheral)
 {
+	unsigned int src;
 	unsigned long sclk;
+	unsigned long clk_base = samsung_get_base_clock();
+	struct clk_bit_info *bit_info = get_table_index(peripheral);
+
+	/*
+	 * I2C clocks are parented by aclk66 which is always parented by
+	 * MPLL on 5250.
+	 */
+	if (bit_info->src_offset < 0)
+		return get_pll_clk(MPLL);
+
+	src = readl(clk_base + bit_info->src_offset);
+	src = (src >> bit_info->src_bit) & bit_info->src_mask;
 
 	switch (src) {
 	case 0x6:
@@ -399,19 +425,21 @@ static long exynos5_src_clk(int src)
 	return sclk;
 }
 
-static unsigned long get_src_clk(int src)
+static unsigned long get_src_clk(int peripheral)
 {
 	if (proid_is_exynos5420())
-		return exynos5420_src_clk(src);
+		return exynos5420_src_clk(peripheral);
+	else if (proid_is_exynos5250())
+		return exynos5_src_clk(peripheral);
 	else
-		return exynos5_src_clk(src);
+		return 0;
 }
 
 long clock_get_periph_rate(int peripheral)
 {
 	struct clk_bit_info *bit_info = NULL;
 	unsigned long sclk, sub_clk;
-	unsigned int src, div, sub_div = 0;
+	unsigned int div, sub_div = 0;
 	unsigned long clk_base = samsung_get_base_clock();
 
 	bit_info = get_table_index(peripheral);
@@ -420,17 +448,10 @@ long clock_get_periph_rate(int peripheral)
 		return -1;
 	}
 
-	if (bit_info->src_offset < 0) {
-		sclk = get_pll_clk(MPLL);
-	} else {
-		src = readl(clk_base + bit_info->src_offset);
-		src = (src >> bit_info->src_bit) & bit_info->src_mask;
-
-		sclk = get_src_clk(src);
-		if (sclk < 0) {
-			debug("Unknown source clock\n");
-			return -1;
-		}
+	sclk = get_src_clk(peripheral);
+	if (sclk < 0) {
+		debug("Unknown source clock\n");
+		return -1;
 	}
 
 	div = readl(clk_base + bit_info->div_offset);
