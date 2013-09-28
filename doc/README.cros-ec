@@ -6,7 +6,7 @@ OS devices. These include battery charging and keyboard scanning.
 
 The Chrome OS EC code base is available on gitweb here:
 
-http://git.chromium.org/gitweb/?p=chromiumos/platform/ec.git;a=summary
+https://chromium.googlesource.com/chromiumos/platform/ec.git
 
 The messaging interface between the AP and the EC is defined by the
 include/ec_commands.h file in U-Boot, which is the same as the file of the
