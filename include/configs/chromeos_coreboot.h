@@ -10,7 +10,7 @@
 /* So far all our x86-based boards share the coreboot config. */
 #include <configs/coreboot.h>
 
-#define CONFIG_DEVICE_TREE_LIST "alex butterfly emeraldlake2 link" \
+#define CONFIG_DEVICE_TREE_LIST "alex bayleybay butterfly emeraldlake2 link" \
 	" link_legacy lumpy parrot stout stumpy"
 
 /* Support USB booting */
