@@ -35,6 +35,7 @@
 #include <asm/i8259.h>
 #include <asm/ibmpc.h>
 #include <asm/interrupt.h>
+#include <asm/processor.h>
 
 #if CONFIG_SYS_NUM_IRQS != 16
 #error "CONFIG_SYS_NUM_IRQS must equal 16 if CONFIG_SYS_NUM_IRQS is defined"
@@ -43,7 +44,25 @@
 int interrupt_init(void)
 {
 	u8 i;
+	struct cpuid_rv cpuid;
 
+	/*
+	 * The baytrail interrupt register layout does not match the standard
+	 * PCAT cascaded set. This is why we bypass interrupt initialization
+	 * on Bay Trail platforms.
+	 */
+
+	/* CPUID with parameter 1 retrieves processor signarure in eax */
+	get_cpuid(1, &cpuid);
+
+	/*
+	 * Processor type, family code and model number are stored in 11 bits
+	 * starting at d4. 103 is the value returned by Baytrail.
+	 */
+	if (((cpuid.eax >> 4) & ((1 << 11) - 1)) == 103) {
+		printf("Bypassing interrupt controller initialization\n");
+		return 0;
+	}
 	disable_interrupts();
 
 	/* Mask all interrupts */
