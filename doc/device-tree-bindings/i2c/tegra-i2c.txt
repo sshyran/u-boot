@@ -20,15 +20,19 @@ in DTS file:
 Required properties:
  - status: "okay" if the device is enabled (has devices attached)
  - clock-frequency: I2C bus clock freq in Hz, typically 100KHz-400KHz
- - nvidia,use-repeat-start: Some I2C devices (Maxim 98090 audo codec,
-	for one) don't like a STOP in the middle of the I2C transaction.
-	If this property is present, the Tegra I2C U-Boot driver will
-	set the REPEAT_START bit in the packet header. Use this flag
-	on the bus of the crippled/picky device. Most I2C parts don't
-	seem to object either way.
+ - nvidia,no-repeat-start: Some I2C devices (TPM infineon slb9645, for one)
+	require that I2C bus be put in STOP state (instead of REPEATED_START
+	state) between writing the address pointer and reading the data. This
+	property is for this kind of devices. If this property is present, the
+	Tegra I2C U-Boot driver will NOT set the REPEAT_START_MASK bit in the
+	packet header. Use this flag on the bus of the crippled/picky device.
 
-	i2c@7000c000 {
+	i2c@7000c500 {
 		status = "okay";
 		clock-frequency = <100000>;
-		nvidia,use-repeat-start;
-        };
+		nvidia,no-repeat-start;
+		tpm@20 {
+			compatible = "infineon,slb9645-tpm";
+			reg = <0x20>;
+		};
+	};

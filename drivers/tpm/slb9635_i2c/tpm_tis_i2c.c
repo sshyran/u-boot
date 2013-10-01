@@ -150,19 +150,7 @@ int iic_tpm_read(u8 addr, u8 *buffer, size_t len)
 		 * be safe on the safe side.
 		 */
 		for (count = 0; count < MAX_COUNT; count++) {
-#ifdef CONFIG_TEGRA
-			/*
-			 * Tegra's i2c_read() can not read multi-bytes from
-			 * a single register address. Use i2c_read_mult() to
-			 * read multiple bytes.
-			 *
-			 * TODO; implement i2c_read() to read multi-bytes from
-			 * a single register address. Track at nvbug 1340765.
-			 */
-			rc = i2c_read_mult(tpm_dev.addr, addr, 1, buffer, len);
-#else
 			rc = i2c_read(tpm_dev.addr, addr, 1, buffer, len);
-#endif
 			if (rc == 0)
 				break;  /* break here to skip sleep */
 			udelay(SLEEP_DURATION);

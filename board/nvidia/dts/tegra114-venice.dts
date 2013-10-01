@@ -33,7 +33,6 @@
 	i2c@7000c000 {
 		status = "okay";
 		clock-frequency = <100000>;
-		nvidia,use-repeat-start;
 	};
 
 	i2c@7000c400 {
@@ -44,6 +43,7 @@
 	i2c@7000c500 {
 		status = "okay";
 		clock-frequency = <100000>;
+		nvidia,no-repeat-start;
 		tpm@20 {
 			compatible = "infineon,slb9645-tpm";
 			reg = <0x20>;

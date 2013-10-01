@@ -49,7 +49,7 @@ struct i2c_bus {
 	int			is_scs;		/* single clock src (T114+) */
 	int			inited;			/* bus is inited */
 	int			node;			/* fdt node */
-	int			use_repeat_start;	/* don't send STOP */
+	int			no_repeat_start;	/* no Repeat_Start */
 };
 
 static struct i2c_bus i2c_controllers[TEGRA_I2C_NUM_CONTROLLERS];
@@ -153,13 +153,7 @@ static void send_packet_headers(
 	if (!(trans->flags & I2C_IS_WRITE))
 		data |= PKT_HDR3_READ_MODE_MASK;
 
-	/*
-	 * Venice audio codec (Max98090) can't be read/written w/o this
-	 * bit being set. But Infineon SLB9645 TPM on Venice doesn't
-	 * like it, so only set it if we're on the same bus as the codec.
-	 * The 'use_repeat_start' flag here is controlled by the DT.
-	 */
-	if (i2c_bus->use_repeat_start) {
+	if (trans->flags & I2C_USE_REPEATED_START) {
 		data |= PKT_HDR3_REPEAT_START_MASK;
 		debug("I2C%d: Set REPEAT_START in master xmit packet header\n",
 		      i2c_bus->id);
@@ -298,14 +292,14 @@ exit:
 	return error;
 }
 
-static int tegra_i2c_write_data(u32 addr, u8 *data, u32 len)
+static int tegra_i2c_write_data(u32 addr, u8 *data, u32 len, u32 flags)
 {
 	int error;
 	struct i2c_trans_info trans_info;
 
 	trans_info.address = addr;
 	trans_info.buf = data;
-	trans_info.flags = I2C_IS_WRITE;
+	trans_info.flags = I2C_IS_WRITE | flags;
 	trans_info.num_bytes = len;
 	trans_info.is_10bit_address = 0;
 
@@ -316,14 +310,14 @@ static int tegra_i2c_write_data(u32 addr, u8 *data, u32 len)
 	return error;
 }
 
-static int tegra_i2c_read_data(u32 addr, u8 *data, u32 len)
+static int tegra_i2c_read_data(u32 addr, u8 *data, u32 len, u32 flags)
 {
 	int error;
 	struct i2c_trans_info trans_info;
 
 	trans_info.address = addr | 1;
 	trans_info.buf = data;
-	trans_info.flags = 0;
+	trans_info.flags = flags;
 	trans_info.num_bytes = len;
 	trans_info.is_10bit_address = 0;
 
@@ -365,8 +359,8 @@ static int i2c_get_config(const void *blob, int node, struct i2c_bus *i2c_bus)
 	i2c_bus->pinmux_config = FUNCMUX_DEFAULT;
 	i2c_bus->speed = fdtdec_get_int(blob, node, "clock-frequency", 0);
 	i2c_bus->periph_id = clock_decode_periph_id(blob, node);
-	i2c_bus->use_repeat_start = fdtdec_get_bool(blob, node,
-						    "nvidia,use-repeat-start");
+	i2c_bus->no_repeat_start = fdtdec_get_bool(blob, node,
+						   "nvidia,no-repeat-start");
 
 	/*
 	 * We can't specify the pinmux config in the fdt, so I2C2 will not
@@ -475,7 +469,7 @@ void i2c_init(int speed, int slaveaddr)
 }
 
 /* i2c write version without the register address */
-int i2c_write_data(uchar chip, uchar *buffer, int len)
+int i2c_write_data(uchar chip, uchar *buffer, int len, u32 flags)
 {
 	int rc;
 
@@ -487,7 +481,7 @@ int i2c_write_data(uchar chip, uchar *buffer, int len)
 	debug("\n");
 
 	/* Shift 7-bit address over for lower-level i2c functions */
-	rc = tegra_i2c_write_data(chip << 1, buffer, len);
+	rc = tegra_i2c_write_data(chip << 1, buffer, len, flags);
 	if (rc)
 		debug("i2c_write_data(): rc=%d\n", rc);
 
@@ -495,13 +489,13 @@ int i2c_write_data(uchar chip, uchar *buffer, int len)
 }
 
 /* i2c read version without the register address */
-int i2c_read_data(uchar chip, uchar *buffer, int len)
+int i2c_read_data(uchar chip, uchar *buffer, int len, u32 flags)
 {
 	int rc;
 
 	debug("inside i2c_read_data():\n");
 	/* Shift 7-bit address over for lower-level i2c functions */
-	rc = tegra_i2c_read_data(chip << 1, buffer, len);
+	rc = tegra_i2c_read_data(chip << 1, buffer, len, flags);
 	if (rc) {
 		debug("i2c_read_data(): rc=%d\n", rc);
 		return rc;
@@ -524,7 +518,7 @@ int i2c_probe(uchar chip)
 
 	debug("i2c_probe: addr=0x%x\n", chip);
 	reg = 0;
-	rc = i2c_write_data(chip, &reg, 1);
+	rc = i2c_write_data(chip, &reg, 1, 0);
 	if (rc) {
 		debug("Error probing 0x%x.\n", chip);
 		return 1;
@@ -538,141 +532,116 @@ static int i2c_addr_ok(const uint addr, const int alen)
 	return alen == 1 || alen == 2;
 }
 
-/* Read bytes */
+/**
+ * i2c_read(uchar chip, uint addr, int alen, uchar *buffer, int len);
+ *
+ * Read "len" number of bytes from register "addr" of i2c device whose address
+ * is "chip".
+ *
+ * This routine reads multiple bytes from the same register "addr". It can be
+ * used to read data from i2c devices that have multi-bytes wide register (e.g.,
+ * ALC5640 codec has 16-bit data per register address). Or, it can be used to
+ * read from a FIFO register.
+ *
+ * Some i2c devices will auto-increment the register "addr" internally for each
+ * byte read. Some i2c devices do not auto-increment the "addr" internally for
+ * multi-bytes read. For these kind of i2c devices, the caller has to call this
+ * routine one byte a time.
+ *
+ * @param chip		address of i2c device to read data from
+ * @param addr		address of register inside the i2c device
+ * @param alen		# of bytes of "addr" field, must be <= 2
+ *			if alen == 0, no "addr" is output to the I2C bus
+ * @param buffer	data pointer to store the read data in
+ * @param len		# of bytes to read from the i2c device
+ */
 int i2c_read(uchar chip, uint addr, int alen, uchar *buffer, int len)
-{
-	uint offset;
-	int i;
-
-	debug("i2c_read: chip=0x%x, addr=0x%x, len=0x%x\n",
-				chip, addr, len);
-
-	if (alen == 0) {
-		/* no addr field, just read data into buffer */
-		if (i2c_read_data(chip, buffer, len)) {
-			debug("i2c_read(alen==0): error reading (0x%x)\n",
-			      addr);
-			return 1;
-		}
-		return 0;
-	}
-
-	if (!i2c_addr_ok(addr, alen)) {
-		debug("i2c_read: Bad address %x.%d.\n", addr, alen);
-		return 1;
-	}
-	for (offset = 0; offset < len; offset++) {
-		if (alen) {
-			uchar data[alen];
-			for (i = 0; i < alen; i++) {
-				data[alen - i - 1] =
-					(addr + offset) >> (8 * i);
-			}
-			if (i2c_write_data(chip, data, alen)) {
-				debug("i2c_read: error sending (0x%x)\n",
-					addr);
-				return 1;
-			}
-		}
-		if (i2c_read_data(chip, buffer + offset, 1)) {
-			debug("i2c_read: error reading (0x%x)\n", addr);
-			return 1;
-		}
-	}
-
-	return 0;
-}
-
-/* Write bytes */
-int i2c_write(uchar chip, uint addr, int alen, uchar *buffer, int len)
-{
-	uint offset;
-	int i;
-
-	debug("i2c_write: chip=0x%x, addr=0x%x, len=0x%x\n",
-				chip, addr, len);
-
-	if (alen == 0) {
-		/* no addr field, just write data from buffer */
-		if (i2c_write_data(chip, buffer, len)) {
-			debug("i2c_write(alen==0): error reading (0x%x)\n",
-			      addr);
-			return 1;
-		}
-		return 0;
-	}
-
-	if (!i2c_addr_ok(addr, alen)) {
-		debug("i2c_write: Bad address %x.%d.\n", addr, alen);
-		return 1;
-	}
-	for (offset = 0; offset < len; offset++) {
-		uchar data[alen + 1];
-		for (i = 0; i < alen; i++)
-			data[alen - i - 1] = (addr + offset) >> (8 * i);
-		data[alen] = buffer[offset];
-		if (i2c_write_data(chip, data, alen + 1)) {
-			debug("i2c_write: error sending (0x%x)\n", addr);
-			return 1;
-		}
-	}
-
-	return 0;
-}
-
-#ifdef CONFIG_I2C_RDWR_MULT
-/* Read multiple bytes */
-int i2c_read_mult(uchar chip, uint addr, int alen, uchar *buffer, int len)
 {
 	int i;
 	uchar data[alen];
+	u32 flags;
 
-	debug("i2c_read_mult: chip=0x%x, addr=0x%x, alen=%d, len=0x%x\n",
-	      chip, addr, alen, len);
+	debug("%s: chip=0x%x, addr=0x%x, alen=%d, len=0x%x\n", __func__, chip,
+	      addr, alen, len);
 
 	if (alen != 0) {
 		if (!i2c_addr_ok(addr, alen)) {
-			debug("i2c_read_mult: Bad addr %x.%d.\n", addr, alen);
+			debug("%s: Bad addr %x.%d.\n", __func__, addr, alen);
 			return 1;
 		}
 
 		for (i = 0; i < alen; i++)
 			data[alen - i - 1] = addr >> (8 * i);
 
-		if (i2c_write_data(chip, data, alen)) {
-			debug("i2c_read_mult: error sending (0x%x)\n", addr);
+		if (i2c_controllers[i2c_bus_num].no_repeat_start)
+			flags = 0;
+		else
+			flags = I2C_USE_REPEATED_START;
+
+		/*
+		 * Write the 'addr' to I2C bus.
+		 *
+		 * Depending on the flags, after the  writing 'addr' phase, the
+		 * I2C bus will either be put in REPEATED_START state or STOP
+		 * state.
+		 *
+		 * Normally the I2C bus should be in REPEATED_START state after
+		 * 'addr' phase. But some devices requires the I2C bus be in
+		 * STOP state after the 'addr' phase. For those devices, the
+		 * 'no_repeat_start' flag has to be set. Since 'no_repeat_start'
+		 * flag affects the whole I2C bus, all devices on that I2C bus
+		 * should behave the same way.
+		 */
+		if (i2c_write_data(chip, data, alen, flags)) {
+			debug("%s: error sending (%#x)\n", __func__, addr);
 			return 1;
 		}
-		/*
-		 * note: i2c_write_data() function above puts the bus in stop
-		 *       state. Some devices expect i2c master to issue restart,
-		 *       instead of stop/start between the address phase and
-		 *       data phase.
-		 *       This code sequence will not work for those devices.
-		 */
 	}
 
 	/* note: alen==0 case comes here directly */
-	if (i2c_read_data(chip, buffer, len)) {
-		debug("i2c_read_mult: error reading (0x%x.%d)\n", addr, alen);
+	if (i2c_read_data(chip, buffer, len, 0)) {
+		debug("%s: error reading (0x%x.%d)\n", __func__, addr, alen);
 		return 1;
 	}
 
 	return 0;
 }
 
-/* Write multiple bytes */
-int i2c_write_mult(uchar chip, uint addr, int alen, uchar *buffer, int len)
+/* Write bytes to a single register at 'addr' */
+/**
+ * i2c_write(uchar chip, uint addr, int alen, uchar *buffer, int len);
+ *
+ * Write "len" number of bytes to register "addr" of i2c device whose address
+ * is "chip".
+ *
+ * This routine writes multiple bytes to the same register "addr". It can be
+ * used to write data to i2c devices that have multi-bytes wide register (e.g.,
+ * ALC5640 codec has 16-bit data per register address). Or, it can be used to
+ * write to a FIFO register.
+ *
+ * Some i2c devices will auto-increment the register "addr" internally for each
+ * byte written. Some i2c devices do not auto-increment the "addr" internally
+ * for multi-bytes write. For these kind of i2c devices, the caller has to call
+ * this routine one byte a time.
+ *
+ * @param chip		address of i2c device to write data to
+ * @param addr		address of register inside the i2c device
+ * @param alen		# of bytes of "addr" field, must be <= 2
+ *			if alen == 0, no "addr" is output to the I2C bus
+ * @param buffer	data pointer to write the data from
+ * @param len		# of bytes to write to the i2c device
+ */
+int i2c_write(uchar chip, uint addr, int alen, uchar *buffer, int len)
 {
 	int i;
 	uchar data[alen + len];
 
-	debug("i2c_write_mult: chip=0x%x, addr=0x%x, alen=%d, len=0x%x\n",
-	      chip, addr, alen, len);
+	debug("%s: chip=0x%x, addr=0x%x, alen=%d, len=0x%x\n", __func__, chip,
+	      addr, alen, len);
 
 	if (alen != 0) {
 		if (!i2c_addr_ok(addr, alen)) {
-			debug("i2c_write_mult: Bad addr %x.%d.\n", addr, alen);
+			debug("%s: Bad addr %x.%d.\n", __func__, addr, alen);
 			return 1;
 		}
 
@@ -682,14 +651,13 @@ int i2c_write_mult(uchar chip, uint addr, int alen, uchar *buffer, int len)
 
 	/* note: alen==0 case comes here directly */
 	memcpy(&data[alen], buffer, len);
-	if (i2c_write_data(chip, data, alen + len)) {
-		debug("i2c_write_mult: error sending (0x%x.%d)\n", addr, alen);
+	if (i2c_write_data(chip, data, alen + len, 0)) {
+		debug("%s: error sending (0x%x.%d)\n", __func__, addr, alen);
 		return 1;
 	}
 
 	return 0;
 }
-#endif /* CONFIG_I2C_RDWR_MULT */
 
 #if defined(CONFIG_I2C_MULTI_BUS)
 /*

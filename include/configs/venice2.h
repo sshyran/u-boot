@@ -106,7 +106,6 @@
 #define CONFIG_CMD_TPM
 #define CONFIG_TPM
 #define CONFIG_TPM_TIS_I2C
-#define CONFIG_I2C_RDWR_MULT
 
 #include "tegra-common-post.h"
 
