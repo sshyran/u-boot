@@ -114,6 +114,27 @@ static void remove_cpu_resets(void)
 	writel(reg, &clkrst->crc_rst_cpug_cmplx_clr);
 }
 
+static void t1x4_init_mem_ctlr(void)
+{
+	struct ahb_ctlr *ahbctlr = (struct ahb_ctlr *)NV_PA_AHB_BASE;
+	struct pmc_ctlr *pmc = (struct pmc_ctlr *)NV_PA_PMC_BASE;
+
+	debug("%s entry\n", __func__);
+
+	/* Disable any further writes to the address map config register */
+	setbits_le32(&pmc->pmc_sec_disable, AMAP_WRITE_ON);
+
+	/* Set up the AHB Mem Gizmo for split writes and fast rearb */
+	clrbits_le32(&ahbctlr->gizmo_ahb_mem, GIZ_DONT_SPLIT_AHB_WR);
+	setbits_le32(&ahbctlr->gizmo_ahb_mem,
+		    (GIZ_ENABLE_SPLIT + GIZ_ENB_FAST_REARB));
+
+	/* Start USB AHB write requests immediately */
+	setbits_le32(&ahbctlr->gizmo_usb, GIZ_USB_IMMEDIATE);
+
+	debug("%s exit\n", __func__);
+}
+
 /**
  * The T1x4 requires some special clock initialization, including setting up
  * the DVC I2C, turning on MSELECT and selecting the G CPU cluster
@@ -262,6 +283,8 @@ void start_cpu(u32 reset_vector)
 	debug("start_cpu entry, reset_vector = %x\n", reset_vector);
 
 	t1x4_init_clocks();
+
+	t1x4_init_mem_ctlr();
 
 	/* Set power-gating timer multiplier */
 	clrbits_le32(&pmc->pmc_pwrgate_timer_mult, TIMER_MULT_MASK);
