@@ -38,6 +38,42 @@ enum {
 	X86_GDT_ENTRY_16BIT_DS,
 	X86_GDT_NUM_ENTRIES
 };
+
+/*
+ * This structure is used to store register values returned by the CPUID
+ * command.
+ */
+struct cpuid_rv {
+	unsigned eax;
+	unsigned ebx;
+	unsigned ecx;
+	unsigned edx;
+};
+
+/*
+ * Issue the x86 architecture CPUID command.
+ *
+ * @param eax_in:  CPUID parameter
+ * @param rv:	   pointer to the structure storing register values after CPUID
+ *		   was executed.
+ */
+static inline void get_cpuid(unsigned eax_in, struct cpuid_rv *rv)
+{
+	unsigned index;
+	unsigned eax, ebx, ecx, edx;
+
+	index = eax_in;
+	asm volatile(
+		     "cpuid"
+		     : "=a" (eax), "=b" (ebx), "=c" (ecx), "=d" (edx)
+		     : "a" (index)
+		     );
+	rv->eax = eax;
+	rv->ebx = ebx;
+	rv->ecx = ecx;
+	rv->edx = edx;
+}
+
 #else
 /* NOTE: If the above enum is modified, this define must be checked */
 #define X86_GDT_ENTRY_32BIT_DS	3
