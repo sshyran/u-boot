@@ -259,3 +259,23 @@ int cleanup_before_linux(void)
 
 	return 0;
 }
+
+#ifdef CONFIG_DISPLAY_CPUINFO
+int print_cpuinfo(void)
+{
+	/* Intel x86 brand string is read in three pieces */
+#define BRAND_STRING_READS	3
+	char brand_str[sizeof(struct cpuid_rv) * BRAND_STRING_READS + 1];
+	int i;
+
+	for (i = 0; i < BRAND_STRING_READS; i++)
+		get_cpuid(0x80000002 + i, ((struct cpuid_rv *)brand_str) + i);
+
+	/* ASCII string termination, just in case */
+	brand_str[sizeof(brand_str) - 1] = 0;
+
+	printf("CPU: %s\n", brand_str);
+
+	return 0;
+}
+#endif
