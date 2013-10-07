@@ -1,0 +1,25 @@
+/dts-v1/;
+
+/include/ "coreboot.dtsi"
+/include/ "chromeos-coreboot.dtsi"
+/include/ "flashmap-coreboot-8mb_3mb_me_1mb_rom.dtsi"
+
+/ {
+	model = "Google Rambi";
+	compatible = "google,rambi", "intel,baytrail";
+
+	config {
+		hwid = "X86 RAMBI TEST 0128";
+		skip-i8042 = <1>;
+		usb-keyboard;
+		hda_codec_beep = <1>;
+	};
+
+	chromeos-config {
+		oprom-matters;
+		vboot-flag-ec-in-rw {
+			compatible = "google,const-flag";
+			value = <0>;
+		};
+	};
+};
