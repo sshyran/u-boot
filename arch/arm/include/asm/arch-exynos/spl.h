@@ -86,6 +86,7 @@ struct spl_machine_param {
 	 * D		SPL debug
 	 * p		Vboot persist start
 	 * c		rtc (clock) type
+	 * t		offset into the image of the board rev convertion table
 	 * \0		termination
 	 */
 	char		params[24];	/* Length must be word-aligned */
@@ -127,7 +128,17 @@ struct spl_machine_param {
 	u32		spl_debug;	/* Enable debug output in SPL */
 	u32		vboot_persist_start;	/* Vboot persistence area */
 	enum rtc_t	rtc_type;	/* Type of RTC */
+
+	/* board map table offset, off this structure base address */
+	u32		map_offset;
 } __attribute__((__packed__));
+
+/*
+ * Value to put in the params field above to aid build tools in filling up
+ * this structure.
+ */
+#define SPL_PARAM_STRING	"vmSoubfasirRMwWjAUdDpct"
+
 #endif
 
 #define SPL_HASH_VERSION	1
