@@ -530,7 +530,7 @@ int cros_ec_read_hash(struct cros_ec_dev *dev,
 	debug("%s: No valid hash (status=%d size=%d). Compute one...\n",
 	      __func__, hash->status, hash->size);
 
-	p.cmd = EC_VBOOT_HASH_RECALC;
+	p.cmd = EC_VBOOT_HASH_START;
 	p.hash_type = EC_VBOOT_HASH_TYPE_SHA256;
 	p.nonce_size = 0;
 	p.offset = EC_VBOOT_HASH_OFFSET_RW;
