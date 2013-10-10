@@ -92,7 +92,7 @@ VbError_t VbExEcJumpToRW(void)
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcStayInRO(void)
+VbError_t VbExEcDisableJump(void)
 {
 	struct cros_ec_dev *mdev = board_get_cros_ec_dev();
 
