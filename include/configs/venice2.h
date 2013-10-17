@@ -19,6 +19,10 @@
 
 #include <asm/sizes.h>
 
+/* LP0 suspend / resume */
+#define CONFIG_TEGRA_LP0
+#define CONFIG_AES
+
 #include "tegra124-common.h"
 
 /* Use memory controller SDRAM size instead of ODMDATA */
