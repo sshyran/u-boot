@@ -21,6 +21,7 @@
 
 /* LP0 suspend / resume */
 #define CONFIG_TEGRA_LP0
+#define CONFIG_RESERVE_TEGRA_LP0
 #define CONFIG_AES
 
 #include "tegra124-common.h"
@@ -47,6 +48,7 @@
 
 #define CONFIG_BOARD_EARLY_INIT_F
 #define CONFIG_ARCH_EARLY_INIT_R
+#define CONFIG_BOARD_LATE_INIT
 
 /* I2C */
 #define CONFIG_TEGRA_I2C

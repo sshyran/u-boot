@@ -941,7 +941,8 @@ int warmboot_prepare_code(u32 seg_address, u32 seg_length)
 	}
 
 	/* Things must be 16-byte aligned. */
-	if ((seg_length & 0xF) || (seg_address & 0xF)) {
+	if ((seg_length & (TEGRA_LP0_ALIGN - 1)) ||
+	    (seg_address & (TEGRA_LP0_ALIGN - 1))) {
 		err = -EINVAL;
 		goto fail;
 	}
@@ -1002,4 +1003,64 @@ fail:
 		printf("WB code not copied to LP0 location! (error=%d)\n", err);
 
 	return err;
+}
+
+/*
+ * Delete all substrings which begin with 'str2' from 'str1' string.
+ *
+ * The substring to be deleted begins with the 'str2' till the space char. that
+ * seperates this substring and the next substring. If there is no space after
+ * the substring, only the substring is deleted.
+ */
+static void str_delete(char *str1, char *str2)
+{
+	char *found;
+	char *next;
+
+	while (1) {
+		/* find a substring which begins with 'str2' in 'str1' */
+		found = strstr(str1, str2);
+		if (found == NULL)
+			return;
+
+		/* find the next substring, separated by a space char. */
+		next = strchr(found, ' ');
+		if (next) {
+			/* found a next substring, replace the 'str2' with it */
+			strcpy(found, next + 1);
+		} else {
+			/* no next substring, terminate the 'str1' and return */
+			*(found - 1) = '\0';
+			return;
+		}
+	}
+}
+
+/*
+ * Append "lp0_vec=<len>@<addr>" substring to extra_bootargs env. variable.
+ *
+ * If there are "lp0_vec=XXX" substrings in the extra_bootargs variable, they
+ * are deleted first, then "lp0_vec=XXX" substring is added.
+ */
+int warmboot_set_lp0_vec(u32 seg_address, u32 seg_length)
+{
+	char *args;
+	int len;
+
+	args = getenv("extra_bootargs");
+
+	/* delete all "lp0_vec=XXX " occurrences */
+	str_delete(args, "lp0_vec=");
+
+	len = strlen(args);
+
+	char new_args[len + 32];
+
+	strcpy(new_args, args);
+
+	/* append the "lp0_vec=" to the end of extra_bootargs */
+	sprintf(&new_args[len], " lp0_vec=%#x@%#x", seg_length, seg_address);
+	setenv("extra_bootargs", new_args);
+
+	return 0;
 }

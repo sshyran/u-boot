@@ -54,6 +54,9 @@ struct arch_global_data {
 #ifdef CONFIG_EXYNOS5
 	int in_iram;		/* non-zero if running from IRAM, not SDRAM */
 #endif
+#ifdef CONFIG_RESERVE_TEGRA_LP0
+	unsigned long tegra_lp0_addr;
+#endif
 };
 
 #include <asm-generic/global_data.h>

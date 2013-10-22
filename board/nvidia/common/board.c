@@ -58,6 +58,7 @@
 #include <spi.h>
 #include <cros_ec.h>
 #include "emc.h"
+#include <malloc.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -190,9 +191,6 @@ int board_init(void)
 #ifdef CONFIG_TEGRA_LP0
 	/* save Sdram params to PMC 2, 4, and 24 for WB0 */
 	warmboot_save_sdram_params();
-
-	/* prepare the WB code to LP0 location */
-	warmboot_prepare_code(TEGRA_LP0_ADDR, TEGRA_LP0_SIZE);
 #endif
 
 	return 0;
@@ -230,6 +228,19 @@ int board_late_init(void)
 	tegra_lcd_check_next_stage(gd->fdt_blob, 1);
 #endif
 	stdio_print_current_devices();
+
+#ifdef CONFIG_TEGRA_LP0
+#ifdef CONFIG_RESERVE_TEGRA_LP0
+	/* TEGRA_LP0_ADDR is gd->arch.tegra_lp0_addr in this case */
+	TEGRA_LP0_ADDR = (unsigned long)memalign(TEGRA_LP0_ALIGN,
+						 TEGRA_LP0_SIZE);
+
+	/* set "lp0_vec=" to extra_bootargs environment variable */
+	warmboot_set_lp0_vec(TEGRA_LP0_ADDR, TEGRA_LP0_SIZE);
+#endif
+	/* prepare the WB code to LP0 location */
+	warmboot_prepare_code(TEGRA_LP0_ADDR, TEGRA_LP0_SIZE);
+#endif
 
 #ifdef CONFIG_CROS_EC
 	if (cros_ec_get_error()) {
@@ -296,11 +307,69 @@ void pad_init_mmc(struct mmc_host *host)
 }
 #endif	/* MMC */
 
+#if defined(CONFIG_OF_BOARD_SETUP)
+/*
+ * ft_board_setup_lp0_vec() is to add "nvidia,lp0-vec" property to pmc node to
+ * kernel's device tree. Also, add the TEGRA_LP0_ADDR/_SIZE area to memreserve.
+ *
+ * "nvidia,lp0-vec" property contains TEGRA_LP0_ADDR and TEGRA_LP0_SIZE.
+ * If there are problems setting the lp0-vec property, we stil return with 0 so
+ * we can continue to boot kernel.
+ */
+static int ft_board_setup_lp0_vec(void *blob, bd_t *bd)
+{
+	static const char fdt_subnode_name[] = "pmc";
+	static const char prop_name[] = "nvidia,lp0-vec";
+	int pmc;
+	int err;
+
+	pmc = fdt_subnode_offset(blob, 0, fdt_subnode_name);
+	if (pmc < 0) {
+		printf("%s: failed to get %s node\n", __func__,
+		       fdt_subnode_name);
+		return 0;
+	}
+
+	if (TEGRA_LP0_ADDR) {
+		/* add "nvidia,lp0-vec = <%addr %length>" to pmc node */
+		err = fdt_setprop_u32(blob, pmc, prop_name, TEGRA_LP0_ADDR);
+		if (err < 0) {
+			printf("%s: failed to setprop; err=%d\n", __func__,
+			       err);
+			/* error: delete the property from the tree */
+			fdt_delprop(blob, pmc, prop_name);
+			return 0;
+		}
+
+		err = fdt_appendprop_u32(blob, pmc, prop_name, TEGRA_LP0_SIZE);
+		if (err < 0) {
+			printf("%s: failed to appendprop; err=%d\n", __func__,
+			       err);
+			/* error: delete the property from the tree */
+			fdt_delprop(blob, pmc, prop_name);
+			return 0;
+		}
+
+		/* add "memreserve" to reserve TEGRA_LP0_ADDR area */
+		fdt_add_mem_rsv(blob, (uint64_t)TEGRA_LP0_ADDR,
+				(uint64_t)TEGRA_LP0_SIZE);
+	}
+
+	return 0;
+}
+
+#ifdef CONFIG_TEGRA_LP0
+int ft_system_setup(void *blob, bd_t *bd)
+{
+	return ft_board_setup_lp0_vec(blob, bd);
+}
+#endif
+
 __weak int ft_board_setup(void *blob, bd_t *bd)
 {
-	/* TODO: add board specific supporting code */
-	return -1;
+	return ft_system_setup(blob, bd);
 }
+#endif
 
 int arch_early_init_r(void)
 {

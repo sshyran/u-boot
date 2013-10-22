@@ -56,4 +56,7 @@ int sign_data_block(u8 *source, u32 length, u8 *signature);
 void wb_start(void);	/* Start of WB assembly code */
 void wb_end(void);	/* End of WB assembly code */
 
+/* Append "lp0_vec=<len>@<addr>" substring to extra_bootargs env. variable. */
+int warmboot_set_lp0_vec(u32 seg_address, u32 seg_length);
+
 #endif	/* _WARM_BOOT_H_ */

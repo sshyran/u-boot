@@ -19,7 +19,6 @@
 
 #define CONFIG_EXTRA_BOOTARGS \
 	"console=ttyS0,115200n8 " \
-	"lp0_vec=0x00002000@0xbdffd000 " \
 	"video=tegrafb " \
 	"noinitrd usb_port_owner_info=0 " \
 	"usbcore.old_scheme_first=1 " \

@@ -87,8 +87,9 @@
 #define CONFIG_USB_EHCI_TXFIFO_THRESH	0x10
 
 #ifdef CONFIG_TEGRA_LP0
-#define TEGRA_LP0_ADDR			0xbdffd000
+#define TEGRA_LP0_ADDR			gd->arch.tegra_lp0_addr
 #define TEGRA_LP0_SIZE			0x2000
+#define TEGRA_LP0_ALIGN			0x10
 #endif
 
 #endif /* _TEGRA124_COMMON_H_ */
