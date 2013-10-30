@@ -32,9 +32,19 @@
 		reg = <0x80000000 0x80000000>;
 	};
 
+	ahub {
+		i2s@70080400 {
+			status = "okay";
+		};
+	};
+
 	i2c@7000c000 {
 		status = "okay";
 		clock-frequency = <100000>;
+		soundcodec@1c {
+			reg = <0x1c>;
+			compatible = "realtek,rt5640-codec";
+		};
 	};
 
 	i2c@7000c400 {
@@ -79,6 +89,19 @@
 	usb@7d008000 {
 		/* SPDIF_IN: USB_VBUS_EN1 */
 		nvidia,vbus-gpio = <&gpio 86 0>;
+		status = "okay";
+	};
+
+	sound@70080400 {
+		nvidia,i2s-pll-clock-frequency = <4800000>;
+		nvidia,i2s-sampling-rate = <48000>;
+		nvidia,i2s-bits-per-sample = <16>;
+		nvidia,i2s-channels = <2>;
+		nvidia,i2s-lr-clk-framesize = <256>;
+		nvidia,i2s-bit-clk-framesize = <32>;
+		nvidia,codec-type = "rt5640";
+		nvidia,i2s-controller = <&tegra_i2s1>;
+		codec-enable-gpio = <&gpio 171 0>;
 		status = "okay";
 	};
 };

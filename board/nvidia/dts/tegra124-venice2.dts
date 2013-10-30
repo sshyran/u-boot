@@ -31,9 +31,19 @@
 		reg = <0x80000000 0x80000000>;
 	};
 
+	ahub {
+		i2s@70301100 {
+			status = "okay";
+		};
+	};
+
 	i2c@7000c000 {
 		status = "okay";
 		clock-frequency = <100000>;
+		soundcodec@10 {
+			reg = <0x10>;
+			compatible = "maxim,max98090-codec";
+		};
 	};
 
 	i2c@7000c400 {
@@ -150,5 +160,17 @@
 			compatible = "google,const-flag";
 			value = <0>;
 		};
+	};
+
+	sound@70301100 {
+		nvidia,i2s-pll-clock-frequency = <4800000>;
+		nvidia,i2s-sampling-rate = <48000>;
+		nvidia,i2s-bits-per-sample = <16>;
+		nvidia,i2s-channels = <2>;
+		nvidia,i2s-lr-clk-framesize = <256>;
+		nvidia,i2s-bit-clk-framesize = <32>;
+		nvidia,codec-type = "max98090";
+		nvidia,i2s-controller = <&tegra_i2s1>;
+		status = "okay";
 	};
 };
