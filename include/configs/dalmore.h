@@ -104,6 +104,14 @@
 /* USB keyboard */
 #define CONFIG_USB_KEYBOARD
 
+/* Sound */
+#define CONFIG_CMD_SOUND
+#ifdef CONFIG_CMD_SOUND
+#define CONFIG_TEGRA_SOUND
+#define CONFIG_TEGRA_I2S
+#define CONFIG_SOUND_RT5640
+#endif
+
 #include "tegra-common-post.h"
 
 #endif /* __CONFIG_H */
