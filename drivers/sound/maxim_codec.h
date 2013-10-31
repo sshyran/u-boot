@@ -24,10 +24,12 @@ struct maxim_codec_priv {
 	unsigned int fmt;
 };
 
+#if !defined(CONFIG_TEGRA)		/* Specific to Samsung, unused if OF */
 #define MAXIM_AUDIO_I2C_BUS		7
 #define MAXIM_AUDIO_I2C_REG_98095	0x22
 
 #define MAXIM_AUDIO_I2C_REG		MAXIM_AUDIO_I2C_REG_98095
+#endif	/* !Tegra */
 
 int maxim_codec_i2c_write(unsigned int reg, unsigned char data);
 unsigned int maxim_codec_i2c_read(unsigned int reg, unsigned char *data);

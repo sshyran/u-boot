@@ -7,12 +7,15 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
+
+#include <asm/io.h>
+#include <common.h>
+#if !defined(CONFIG_TEGRA)
 #include <asm/arch/clk.h>
 #include <asm/arch/cpu.h>
 #include <asm/arch/power.h>
+#endif
 #include <asm/gpio.h>
-#include <asm/io.h>
-#include <common.h>
 #include <div64.h>
 #include <fdtdec.h>
 #include <i2c.h>
@@ -97,11 +100,15 @@ static int maxim_codec_do_init(struct sound_codec_info *pcodec_info,
 {
 	int ret = 0;
 
+#if !defined(CONFIG_TEGRA)
 	/* Enable codec clock */
 	set_xclkout();
 
 	/* shift the device address by 1 for 7 bit addressing */
 	g_maxim_codec_i2c_dev_addr = pcodec_info->i2c_dev_addr >> 1;
+#else	/* TEGRA */
+	g_maxim_codec_i2c_dev_addr = pcodec_info->i2c_dev_addr;
+#endif
 
 	if (pcodec_info->codec_type == CODEC_MAX_98095) {
 		g_maxim_codec_info.devtype = MAX98095;
@@ -167,13 +174,15 @@ static int get_maxim_codec_values(struct sound_codec_info *pcodec_info,
 	/* Get the node from FDT for codec */
 	node = fdtdec_next_compatible(blob, 0, COMPAT_MAXIM_98095_CODEC);
 	if (node <= 0) {
-		debug("EXYNOS_SOUND: No node for codec COMPAT_MAXIM_98095_CODEC in device tree\n");
+		debug("%s: No node for Max98095 codec in device tree\n",
+		      __func__);
 		debug("node = %d\n", node);
 
 		node = fdtdec_next_compatible(blob, 0,
 					      COMPAT_MAXIM_98090_CODEC);
 		if (node <= 0) {
-			debug("EXYNOS_SOUND: No node for codec COMPAT_MAXIM_98090_CODEC in device tree\n");
+			debug("%s: No node for Max98090 codec in device tree\n",
+			      __func__);
 			debug("node = %d\n", node);
 			return -1;
 		}
@@ -190,6 +199,7 @@ static int get_maxim_codec_values(struct sound_codec_info *pcodec_info,
 	switch (compat) {
 	case COMPAT_SAMSUNG_S3C2440_I2C:
 	case COMPAT_SAMSUNG_EXYNOS5_I2C:
+	case COMPAT_NVIDIA_TEGRA114_I2C:
 		pcodec_info->i2c_bus = i2c_get_bus_num_fdt(parent);
 		error |= pcodec_info->i2c_bus;
 		debug("i2c bus = %d\n", pcodec_info->i2c_bus);

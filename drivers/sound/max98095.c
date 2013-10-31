@@ -9,12 +9,15 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
+
+#include <asm/io.h>
+#include <common.h>
+#if !defined(CONFIG_TEGRA)
 #include <asm/arch/clk.h>
 #include <asm/arch/cpu.h>
 #include <asm/arch/power.h>
+#endif
 #include <asm/gpio.h>
-#include <asm/io.h>
-#include <common.h>
 #include <div64.h>
 #include <fdtdec.h>
 #include <i2c.h>
@@ -345,4 +348,3 @@ err_access:
 
 	return 0;
 }
-
