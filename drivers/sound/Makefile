@@ -36,6 +36,8 @@ COBJS-$(CONFIG_SOUND_MAXIM_CODEC)	+= maxim_codec.o
 COBJS-$(CONFIG_SOUND_MAX98095)	+= max98095.o
 COBJS-$(CONFIG_SOUND_MAX98090)	+= max98090.o
 COBJS-$(CONFIG_SOUND_RT5640)	+= rt5640.o
+COBJS-$(CONFIG_TEGRA_SOUND)     += tegra-sound.o tegra-ahub.o
+COBJS-$(CONFIG_TEGRA_I2S)       += tegra-i2s.o
 
 COBJS	:= $(COBJS-y)
 SRCS	:= $(COBJS:.o=.c)
