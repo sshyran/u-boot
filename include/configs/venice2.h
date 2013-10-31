@@ -111,6 +111,16 @@
 #define CONFIG_TPM
 #define CONFIG_TPM_TIS_I2C
 
+/* Sound */
+#define CONFIG_CMD_SOUND
+#ifdef CONFIG_CMD_SOUND
+#define CONFIG_TEGRA_SOUND
+#define CONFIG_TEGRA_I2S
+#define CONFIG_SOUND_MAXIM_CODEC
+#define CONFIG_SOUND_MAX98090
+#define CONFIG_SOUND_MAX98095
+#endif
+
 #include "tegra-common-post.h"
 
 #endif /* __CONFIG_H */
