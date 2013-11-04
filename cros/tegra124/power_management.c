@@ -23,11 +23,11 @@
 
 #define PMIC_I2C_BUS		0x00
 #define PMIC_I2C_DEVICE_ADDRESS	0x40	/* AS3722 PMIC */
-#define PMIC_ASIC_ID1		0x90	/* AS3722 PMIC ASIC ID1, RO */
+#define PMIC_RESET_CTRL		0x36	/* AS3722 PMIC ResetControl */
 
 int is_processor_reset(void)
 {
-	/* TODO: add board specific supporting code */
+	/* TODO(twarren@nvidia.com): add board-specific code */
 	return 1;
 }
 
@@ -61,8 +61,8 @@ void cold_reboot(void)
 		goto fatal;
 	}
 
-	/* TODO(twarren@nvidia.com): Set cold-boot bit in PMIC */
-	pmic_set_bit(PMIC_ASIC_ID1, 0, 0);	/* dummy write to ASIC_ID */
+	/*  Set force-reset bit in PMIC reg 0x36 */
+	pmic_set_bit(PMIC_RESET_CTRL, 0, 1);
 
 	/* Wait for 10 ms. If not rebootting, go to endless loop */
 	udelay(10 * 1000);
@@ -81,8 +81,8 @@ void power_off(void)
 		goto fatal;
 	}
 
-	/* TODO(twarren@nvidia.com): Set power-off bits in PMIC */
-	pmic_set_bit(PMIC_ASIC_ID1, 0, 0);	/* dummy write to ASIC_ID */
+	/* Set shut-down bit in PMIC reg 0x36*/
+	pmic_set_bit(PMIC_RESET_CTRL, 1, 1);
 
 	/* Wait for 10 ms. If not powering off, go to endless loop */
 	udelay(10 * 1000);
