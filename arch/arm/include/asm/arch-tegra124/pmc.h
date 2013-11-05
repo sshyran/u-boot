@@ -373,5 +373,7 @@ struct pmc_ctlr {
 
 /* APBDEV_PMC_CNTRL2_0 0x440 */
 #define HOLD_CKE_LOW_EN				(1 << 12)
+/* APBDEV_PMC_CLK_OUT_CNTRL_0 0x1A8 */
+#define CLK1_EN					(1 << 2)
 
 #endif	/* _TEGRA124_PMC_H_ */

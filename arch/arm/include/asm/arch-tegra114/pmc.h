@@ -349,4 +349,7 @@ struct pmc_ctlr {
 #define PWRGATE_STATUS_XUSBB_ENABLE		(1 << 21)
 #define PWRGATE_STATUS_XUSBC_ENABLE		(1 << 22)
 
+/* APBDEV_PMC_CLK_OUT_CNTRL_0 0x1A8 */
+#define CLK1_EN					(1 << 2)
+
 #endif	/* _TEGRA114_PMC_H_ */

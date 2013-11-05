@@ -26,8 +26,9 @@
 #include <i2c.h>
 #include <i2s.h>
 #include <sound.h>
-#include <asm/arch/sound.h>
 #include <asm/arch/ahub.h>
+#include <asm/arch/pmc.h>
+#include <asm/arch/sound.h>
 #include "rt5640.h"
 #include "max98090.h"
 #include "maxim_codec.h"
@@ -113,17 +114,18 @@ static int codec_init(const void *blob, struct i2stx_info *pi2s_tx)
 
 void set_mclk_from_ap(void)
 {
-	u32 reg;
+	struct pmc_ctlr *pmc = (struct pmc_ctlr *)NV_PA_PMC_BASE;
+
 	debug("%s: Set codec MCLK to CLK1_OUT, 12MHz OSC\n", __func__);
 
-	reg = readl(0x60006360);	/* CLK_ENB_V */
-	reg |= (1 << 24);		/* CLK_ENB_EXTPERIPH1 */
-	writel(reg, 0x60006360);
-	reg = readl(0x7000E5A8);	/* PMC_CLK_CNTRL */
-	reg |= (1 << 2);		/* CLK1_EN */
-	writel(reg, 0x7000E5A8);
+	/* Enable EXTPERIPH1 */
+	clock_set_enable(PERIPH_ID_EXTPERIPH1, 1);
+
+	/* Force CLK1 to run */
+	setbits_le32(&pmc->pmc_clk_out_cntrl, CLK1_EN);
+
 	/* CLK1_OUT -> codec MCLK s/b running at 12MHz (OSC) now */
-	writel(0x60000000, 0x600063EC);
+	clock_ll_set_source_divisor(PERIPH_ID_EXTPERIPH1, 6, 0);
 }
 
 int sound_init(const void *blob)
