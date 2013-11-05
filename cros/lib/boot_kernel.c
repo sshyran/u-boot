@@ -327,16 +327,16 @@ int ft_board_setup(void *fdt, bd_t *bd)
 	crossystem_data_t *cdata = g_crossystem_data;
 	int err;
 
-	if (!vboot == !cdata) {
-		VBDEBUG("warning: Must pass exactly one of vboot or cdata\n");
-		return 0;
-	}
-
 	/* This function should be provided by the board file */
 	err = ft_system_setup(fdt, bd);
 	if (err) {
 		VBDEBUG("warning: fdt_system_setup() fails\n");
 		return err;
+	}
+
+	if (!vboot == !cdata) {
+		VBDEBUG("warning: Must pass exactly one of vboot or cdata\n");
+		return 0;
 	}
 
 	if (vboot) {
