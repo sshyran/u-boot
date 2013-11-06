@@ -31,6 +31,7 @@
 #include <asm/arch-tegra/tegra1x4_spi.h>
 #include <spi.h>
 #include <fdtdec.h>
+#include <asm/arch/pinmux.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -114,6 +115,7 @@ struct tegra_spi_ctrl {
 	int valid;
 	int node;
 	uint deactivate_delay_us;	/* Delay to wait after deactivate */
+	int cs_pinmux;
 };
 
 struct tegra_spi_slave {
@@ -178,19 +180,6 @@ struct spi_slave *tegra114_spi_setup_slave(unsigned int bus, unsigned int cs,
 	spi->ctrl->mode = mode;
 	spi->last_transaction_us = timer_get_us();
 
-	/* Change SPI clock to correct frequency, PLLP_OUT0 source */
-	clock_start_periph_pll(spi->ctrl->periph_id, CLOCK_ID_PERIPH,
-			       spi->ctrl->freq);
-
-	/*
-	 * The above set clock routine resets SPI controller, which causes CS
-	 * to be active for a short duration while setting clock.
-	 * Because of this CS active but no data transaction, EC is complaining
-	 * (outputting to console) and not able to receive next CS immediately.
-	 * Delay a little bit.
-	 */
-	udelay(100);
-
 	return &spi->slave;
 }
 
@@ -236,6 +225,10 @@ int tegra114_spi_init(int *node_list, int count)
 		ctrl->node = node;
 		ctrl->deactivate_delay_us = fdtdec_get_int(gd->fdt_blob, node,
 						"spi-deactivate-delay", 0);
+
+		ctrl->cs_pinmux = fdtdec_get_int(gd->fdt_blob, node,
+						 "nvidia,cs-pinmux", 0);
+
 		debug("%s: found controller at %p, freq = %u, periph_id = %d\n",
 		      __func__, ctrl->regs, ctrl->freq, ctrl->periph_id);
 	}
@@ -247,6 +240,26 @@ int tegra114_spi_claim_bus(struct spi_slave *slave)
 {
 	struct tegra_spi_slave *spi = to_tegra_spi(slave);
 	struct spi_regs *regs = spi->ctrl->regs;
+
+	/*
+	 * Change SPI clock to correct frequency, PLLP_OUT0 source
+	 *
+	 * Note that calling clock_start_periph_pll() will reset the SPI
+	 * controller, and that will cause CS line to be asserted.
+	 *
+	 * We tristate (and pull-up) the CS line before the call, so the line
+	 * won't be driven out low during reset.
+	 */
+	if (spi->ctrl->cs_pinmux) {
+		pinmux_set_pullupdown(spi->ctrl->cs_pinmux, PMUX_PULL_UP);
+		pinmux_tristate_enable(spi->ctrl->cs_pinmux);
+	}
+	clock_start_periph_pll(spi->ctrl->periph_id, CLOCK_ID_PERIPH,
+			       spi->ctrl->freq);
+	if (spi->ctrl->cs_pinmux) {
+		pinmux_set_pullupdown(spi->ctrl->cs_pinmux, PMUX_PULL_NORMAL);
+		pinmux_tristate_disable(spi->ctrl->cs_pinmux);
+	}
 
 	/* Clear stale status here */
 	setbits_le32(&regs->fifo_status,

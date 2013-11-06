@@ -79,6 +79,7 @@
 	spi@7000da00 {
 		status = "okay";
 		spi-max-frequency = <25000000>;
+		nvidia,cs-pinmux = <122>;	/* GPIO_PI3 */
 		firmware_storage_spi: flash@0 {
 			spi-max-frequency = <25000000>;
 		};
@@ -88,6 +89,7 @@
 		status = "okay";
 		spi-max-frequency = <25000000>;
 		spi-deactivate-delay = <100>;
+		nvidia,cs-pinmux = <11>;	/* ULPI_STP */
 		cros-ec {
 			compatible = "google,cros-ec";
 			spi-half-duplex;

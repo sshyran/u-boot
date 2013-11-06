@@ -1,0 +1,29 @@
+Tegra T114/124 SPI controllers
+
+In DTS file:
+
+Optional property:
+  - nvidia,cs-pinmux: specifies pinmux number of the CS line.
+	The CS line will be asserted when SPI driver resets the SPI
+	controller. Some SPI devices (ex. EC) don't like CS being active
+	but without actual data transaction. The SPI driver uses this
+	property to control the CS line so the signal won't be driven
+	out when SPI controller is reset.
+
+Example:
+
+	spi@7000d400 {
+		status = "okay";
+		spi-max-frequency = <25000000>;
+		spi-deactivate-delay = <100>;
+		nvidia,cs-pinmux = <11>;
+		cros-ec {
+			compatible = "google,cros-ec";
+			spi-half-duplex;
+			spi-frame-header = <0xec>;
+			spi-max-frequency = <4000000>;
+			spi-max-timeout-ms = <100>;
+			ec-interrupt = <&gpio 23 1>; /* PC7, KBC_IRQ_L */
+			reg = <0>;
+		};
+	};
