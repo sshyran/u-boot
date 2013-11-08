@@ -47,6 +47,11 @@ void pmic_enable_cpu_vdd(void)
 	/*
 	 * Bring up VDD_CPU via the AS3722 PMIC on the PWR I2C bus.
 	 * First set VDD to 1.0V, then enable the VDD regulator.
+	 *
+	 * NOTE: On Venice2 w/older PMIC, this new setting will
+	 * give a VDD_CPU of 1.2V, which HW says is OK. On the
+	 * new Norrin FFD/Google reference board, it'll be 1.0V,
+	 * due to a new rev AS3722 PMIC used on those boards.
 	 */
 	tegra_i2c_ll_write_addr(AS3722_I2C_ADDR, 2);
 	tegra_i2c_ll_write_data(AS3722_SD0VOLTAGE_DATA, I2C_SEND_2_BYTES);
