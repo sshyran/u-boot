@@ -16,6 +16,7 @@
 
 #include <common.h>
 #include <asm-generic/gpio.h>
+#include <asm/arch-tegra/board.h>
 #include <asm/arch/gpio.h>
 #include <asm/arch/gp_padctrl.h>
 #include <asm/arch/pinmux.h>
@@ -157,4 +158,22 @@ void board_vreg_init(void)
 	/* Enable touchscreen */
 	gpio_request(TS_SHDN_L_GPIO, "ts_shdn_l");
 	gpio_direction_output(TS_SHDN_L_GPIO, 1);
+
+	switch (board_get_revision()) {
+	case VENICE2_ID:
+		printf("Venice2 board ID (PM371)\n");
+		break;
+	case NORRIN_FFD_ID:
+		printf("Norrin Logan FFD board ID (PM370)\n");
+		break;
+	case NORRIN_ERS_ID:
+		printf("Norrin ERS board ID (PM374)\n");
+		break;
+	case NORRIN_PIX_ID:
+		printf("Norrin FFD, Pixel-based board ID (PM373)\n");
+		break;
+	default:
+		printf("UKNOWN BOARD ID: 0x%04X\n", board_get_revision());
+		break;
+	}
 }

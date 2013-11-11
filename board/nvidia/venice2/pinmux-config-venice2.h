@@ -320,7 +320,12 @@ static struct pingroup_config unused_pins_lowpower[] = {
 
 /* Initially setting all used GPIO's to non-TRISTATE */
 static struct pingroup_config tegra124_pinmux_set_nontristate[] = {
-	DEFAULT_PINMUX(GPIO_X4_AUD,     RSVD1,  DOWN,    NORMAL,    OUTPUT),
+	/* These four are the board ID straps on Venice2 */
+	DEFAULT_PINMUX(KB_COL3,         RSVD1,  NORMAL,  NORMAL,    INPUT),
+	DEFAULT_PINMUX(KB_ROW17,        RSVD1,  NORMAL,  NORMAL,    INPUT),
+	DEFAULT_PINMUX(GPIO_X1_AUD,     RSVD1,  NORMAL,  NORMAL,    INPUT),
+	DEFAULT_PINMUX(GPIO_X4_AUD,     RSVD1,  NORMAL,  NORMAL,    INPUT),
+
 	DEFAULT_PINMUX(GPIO_X7_AUD,     RSVD1,  DOWN,    NORMAL,    OUTPUT),
 	DEFAULT_PINMUX(GPIO_W2_AUD,     RSVD1,  UP,      NORMAL,    INPUT),
 	DEFAULT_PINMUX(GPIO_X3_AUD,     RSVD3,  UP,      NORMAL,    INPUT),
@@ -340,7 +345,6 @@ static struct pingroup_config tegra124_pinmux_set_nontristate[] = {
 
 	DEFAULT_PINMUX(CLK2_REQ,        RSVD3,  NORMAL,  NORMAL,    OUTPUT),
 
-	DEFAULT_PINMUX(KB_COL3,         KBC,    UP,      NORMAL,    OUTPUT),
 	DEFAULT_PINMUX(KB_COL4,		SDMMC3, UP,	 NORMAL,    INPUT),
 	DEFAULT_PINMUX(KB_ROW8,         KBC,    UP,      NORMAL,    INPUT),
 

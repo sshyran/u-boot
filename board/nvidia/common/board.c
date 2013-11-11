@@ -54,6 +54,7 @@
 #ifdef CONFIG_USB_EHCI_TEGRA
 #include <asm/arch/usb.h>
 #endif
+#include <asm/gpio.h>
 #include <i2c.h>
 #include <spi.h>
 #include <cros_ec.h>
@@ -380,4 +381,29 @@ int arch_early_init_r(void)
 	}
 #endif
 	return 0;
+}
+
+int board_get_revision(void)
+{
+	int board_id = -1;
+
+#if defined(CONFIG_TEGRA124)
+	gpio_request(GPIO_PQ3, "BD_ID0");
+	gpio_direction_input(GPIO_PQ3);
+	gpio_request(GPIO_PT1, "BD_ID1");
+	gpio_direction_input(GPIO_PT1);
+	gpio_request(GPIO_PX1, "BD_ID2");
+	gpio_direction_input(GPIO_PX1);
+	gpio_request(GPIO_PX4, "BD_ID3");
+	gpio_direction_input(GPIO_PX4);
+
+	/* Use GPIOs to read BOARD ID straps 0-3 and return an ID */
+	board_id = gpio_get_value(GPIO_PQ3);
+	board_id |= (gpio_get_value(GPIO_PT1) << 1);
+	board_id |= (gpio_get_value(GPIO_PX1) << 2);
+	board_id |= (gpio_get_value(GPIO_PX4) << 3);
+
+	debug("%s: Board ID from GPIOs is 0x%04X\n", __func__, board_id);
+#endif
+	return board_id;
 }

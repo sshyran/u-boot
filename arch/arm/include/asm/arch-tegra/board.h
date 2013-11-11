@@ -1,24 +1,17 @@
 /*
- *  (C) Copyright 2010,2011
- *  NVIDIA Corporation <www.nvidia.com>
+ * Copyright (c) 2013, NVIDIA CORPORATION.  All rights reserved.
  *
- * See file CREDITS for list of people who contributed to this
- * project.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _TEGRA_BOARD_H_
@@ -47,5 +40,13 @@ void pin_mux_display(void);  /* overrideable DISPLAY pinmux setup */
 
 /* Enable needed power rails */
 void board_vreg_init(void);
+
+int board_get_revision(void);
+
+/* Currently only Venice2 and derivitives use a board ID */
+#define VENICE2_ID		0	/* 0000 from board ID straps */
+#define NORRIN_ERS_ID		4	/* 0100 from board ID straps */
+#define NORRIN_PIX_ID		8	/* 1000 from board ID straps */
+#define NORRIN_FFD_ID		9	/* 1001 from board ID straps */
 
 #endif
