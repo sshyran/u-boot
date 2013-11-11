@@ -25,6 +25,7 @@
 #include <asm/io.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/clk_rst.h>
+#include <asm/arch-tegra/board.h>
 #include <asm/arch-tegra/tegra_mmc.h>
 #include <mmc.h>
 
@@ -527,8 +528,12 @@ int tegra_mmc_getcd(struct mmc *mmc)
 
 	debug("tegra_mmc_getcd called\n");
 
-	if (fdt_gpio_isvalid(&host->cd_gpio))
-		return fdtdec_get_gpio(&host->cd_gpio);
+	if (fdt_gpio_isvalid(&host->cd_gpio)) {
+		if (board_get_revision() == NORRIN_FFD_ID)
+			return !fdtdec_get_gpio(&host->cd_gpio);
+		else
+			return fdtdec_get_gpio(&host->cd_gpio);
+	}
 
 	return 1;
 }
