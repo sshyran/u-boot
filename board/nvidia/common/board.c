@@ -235,9 +235,6 @@ int board_late_init(void)
 	/* TEGRA_LP0_ADDR is gd->arch.tegra_lp0_addr in this case */
 	TEGRA_LP0_ADDR = (unsigned long)memalign(TEGRA_LP0_ALIGN,
 						 TEGRA_LP0_SIZE);
-
-	/* set "lp0_vec=" to extra_bootargs environment variable */
-	warmboot_set_lp0_vec(TEGRA_LP0_ADDR, TEGRA_LP0_SIZE);
 #endif
 	/* prepare the WB code to LP0 location */
 	warmboot_prepare_code(TEGRA_LP0_ADDR, TEGRA_LP0_SIZE);
