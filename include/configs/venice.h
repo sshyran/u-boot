@@ -25,6 +25,10 @@
 
 #include "tegra114-common.h"
 
+#ifdef CONFIG_TEGRA_LP0
+#define CONFIG_TEGRA114_LP0
+#endif
+
 /* Keep L2 cache disabled */
 #define CONFIG_SYS_DCACHE_OFF	/* TODO(twarren@nvidia.com): enable this? */
 /* Use memory controller SDRAM size instead of ODMDATA */

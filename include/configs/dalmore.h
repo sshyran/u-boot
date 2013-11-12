@@ -25,6 +25,10 @@
 
 #include "tegra114-common.h"
 
+#ifdef CONFIG_TEGRA_LP0
+#define CONFIG_TEGRA114_LP0
+#endif
+
 /* Must be off for Dalmore to boot !?!? FIXME */
 #define CONFIG_SYS_DCACHE_OFF
 
@@ -46,6 +50,7 @@
 #define CONFIG_MACH_TYPE		MACH_TYPE_DALMORE
 
 #define CONFIG_BOARD_EARLY_INIT_F
+#define CONFIG_BOARD_LATE_INIT
 
 /* I2C */
 #define CONFIG_TEGRA_I2C

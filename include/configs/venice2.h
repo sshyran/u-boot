@@ -26,6 +26,10 @@
 
 #include "tegra124-common.h"
 
+#ifdef CONFIG_TEGRA_LP0
+#define CONFIG_TEGRA124_LP0
+#endif
+
 /* Use memory controller SDRAM size instead of ODMDATA */
 #define CONFIG_TEGRA_USE_EMC_DRAM_SIZE
 
