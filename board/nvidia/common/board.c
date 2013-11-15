@@ -385,9 +385,11 @@ int arch_early_init_r(void)
 
 int board_get_revision(void)
 {
-	int board_id = -1;
+	int rev = -1;
 
 #if defined(CONFIG_TEGRA124)
+	int board_id;
+
 	gpio_request(GPIO_PQ3, "BD_ID0");
 	gpio_direction_input(GPIO_PQ3);
 	gpio_request(GPIO_PT1, "BD_ID1");
@@ -404,6 +406,18 @@ int board_get_revision(void)
 	board_id |= (gpio_get_value(GPIO_PX4) << 3);
 
 	debug("%s: Board ID from GPIOs is 0x%04X\n", __func__, board_id);
+
+	switch (board_id) {
+	case VENICE2_ID:
+		rev = 0;
+		break;
+	case NORRIN_ERS_ID:
+	case NORRIN_PIX_ID:
+	case NORRIN_FFD_ID:
+		rev = 1;
+		break;
+	}
+
 #endif
-	return board_id;
+	return rev;
 }

@@ -160,17 +160,11 @@ void board_vreg_init(void)
 	gpio_direction_output(TS_SHDN_L_GPIO, 1);
 
 	switch (board_get_revision()) {
-	case VENICE2_ID:
-		printf("Venice2 board ID (PM371)\n");
+	case 0:
+		printf("Venice2 (Nyan Rev0) board ID\n");
 		break;
-	case NORRIN_FFD_ID:
-		printf("Norrin Logan FFD board ID (PM370)\n");
-		break;
-	case NORRIN_ERS_ID:
-		printf("Norrin ERS board ID (PM374)\n");
-		break;
-	case NORRIN_PIX_ID:
-		printf("Norrin FFD, Pixel-based board ID (PM373)\n");
+	case 1:
+		printf("Norrin (Nyan Rev1) board ID\n");
 		break;
 	default:
 		printf("UKNOWN BOARD ID: 0x%04X\n", board_get_revision());

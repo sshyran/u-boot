@@ -529,7 +529,7 @@ int tegra_mmc_getcd(struct mmc *mmc)
 	debug("tegra_mmc_getcd called\n");
 
 	if (fdt_gpio_isvalid(&host->cd_gpio)) {
-		if (board_get_revision() == NORRIN_FFD_ID)
+		if (board_get_revision() == 1)
 			return !fdtdec_get_gpio(&host->cd_gpio);
 		else
 			return fdtdec_get_gpio(&host->cd_gpio);
