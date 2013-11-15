@@ -8,7 +8,7 @@
 
 / {
 	model = "NVIDIA Venice2";
-	compatible = "nvidia,venice2", "nvidia,tegra124";
+	compatible = "google,nyan-rev#", "nvidia,venice2", "nvidia,tegra124";
 
 	config {
 		hwid = "NVIDIA Venice2";
