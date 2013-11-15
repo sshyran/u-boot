@@ -103,6 +103,7 @@
 /* FIT image support */
 #define CONFIG_FIT
 #define CONFIG_FIT_BEST_MATCH
+#define CONFIG_FIT_MATCH_ADD_REV
 
 /* USB keyboard */
 #define CONFIG_USB_KEYBOARD
