@@ -17,6 +17,7 @@
 #include <common.h>
 #include <asm/io.h>
 #include <asm/arch-tegra/ap.h>
+#include <asm/arch-tegra/mc.h>
 #include <asm/arch/clk_rst.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/pmc.h>
@@ -32,6 +33,7 @@ void wb_start(void)
 	struct flow_ctlr *flow = (struct flow_ctlr *)NV_PA_FLOW_BASE;
 	struct clk_rst_ctlr *clkrst = (struct clk_rst_ctlr *)NV_PA_CLK_RST_BASE;
 	struct sysctr_ctlr *sysctr = (struct sysctr_ctlr *)NV_PA_TSC_BASE;
+	struct mc_ctlr *mc = (struct mc_ctlr *)NV_PA_MC_BASE;
 	u32 reg;
 	u32 reg_1;
 	u32 reg_saved;
@@ -343,6 +345,10 @@ void wb_start(void)
 
 	/* restore the original PMC_CPUPWRGOOD_TIMER register */
 	writel(reg_saved, &pmc->pmc_cpupwrgood_timer);
+
+	/* disable VPR */
+	writel(0x00000000, &mc->mc_video_protect_size_mb);
+	writel(0x00000001, &mc->mc_video_protect_reg_ctrl);
 
 avp_halt:
 	reg = EVENT_MODE_STOP | EVENT_JTAG;

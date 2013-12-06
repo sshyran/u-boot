@@ -179,4 +179,7 @@ void s_init(void)
 
 	/* init the cache */
 	config_cache();
+
+	/* init vpr */
+	config_vpr();
 }

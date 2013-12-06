@@ -36,6 +36,10 @@ struct mc_ctlr {
 	u32 mc_emem_adr_cfg_dev0;		/* offset 0x58 */
 	u32 mc_emem_adr_cfg_dev1;		/* offset 0x5C */
 	u32 reserved3[12];			/* offset 0x60 - 0x8C */
-	u32 mc_emem_arb_reserved[40];		/* offset 0x90 - 0xFF */
+	u32 mc_emem_arb_reserved[28];		/* offset 0x90 - 0xFC */
+	u32 reserved4[338];			/* offset 0x100 - 0x644 */
+	u32 mc_video_protect_bom;		/* offset 0x648 */
+	u32 mc_video_protect_size_mb;		/* offset 0x64c */
+	u32 mc_video_protect_reg_ctrl;		/* offset 0x650 */
 };
 #endif	/* _TEGRA_MC_H_ */

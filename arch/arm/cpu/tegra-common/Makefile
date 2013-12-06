@@ -28,7 +28,7 @@ include $(TOPDIR)/config.mk
 LIB	= $(obj)libcputegra-common.o
 
 SOBJS += lowlevel_init.o
-COBJS-y	+= ap.o board.o sys_info.o timer.o clock.o cache.o
+COBJS-y	+= ap.o board.o sys_info.o timer.o clock.o cache.o vpr.o
 COBJS-$(CONFIG_TEGRA_LP0) += crypto.o
 COBJS-$(CONFIG_TEGRA114_LP0) += t1x4_warmboot.o
 COBJS-$(CONFIG_TEGRA124_LP0) += t1x4_warmboot.o
