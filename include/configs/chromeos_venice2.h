@@ -20,7 +20,8 @@
 #define CONFIG_EXTRA_BOOTARGS \
 	"console=ttyS0,115200n8 " \
 	"noinitrd " \
-	"usbcore.old_scheme_first=1 \0 "
+	"usbcore.old_scheme_first=1 " \
+	"cros_debug \0 "
 
 /* Add chromeos specific only for non spl build */
 #ifndef CONFIG_SPL_BUILD
