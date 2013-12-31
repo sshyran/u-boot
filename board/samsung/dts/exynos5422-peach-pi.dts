@@ -18,18 +18,5 @@
 	model = "Google Peach Pi";
 
 	compatible = "google,pi-rev#", "google,pi",
-		"google,peach", "samsung,exynos5420", "samsung,exynos5";
-
-	/* For Early-Firmware-Selection */
-	flash@0 {
-		rw-a-spl {
-			hash-target;
-		};
-		rw-b-spl {
-			hash-target;
-		};
-		ro-spl-rec {
-			hash-target;
-		};
-	};
+		"google,peach", "samsung,exynos5422", "samsung,exynos5";
 };
