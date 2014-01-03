@@ -2,7 +2,7 @@ Tegra T114/124 SPI controllers
 
 In DTS file:
 
-Optional property:
+Required property:
   - nvidia,cs-pinmux: specifies pinmux number of the CS line.
 	The CS line will be asserted when SPI driver resets the SPI
 	controller. Some SPI devices (ex. EC) don't like CS being active

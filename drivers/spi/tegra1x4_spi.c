@@ -213,6 +213,12 @@ int tegra114_spi_init(int *node_list, int count)
 			debug("%s: no spi max frequency found\n", __func__);
 			continue;
 		}
+		ctrl->cs_pinmux = fdtdec_get_int(gd->fdt_blob, node,
+						 "nvidia,cs-pinmux", 0);
+		if (!ctrl->cs_pinmux) {
+			debug("%s: cs-pinmux must be specified.\n", __func__);
+			continue;
+		}
 
 		ctrl->periph_id = clock_decode_periph_id(gd->fdt_blob, node);
 		if (ctrl->periph_id == PERIPH_ID_NONE) {
@@ -225,9 +231,6 @@ int tegra114_spi_init(int *node_list, int count)
 		ctrl->node = node;
 		ctrl->deactivate_delay_us = fdtdec_get_int(gd->fdt_blob, node,
 						"spi-deactivate-delay", 0);
-
-		ctrl->cs_pinmux = fdtdec_get_int(gd->fdt_blob, node,
-						 "nvidia,cs-pinmux", 0);
 
 		debug("%s: found controller at %p, freq = %u, periph_id = %d\n",
 		      __func__, ctrl->regs, ctrl->freq, ctrl->periph_id);

@@ -130,7 +130,7 @@ static struct pingroup_config tegra124_pinmux_common[] = {
 	DEFAULT_PINMUX(ULPI_CLK,      SPI1,        UP,        NORMAL,   INPUT),
 	DEFAULT_PINMUX(ULPI_DIR,      SPI1,        UP,        NORMAL,   INPUT),
 	DEFAULT_PINMUX(ULPI_NXT,      SPI1,        NORMAL,    NORMAL,   INPUT),
-	DEFAULT_PINMUX(ULPI_STP,      SPI1,        NORMAL,    NORMAL,   INPUT),
+	DEFAULT_PINMUX(ULPI_STP,      SPI1,        UP,        TRISTATE, INPUT),
 
 	/* I2C3 (TPM) pinmux */
 	I2C_PINMUX(CAM_I2C_SCL, I2C3, NORMAL, NORMAL, INPUT, DEFAULT, DISABLE),
