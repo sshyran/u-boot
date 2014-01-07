@@ -74,7 +74,7 @@
 #endif
 #define RPLL_MDIV		0x5E
 #define RPLL_PDIV		0x2
-#define RPLL_SDIV		0x4
+#define RPLL_SDIV		0x3
 #define LCD_BPP			LCD_COLOR16
 
 #define CONFIG_CHROMEOS_GPIO_FLAG
