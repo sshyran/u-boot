@@ -136,10 +136,10 @@ static struct clk_bit_info *get_table_index(int periph_id)
 	int i, count;
 	struct clk_bit_info *table;
 
-	if (proid_is_exynos5420()) {
+	if (proid_is_exynos542x()) {
 		table = exynos5420_bit_info_table;
 		count = ARRAY_SIZE(exynos5420_bit_info_table);
-	} else {
+	} else if (proid_is_exynos5250()) {
 		table = exynos5_bit_info_table;
 		count = ARRAY_SIZE(exynos5_bit_info_table);
 	}
@@ -427,7 +427,7 @@ static long exynos5_src_clk(int peripheral)
 
 static unsigned long get_src_clk(int peripheral)
 {
-	if (proid_is_exynos5420())
+	if (proid_is_exynos542x())
 		return exynos5420_src_clk(peripheral);
 	else if (proid_is_exynos5250())
 		return exynos5_src_clk(peripheral);
@@ -1335,7 +1335,7 @@ static unsigned long exynos4_get_i2c_clk(void)
 unsigned long get_pll_clk(int pllreg)
 {
 	if (cpu_is_exynos5()) {
-		if (proid_is_exynos5420())
+		if (proid_is_exynos542x())
 			return exynos5420_get_pll_clk(pllreg);
 		return exynos5_get_pll_clk(pllreg);
 	} else {
@@ -1409,18 +1409,20 @@ unsigned long get_lcd_clk(void)
 {
 	if (cpu_is_exynos4())
 		return exynos4_get_lcd_clk();
-	else if (proid_is_exynos5420())
+	else if (proid_is_exynos542x())
 		return exynos5420_get_lcd_clk();
-	return exynos5_get_lcd_clk();
+	else if (proid_is_exynos5250())
+		return exynos5_get_lcd_clk();
+	return 0;
 }
 
 void set_lcd_clk(void)
 {
 	if (cpu_is_exynos4())
 		exynos4_set_lcd_clk();
-	else if (proid_is_exynos5420())
+	else if (proid_is_exynos542x())
 		exynos5420_set_lcd_clk();
-	else
+	else if (proid_is_exynos5250())
 		exynos5_set_lcd_clk();
 }
 
@@ -1450,7 +1452,7 @@ int set_i2s_clk_prescaler(unsigned int src_frq, unsigned int dst_frq)
 void set_i2s_clk_source(void)
 {
 	if (cpu_is_exynos5()) {
-		if (proid_is_exynos5420())
+		if (proid_is_exynos542x())
 			clock_set_periph_source(PERIPH_ID_I2S0,
 						EXYNOS5420_CLK_SRC_SCLK_EPLL);
 		else

@@ -1019,25 +1019,23 @@ static struct gpio_info exynos5420_gpio_data[EXYNOS5420_GPIO_NUM_PARTS] = {
 static inline struct gpio_info *get_gpio_data(void)
 {
 	if (cpu_is_exynos5()) {
-		if (proid_is_exynos5420())
+		if (proid_is_exynos542x())
 			return exynos5420_gpio_data;
-		else
+		else if (proid_is_exynos5250())
 			return exynos5_gpio_data;
 	}
-	else
-		return NULL;
+	return NULL;
 }
 
 static inline unsigned int get_bank_num(void)
 {
 	if (cpu_is_exynos5()) {
-		if (proid_is_exynos5420())
+		if (proid_is_exynos542x())
 			return EXYNOS5420_GPIO_NUM_PARTS;
-		else
+		else if (proid_is_exynos5250())
 			return EXYNOS5_GPIO_NUM_PARTS;
 	}
-	else
-		return 0;
+	return 0;
 }
 
 int s5p_name_to_gpio(const char *name);
