@@ -46,7 +46,7 @@
 #define CONFIG_IRAM_TOP			0x02074000
 
 #define CONFIG_DEVICE_TREE_LIST "exynos5420-peach-pit" \
-	" exynos5422-peach-pi exynos5420-smdk5420"
+	" exynos5420-peach-pi exynos5422-peach-pi exynos5420-smdk5420"
 
 /* DRAM Memory Banks */
 #define CONFIG_NR_DRAM_BANKS	7
