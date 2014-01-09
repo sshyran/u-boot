@@ -35,8 +35,8 @@
 /* Enable Macronix SPI flash support for Spring board */
 #define CONFIG_SPI_FLASH_MACRONIX
 
-#define CONFIG_DEVICE_TREE_LIST "exynos5250-smdk5250" \
-	" exynos5250-snow exynos5250-spring"
+#define CONFIG_DEVICE_TREE_LIST "exynos5250-skate" \
+	" exynos5250-smdk5250 exynos5250-snow exynos5250-spring"
 
 /* DRAM Memory Banks */
 #define CONFIG_NR_DRAM_BANKS	4
