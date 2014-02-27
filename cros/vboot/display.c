@@ -18,6 +18,7 @@
 #include <cros/cros_fdtdec.h>
 #include <cros/common.h>
 #include <cros/crossystem_data.h>
+#include <cros/cros_init.h>
 #include <cros/vboot.h>
 #include <lzma/LzmaTypes.h>
 #include <lzma/LzmaDec.h>
@@ -69,6 +70,8 @@ static struct display_callbacks display_callbacks_ = {
 
 VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
 {
+	lcd_init_if_needed(); /* just in case it was deferred */
+
 	/*
 	* crosbug.com/p/13492
 	* This may be an unexpected display init request - probably due to a
