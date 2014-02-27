@@ -260,6 +260,12 @@ int cleanup_before_linux(void)
 	return 0;
 }
 
+/* Just a stub for now to make cros x86 targets compile */
+int cleanup_before_linux_select(int flags)
+{
+	return cleanup_before_linux();
+}
+
 #ifdef CONFIG_DISPLAY_CPUINFO
 int print_cpuinfo(void)
 {
