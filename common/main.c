@@ -442,6 +442,29 @@ static void process_boot_delay(void)
 }
 #endif /* CONFIG_BOOTDELAY */
 
+__weak void lcd_late_init(void) {}
+
+void lcd_init_if_needed(void)
+{
+	if (defer_display_init(gd->fdt_blob))
+		lcd_late_init();
+}
+
+int defer_display_init(const void *blob)
+{
+#ifdef CONFIG_OF_CONTROL
+#define UNINITTED_VALUE 0xdeadbeef
+	static int lazy_init = UNINITTED_VALUE;
+
+	if (lazy_init == UNINITTED_VALUE)
+		lazy_init = fdtdec_get_config_int(blob, "lazy-init", -1);
+
+	return (lazy_init > 0);
+#else
+	return 0;
+#endif
+}
+
 void main_loop(void)
 {
 #if defined(CONFIG_CMDLINE) && !defined(CONFIG_SYS_HUSH_PARSER)
@@ -515,6 +538,7 @@ void main_loop(void)
 # endif
 	}
 #endif
+	lcd_init_if_needed();
 	/*
 	 * Main Loop for Monitor Command Processing
 	 */
