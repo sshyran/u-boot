@@ -207,6 +207,9 @@ int stdio_init (void)
 	/* Initialize the list */
 	INIT_LIST_HEAD(&(devs.list));
 
+	/* Keep this first to make sure serial console is always available. */
+	serial_stdio_init();
+
 #ifdef CONFIG_ARM_DCC
 	drv_arm_dcc_init ();
 #endif
@@ -226,7 +229,6 @@ int stdio_init (void)
 	drv_logbuff_init ();
 #endif
 	drv_system_init ();
-	serial_stdio_init ();
 #ifdef CONFIG_USB_TTY
 	drv_usbtty_init ();
 #endif
