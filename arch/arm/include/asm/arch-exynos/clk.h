@@ -32,6 +32,7 @@
 #define SPLL	7
 #define CPLL	8
 #define DPLL	9
+#define IPLL	10
 
 unsigned long get_pll_clk(int pllreg);
 unsigned long get_arm_clk(void);
