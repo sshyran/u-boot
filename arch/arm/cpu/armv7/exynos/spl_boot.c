@@ -21,25 +21,25 @@
  */
 
 #include <common.h>
-#include <config.h>
-#include <elog.h>
-#include <errno.h>
-#include <mmc.h>
-#include <dwmmc.h>
-#include <dwmmc_simple.h>
-#include <asm/gpio.h>
-#include <asm/sections.h>
-#include <asm/arch/clock.h>
 #include <asm/arch/clk.h>
+#include <asm/arch/clock.h>
 #include <asm/arch/cpu.h>
 #include <asm/arch/dmc.h>
 #include <asm/arch/gpio.h>
-#include <asm/arch/pinmux.h>
 #include <asm/arch/periph.h>
+#include <asm/arch/pinmux.h>
 #include <asm/arch/power.h>
 #include <asm/arch/setup.h>
 #include <asm/arch/spi.h>
 #include <asm/arch/spl.h>
+#include <asm/gpio.h>
+#include <asm/sections.h>
+#include <config.h>
+#include <dwmmc.h>
+#include <dwmmc_simple.h>
+#include <elog.h>
+#include <errno.h>
+#include <mmc.h>
 #include "clock_init.h"
 
 DECLARE_GLOBAL_DATA_PTR;
