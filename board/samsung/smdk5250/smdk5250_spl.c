@@ -71,3 +71,9 @@ struct spl_machine_param *spl_get_machine_params(void)
 
 	return &machine_param;
 }
+
+/* Amount of memory on 5250 platforms is determined at compile time. */
+phys_size_t board_get_memory_size(void)
+{
+	return CONFIG_NR_DRAM_BANKS * SDRAM_BANK_SIZE;
+}
