@@ -24,6 +24,7 @@
 
 #include <common.h>
 #include <config.h>
+#include <asm/gpio.h>
 #include <asm/arch/cpu.h>
 #include <asm/arch/dmc.h>
 #include <asm/arch/mct.h>
@@ -31,6 +32,7 @@
 #include <asm/arch/pinmux.h>
 #include <asm/arch/power.h>
 #include <asm/arch/setup.h>
+#include <asm/arch/spl.h>
 #include <asm/arch/system.h>
 #include <asm/arch/tzpc.h>
 
@@ -241,6 +243,34 @@ static void mct_init(void)
 	writel(MCT_G_TCON_TIMER_ENABLE, &mct->g_tcon);
 }
 
+/**
+ * Reset the CPU if the wakeup was not permitted.
+ *
+ * On some boards we need to look at a special GPIO to ensure that the wakeup
+ * from sleep was valid.  If the wakeup is not valid we need to go through a
+ * full reset.
+ */
+static void reset_if_invalid_wakeup(void)
+{
+	struct spl_machine_param *param = spl_get_machine_params();
+	const u32 gpio = param->bad_wake_gpio;
+	int is_bad_wake;
+
+	/* We're a bad wakeup if the gpio was defined and was high */
+	is_bad_wake = ((gpio != 0xffffffff) && gpio_get_value(gpio));
+
+	if (is_bad_wake) {
+		power_reset();
+
+		/*
+		 * We don't expect to get here, but it's better to loop
+		 * if some bug in U-Boot makes the reset not happen.
+		 */
+		while (1)
+			;
+	}
+}
+
 void lowlevel_do_init(int actions)
 {
 	/* Do this since it ensures that power remains up */
@@ -267,12 +297,24 @@ void lowlevel_do_init(int actions)
 	if (actions & DO_TIMER)
 		timer_init();
 
+	if (actions & DO_WAKEUP)
+		reset_if_invalid_wakeup();
+
 	if (actions & DO_CLOCKS) {
 		/*
-		 * TODO(vbendeb@chromium.org): Need to be able to skip SDRAM
-		 * init if EFS is enabled and this is the ROM SPL.
+		 * Always init the memory controller if we're at reset time.
+		 *
+		 * If we're not at reset time we'll check for a kernel patch
+		 * that might be in iRAM.  The kernel patch can return true
+		 * to indicate that it wants to skip the normal memory init.
+		 *
+		 * If and when EFS is enabled, the need for calling the patch
+		 * would be eliminated, the second pahse SPL coming from RW
+		 * firmware would take care of proper memory initialization.
 		 */
-		mem_ctrl_init(actions & DO_MEM_RESET);
+		if ((actions & DO_MEM_RESET) || !call_memctrl_patch())
+			mem_ctrl_init(actions & DO_MEM_RESET);
+
 		tzpc_init();
 	}
 }
