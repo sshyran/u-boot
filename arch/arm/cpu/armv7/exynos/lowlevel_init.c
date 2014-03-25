@@ -216,7 +216,7 @@ int lowlevel_select_actions(void)
 
 	switch (reset_status) {
 	case S5P_CHECK_SLEEP:
-		actions = DO_CLOCKS | DO_MEM_INIT | DO_WAKEUP;
+		actions = DO_CLOCKS | DO_WAKEUP;
 		break;
 	case S5P_CHECK_DIDLE:
 	case S5P_CHECK_LPA:
@@ -224,7 +224,7 @@ int lowlevel_select_actions(void)
 		break;
 	default:
 		/* This is a normal boot (not a wake from sleep) */
-		actions = DO_CLOCKS | DO_MEM_INIT | DO_MEM_RESET | DO_POWER |
+		actions = DO_CLOCKS | DO_MEM_RESET | DO_POWER |
 			DO_TIMER | DO_UART;
 	}
 
@@ -266,8 +266,13 @@ void lowlevel_do_init(int actions)
 #endif
 	if (actions & DO_TIMER)
 		timer_init();
-	if (actions & DO_MEM_INIT)
+
+	if (actions & DO_CLOCKS) {
+		/*
+		 * TODO(vbendeb@chromium.org): Need to be able to skip SDRAM
+		 * init if EFS is enabled and this is the ROM SPL.
+		 */
 		mem_ctrl_init(actions & DO_MEM_RESET);
-	if (actions & DO_CLOCKS)
 		tzpc_init();
+	}
 }

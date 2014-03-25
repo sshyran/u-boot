@@ -901,12 +901,6 @@ void board_init_f(unsigned long bootflag)
 	actions = lowlevel_select_actions();
 
 	/*
-	 * TODO(sjg@chromium.org): Support skipping the SDRAM init in RO SPL
-	 * if (param->skip_sdram_init)
-	 *	actions &= ~DO_MEM_INIT;
-	 */
-
-	/*
 	 * We allow only serial init in RW SPL since all the clocks, etc.
 	 * should be done by RO SPL.
 	 * TODO(sjg@chromium.org): We could init SDRAM only in RW SPL

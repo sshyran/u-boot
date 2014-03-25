@@ -944,12 +944,11 @@ enum {
 /* These are the things we can do during low-level init */
 enum boot_action_t {
 	DO_WAKEUP	= 1 << 0,
-	DO_CLOCKS	= 1 << 1,
-	DO_MEM_INIT	= 1 << 2,
-	DO_MEM_RESET	= 1 << 3,
-	DO_UART		= 1 << 4,
-	DO_POWER	= 1 << 5,
-	DO_TIMER	= 1 << 6,
+	DO_CLOCKS	= 1 << 1,	/* Inits both clocks and memory. */
+	DO_MEM_RESET	= 1 << 2,
+	DO_UART		= 1 << 3,
+	DO_POWER	= 1 << 4,
+	DO_TIMER	= 1 << 5,
 };
 
 /*
