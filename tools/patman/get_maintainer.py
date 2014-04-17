@@ -59,5 +59,5 @@ def GetMaintainer(fname, verbose=False):
             print "WARNING: Couldn't find get_maintainer.pl"
         return []
 
-    stdout = command.Output(get_maintainer, '--norolestats', fname)
+    stdout = command.Output(get_maintainer, '--norolestats', '--non', fname)
     return stdout.splitlines()
