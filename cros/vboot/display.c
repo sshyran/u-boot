@@ -92,6 +92,12 @@ VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
 	return VBERROR_SUCCESS;
 }
 
+VbError_t VbExDisplaySetDimension(uint32_t width, uint32_t height)
+{
+	/* Currently no platforms need it. */
+	return VBERROR_SUCCESS;
+}
+
 VbError_t VbExDisplayBacklight(uint8_t enable)
 {
 	/* TODO(waihong@chromium.org) Implement it later */
