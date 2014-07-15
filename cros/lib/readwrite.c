@@ -154,7 +154,7 @@ int vboot_rw_select_kernel(struct vboot_info *vboot)
 	/* If software sync is disabled, just leave this as original value. */
 	vboot->active_ec_firmware = ACTIVE_EC_FIRMWARE_UNCHANGE;
 	if (cros_fdtdec_config_has_prop(gd->fdt_blob, "ec-software-sync")) {
-		rv = VbExEcRunningRW(&in_rw);
+		rv = VbExEcRunningRW(0, &in_rw);
 		if (rv == VBERROR_SUCCESS) {
 			vboot->active_ec_firmware = in_rw ?
 					ACTIVE_EC_FIRMWARE_RW :

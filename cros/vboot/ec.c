@@ -30,10 +30,13 @@ void cros_ec_set_corrupt_image(int offset, int byte)
 	corrupt_byte = byte;
 }
 
-int VbExTrustEC(void)
+int VbExTrustEC(int devidx)
 {
 	struct vboot_flag_details gpio_ec_in_rw;
 	int okay;
+
+	if (devidx != 0)
+		return 0;
 
 	/* If we don't have a valid GPIO to read, we can't trust it. */
 	if (vboot_flag_fetch(VBOOT_FLAG_EC_IN_RW, &gpio_ec_in_rw)) {
@@ -50,10 +53,13 @@ int VbExTrustEC(void)
 	return okay;
 }
 
-VbError_t VbExEcRunningRW(int *in_rw)
+VbError_t VbExEcRunningRW(int devidx, int *in_rw)
 {
 	struct cros_ec_dev *mdev = board_get_cros_ec_dev();
 	enum ec_current_image image;
+
+	if (devidx != 0)
+		return VBERROR_UNKNOWN;
 
 	if (!mdev) {
 		VBDEBUG("%s: no cros_ec device\n", __func__);
@@ -77,9 +83,12 @@ VbError_t VbExEcRunningRW(int *in_rw)
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcJumpToRW(void)
+VbError_t VbExEcJumpToRW(int devidx)
 {
 	struct cros_ec_dev *mdev = board_get_cros_ec_dev();
+
+	if (devidx != 0)
+		return VBERROR_UNKNOWN;
 
 	if (!mdev) {
 		VBDEBUG("%s: no cros_ec device\n", __func__);
@@ -92,9 +101,12 @@ VbError_t VbExEcJumpToRW(void)
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcDisableJump(void)
+VbError_t VbExEcDisableJump(int devidx)
 {
 	struct cros_ec_dev *mdev = board_get_cros_ec_dev();
+
+	if (devidx != 0)
+		return VBERROR_UNKNOWN;
 
 	if (!mdev) {
 		VBDEBUG("%s: no cros_ec device\n", __func__);
@@ -107,10 +119,13 @@ VbError_t VbExEcDisableJump(void)
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcHashRW(const uint8_t **hash, int *hash_size)
+VbError_t VbExEcHashRW(int devidx, const uint8_t **hash, int *hash_size)
 {
 	struct cros_ec_dev *mdev = board_get_cros_ec_dev();
 	static struct ec_response_vboot_hash resp __aligned(8);
+
+	if (devidx != 0)
+		return VBERROR_UNKNOWN;
 
 	if (!mdev) {
 		VBDEBUG("%s: no cros_ec device\n", __func__);
@@ -174,10 +189,13 @@ static VbError_t ec_protect_rw(int protect)
 	return VBERROR_UNKNOWN;
 }
 
-VbError_t VbExEcUpdateRW(const uint8_t  *image, int image_size)
+VbError_t VbExEcUpdateRW(int devidx, const uint8_t  *image, int image_size)
 {
 	struct cros_ec_dev *mdev = board_get_cros_ec_dev();
 	int rv;
+
+	if (devidx != 0)
+		return VBERROR_UNKNOWN;
 
 	if (!mdev) {
 		VBDEBUG("%s: no cros_ec device\n", __func__);
@@ -194,12 +212,15 @@ VbError_t VbExEcUpdateRW(const uint8_t  *image, int image_size)
 	return rv == 0 ? VBERROR_SUCCESS : VBERROR_UNKNOWN;
 }
 
-VbError_t VbExEcProtectRW(void)
+VbError_t VbExEcProtectRW(int devidx)
 {
+	if (devidx != 0)
+		return VBERROR_UNKNOWN;
+
 	return ec_protect_rw(1);
 }
 
-VbError_t VbExEcGetExpectedRW(enum VbSelectFirmware_t select,
+VbError_t VbExEcGetExpectedRW(int devidx, enum VbSelectFirmware_t select,
 			      const uint8_t **image, int *image_size)
 {
 	struct fmap_firmware_entry *fw_entry;
@@ -211,6 +232,9 @@ VbError_t VbExEcGetExpectedRW(enum VbSelectFirmware_t select,
 
 	*image = NULL;
 	*image_size = 0;
+
+	if (devidx != 0)
+		return VBERROR_UNKNOWN;
 
 	cros_fdtdec_flashmap(gd->fdt_blob, &fmap);
 	switch (select) {
@@ -267,13 +291,16 @@ VbError_t VbExEcGetExpectedRW(enum VbSelectFirmware_t select,
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcGetExpectedRWHash(enum VbSelectFirmware_t select,
+VbError_t VbExEcGetExpectedRWHash(int devidx, enum VbSelectFirmware_t select,
 		       const uint8_t **hash, int *hash_size)
 {
 	struct twostop_fmap fmap;
 	struct fmap_entry *ec;
 
 	*hash = NULL;
+
+	if (devidx != 0)
+		return VBERROR_UNKNOWN;
 
 	/* TODO: Decode the flashmap once and reuse throughout. */
 	cros_fdtdec_flashmap(gd->fdt_blob, &fmap);

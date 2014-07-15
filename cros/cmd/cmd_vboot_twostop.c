@@ -409,7 +409,7 @@ static int set_active_ec_firmware(crossystem_data_t* cdata)
 		return 0;
 	}
 
-	rv = VbExEcRunningRW(&in_rw);
+	rv = VbExEcRunningRW(0, &in_rw);
 	if (rv != VBERROR_SUCCESS)
 		return rv;
 	cdata->active_ec_firmware = (in_rw ? ACTIVE_EC_FIRMWARE_RW :
