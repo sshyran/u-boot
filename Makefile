@@ -440,7 +440,8 @@ vboot:
 		$(MAKE) -C $(VBOOT_SOURCE) \
 		BUILD=$(OBJTREE)/include/generated/vboot \
 		ARCH=$(VBOOT_SUBMAKE_ARCH) \
-		$(if CONFIG_VBOOT_REGION_READ,REGION_READ=1,,)
+		$(if CONFIG_VBOOT_REGION_READ,REGION_READ=1,,) \
+		fwlib
 
 __LIBS += $(obj)include/generated/vboot/vboot_fw.a
 VBOOT_TARGET := vboot
