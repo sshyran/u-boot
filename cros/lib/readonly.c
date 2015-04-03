@@ -146,7 +146,6 @@ int vboot_ro_init(struct vboot_info *vboot)
 	vboot->nvcontext_size = VBNV_BLOCK_SIZE;
 
 	vboot->active_ec_firmware = ACTIVE_EC_FIRMWARE_RO;
-	vboot->ddr_type = cros_fdt_get_mem_type();
 
 	return 0;
 

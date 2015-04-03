@@ -122,8 +122,6 @@ int vboot_read_from_fdt(struct vboot_info *vboot, const void *blob)
 			(unsigned)sizeof(vboot->vb_shared_data), len);
 	}
 
-	vboot->ddr_type = fdt_getprop(blob, node, "ddr-type", NULL);
-
 	return 0;
 }
 
@@ -198,9 +196,6 @@ int vboot_write_to_fdt(const struct vboot_info *vboot, void *blob)
 	}
 
 	CALL(set_array_prop("vboot-shared-data", vb_shared_data));
-
-	if (vboot->ddr_type)
-		CALL(set_conststring_prop("ddr-type", vboot->ddr_type));
 
 #undef set_scalar_prop
 #undef set_array_prop

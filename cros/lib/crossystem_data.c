@@ -142,7 +142,6 @@ int crossystem_data_set_main_firmware(crossystem_data_t *cdata,
 #ifdef CONFIG_OF_LIBFDT
 static int process_cdata(crossystem_data_t *cdata, void *fdt)
 {
-	const char *ddr_type;
 	int gpio_prop[3];
 	int nodeoffset;
 	int err;
@@ -246,12 +245,6 @@ static int process_cdata(crossystem_data_t *cdata, void *fdt)
 #endif /* CONFIG_ARM */
 
 	CALL(set_array_prop("vboot-shared-data", vb_shared_data));
-
-	ddr_type = cros_fdt_get_mem_type();
-	if (ddr_type) {
-		CALL(fdt_setprop(fdt, nodeoffset, "ddr-type", ddr_type,
-				   strlen(ddr_type)));
-	}
 
 #undef set_scalar_prop
 #undef set_array_prop

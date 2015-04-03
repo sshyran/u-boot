@@ -134,7 +134,6 @@ struct vboot_fw_info {
  *	of bytes in the section containing the firmware, but may be smaller if
  *	the vblock indicates that not all of that data was signed.
  * @active_ec_firmware: Indicates if the EC is in RO/RW (ACTIVE_EC_FIRMWARE_..)
- * @ddr_type: Name of the DDR memory type we have
  * @readonly_firmware_id: Firmware ID read from RO firmware
  * @firmware_id: Firmware ID of selected RO/RW firmware
  * @hardware_id: Hardware ID
@@ -170,7 +169,6 @@ struct vboot_info {
 	struct vboot_persist *persist;
 	uint32_t fw_size;
 	uint8_t active_ec_firmware;
-	const char *ddr_type;
 	char readonly_firmware_id[ID_LEN];
 	char firmware_id[ID_LEN];
 	char hardware_id[ID_LEN];
