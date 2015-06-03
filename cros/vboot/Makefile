@@ -18,6 +18,7 @@ COBJS-$(CONFIG_CHROMEOS_IDE) += boot_device_ide.o
 COBJS-$(CONFIG_MMC) += boot_device_mmc.o
 COBJS-$(CONFIG_CHROMEOS_USB) += boot_device_usb.o
 COBJS-$(CONFIG_SCSI_AHCI) += boot_device_scsi.o
+COBJS-$(CONFIG_CHROMEOS) += cgptlib.o
 COBJS-$(CONFIG_CHROMEOS) += display.o
 COBJS-$(CONFIG_CHROMEOS) += ec.o
 COBJS-$(CONFIG_CHROMEOS) += keyboard.o

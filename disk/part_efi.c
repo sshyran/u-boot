@@ -440,7 +440,7 @@ int gpt_fill_pte(gpt_header *gpt_h, gpt_entry *gpt_e,
 int gpt_fill_header(block_dev_desc_t *dev_desc, gpt_header *gpt_h,
 		char *str_guid, int parts_count)
 {
-	gpt_h->signature = cpu_to_le64(GPT_HEADER_SIGNATURE);
+	gpt_h->signature = cpu_to_le64(GPT_HEADER_SIGNATURE_VALUE);
 	gpt_h->revision = cpu_to_le32(GPT_HEADER_REVISION_V1);
 	gpt_h->header_size = cpu_to_le32(sizeof(gpt_header));
 	gpt_h->my_lba = cpu_to_le64(1);
@@ -572,11 +572,11 @@ static int is_gpt_valid(block_dev_desc_t * dev_desc, unsigned long long lba,
 	}
 
 	/* Check the GPT header signature */
-	if (le64_to_cpu(pgpt_head->signature) != GPT_HEADER_SIGNATURE) {
+	if (le64_to_cpu(pgpt_head->signature) != GPT_HEADER_SIGNATURE_VALUE) {
 		printf("GUID Partition Table Header signature is wrong:"
 			"0x%llX != 0x%llX\n",
 			le64_to_cpu(pgpt_head->signature),
-			GPT_HEADER_SIGNATURE);
+			GPT_HEADER_SIGNATURE_VALUE);
 		return 0;
 	}
 
