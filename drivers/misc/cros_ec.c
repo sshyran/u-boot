@@ -1147,6 +1147,34 @@ int cros_ec_get_ldo(struct cros_ec_dev *dev, uint8_t index, uint8_t *state)
 	return 0;
 }
 
+int cros_ec_read_limit_power_request(struct cros_ec_dev *dev, int *limit_power)
+{
+	struct ec_params_charge_state p;
+	struct ec_response_charge_state r;
+	int res;
+
+	p.cmd = CHARGE_STATE_CMD_GET_PARAM;
+	p.get_param.param = CS_PARAM_LIMIT_POWER;
+	res = ec_command(dev, EC_CMD_CHARGE_STATE, 0,
+			 &p, sizeof(p), &r, sizeof(r));
+
+	/*
+	 * If our EC doesn't support the LIMIT_POWER parameter, assume that
+	 * LIMIT_POWER is not requested.
+	 */
+	if (res == -EC_RES_INVALID_PARAM || res == -EC_RES_INVALID_COMMAND) {
+		debug("PARAM_LIMIT_POWER not supported by EC.\n");
+		*limit_power = 0;
+		return 0;
+	}
+
+	if (res != sizeof(r.get_param))
+		return -1;
+
+	*limit_power = r.get_param.value;
+	return 0;
+}
+
 /**
  * Decode EC interface details from the device tree and allocate a suitable
  * device.

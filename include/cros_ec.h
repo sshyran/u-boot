@@ -500,4 +500,13 @@ int cros_ec_decode_ec_flash(const void *blob, struct fdt_cros_ec *config);
  */
 void cros_ec_check_keyboard(struct cros_ec_dev *dev);
 
+/**
+ * Read limit power request from the EC
+ *
+ * @param dev		CROS-EC device
+ * @param limit_power	Pointer to result destination
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_read_limit_power_request(struct cros_ec_dev *dev, int *limit_power);
+
 #endif

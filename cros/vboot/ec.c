@@ -337,3 +337,47 @@ VbError_t VbExEcGetExpectedRWHash(int devidx, enum VbSelectFirmware_t select,
 
 	return VBERROR_SUCCESS;
 }
+
+/* Wait 3 seconds after software sync for EC to clear the limit power flag. */
+#define LIMIT_POWER_WAIT_TIMEOUT 3000
+/* Check the limit power flag every 50 ms while waiting. */
+#define LIMIT_POWER_POLL_SLEEP 50
+
+VbError_t VbExEcVbootDone(int in_recovery)
+{
+	struct cros_ec_dev *mdev = board_get_cros_ec_dev();
+	int limit_power;
+	int limit_power_wait_time = 0;
+	int message_printed = 0;
+
+	/* Ensure we have enough power to continue booting */
+	while (1) {
+		if (cros_ec_read_limit_power_request(mdev, &limit_power)) {
+			VBDEBUG("Failed to check EC limit power flag.\n");
+			return VBERROR_UNKNOWN;
+		}
+
+		/*
+		 * Do not wait for the limit power flag to be cleared in
+		 * recovery mode since we didn't just sysjump.
+		 */
+		if (!limit_power || in_recovery ||
+		    limit_power_wait_time > LIMIT_POWER_WAIT_TIMEOUT)
+			break;
+
+		if (!message_printed) {
+			VBDEBUG("Waiting for EC to clear limit power flag.\n");
+			message_printed = 1;
+		}
+
+		mdelay(LIMIT_POWER_POLL_SLEEP);
+		limit_power_wait_time += LIMIT_POWER_POLL_SLEEP;
+	}
+
+	if (limit_power) {
+		VBDEBUG("EC requests limited power usage. Request shutdown.\n");
+		return VBERROR_SHUTDOWN_REQUESTED;
+	}
+
+	return VBERROR_SUCCESS;
+}
