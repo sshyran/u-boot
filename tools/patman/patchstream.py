@@ -288,6 +288,7 @@ class PatchStream:
                     raise ValueError("%s: Two Change-Ids: '%s' vs. '%s'" %
                         (self.commit.hash, self.commit.change_id, value))
                 self.commit.change_id = value
+            self.skip_blank = True
 
         # Detect Commit-xxx tags
         elif commit_tag_match:
@@ -371,6 +372,12 @@ class PatchStream:
         if not self.commit.change_id:
             return
 
+        # If the count is -1 we're testing, so use a fixed time
+        if self.commit.count == -1:
+            time_now = datetime.datetime(1999, 12, 31, 23, 59, 59)
+        else:
+            time_now = datetime.datetime.now()
+
         # In theory there is email.utils.make_msgid() which would be nice
         # to use, but it already produces something way too long and thus
         # will produce ugly commit lines if someone throws this into
@@ -378,7 +385,7 @@ class PatchStream:
 
         # Start with the time; presumably we wouldn't send the same series
         # with the same Change-Id at the exact same second.
-        parts = [datetime.datetime.now().strftime("%Y%m%d%H%M%S")]
+        parts = [time_now.strftime("%Y%m%d%H%M%S")]
 
         # These seem like they would be nice to include.
         if 'prefix' in self.series:
