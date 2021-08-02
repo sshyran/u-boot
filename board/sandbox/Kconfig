@@ -1,0 +1,14 @@
+if TARGET_SANDBOX
+
+config SYS_CONFIG_NAME
+	default "sandbox_spl" if TARGET_SANDBOX_SPL
+	default "sandbox" if !TARGET_SANDBOX_SPL
+
+endif
+
+if TARGET_CHROMEOS_SANDBOX
+
+config SYS_CONFIG_NAME
+	default "chromeos_sandbox"
+
+endif
