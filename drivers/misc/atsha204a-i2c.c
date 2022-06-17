@@ -20,7 +20,8 @@
 #include <linux/delay.h>
 #include <u-boot/crc.h>
 
-#define ATSHA204A_TWLO			60
+#define ATSHA204A_TWLO_US		60
+#define ATSHA204A_TWHI_US		2500
 #define ATSHA204A_TRANSACTION_TIMEOUT	100000
 #define ATSHA204A_TRANSACTION_RETRY	5
 #define ATSHA204A_EXECTIME		5000
@@ -225,7 +226,7 @@ int atsha204a_wakeup(struct udevice *dev)
 			continue;
 		}
 
-		udelay(ATSHA204A_TWLO);
+		udelay(ATSHA204A_TWLO_US + ATSHA204A_TWHI_US);
 
 		res = atsha204a_recv_resp(dev, &resp);
 		if (res) {
